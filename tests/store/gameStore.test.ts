@@ -19,7 +19,7 @@ describe('게임 저장소', () => {
 
     expect(decision.rejectedBy).toBeUndefined();
     expect(notificationCount).toBe(1);
-    expect(store.getState().game.entities.player.position).toEqual({ x: 1, y: 19 });
+    expect(store.getState().game.entities.player.position).toEqual({ x: 1, y: 9 });
   });
 
   it('거부된 이동 명령은 게임 상태를 갱신하지 않는다', () => {
@@ -48,7 +48,7 @@ describe('게임 저장소', () => {
     store.getState().dispatch({ type: 'player/move', direction: 'right' });
     store.getState().reset();
 
-    expect(store.getState().game.entities.player.position).toEqual({ x: 0, y: 19 });
+    expect(store.getState().game.entities.player.position).toEqual({ x: 0, y: 9 });
     expect(store.getState().game.status).toBe('playing');
   });
 });

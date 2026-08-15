@@ -37,7 +37,7 @@ describe('플레이어 이동', () => {
     const decision = decide(state, { type: 'player/move', direction: 'up' });
 
     const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 0, y: 18 });
+    expect(next.entities.player.position).toEqual({ x: 0, y: 8 });
   });
 
   it('플레이어는 오른쪽의 인접한 타일로 이동한다', () => {
@@ -48,23 +48,23 @@ describe('플레이어 이동', () => {
     expect(decision.events).toHaveLength(1);
 
     const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 1, y: 19 });
+    expect(next.entities.player.position).toEqual({ x: 1, y: 9 });
   });
 
   it('플레이어는 아래쪽의 인접한 타일로 이동한다', () => {
-    const state = createStateWithPlayer({ x: 1, y: 18 });
+    const state = createStateWithPlayer({ x: 1, y: 8 });
     const decision = decide(state, { type: 'player/move', direction: 'down' });
 
     const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 1, y: 19 });
+    expect(next.entities.player.position).toEqual({ x: 1, y: 9 });
   });
 
   it('플레이어는 왼쪽의 인접한 타일로 이동한다', () => {
-    const state = createStateWithPlayer({ x: 1, y: 18 });
+    const state = createStateWithPlayer({ x: 1, y: 8 });
     const decision = decide(state, { type: 'player/move', direction: 'left' });
 
     const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 0, y: 18 });
+    expect(next.entities.player.position).toEqual({ x: 0, y: 8 });
   });
 
   it('플레이어는 보드 밖으로 이동할 수 없다', () => {
@@ -84,8 +84,8 @@ describe('상자 상호작용', () => {
 
     expect(boxes).toHaveLength(5);
     expect(positions).toHaveLength(5);
-    expect(positions.has('0,19')).toBe(false);
-    expect(positions.has('9,0')).toBe(false);
+    expect(positions.has('0,9')).toBe(false);
+    expect(positions.has('19,0')).toBe(false);
   });
 
   it('플레이어는 앞의 상자를 빈 타일로 민다', () => {
@@ -123,7 +123,7 @@ describe('상자 상호작용', () => {
 
 describe('출구 도달', () => {
   it('플레이어가 출구에 도착하면 게임 완료 이벤트가 발생한다', () => {
-    const state = createStateWithPlayer({ x: 8, y: 0 });
+    const state = createStateWithPlayer({ x: 18, y: 0 });
     const decision = decide(state, { type: 'player/move', direction: 'right' });
     const next = evolveAll(state, decision.events);
 
