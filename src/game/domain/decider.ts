@@ -1,9 +1,11 @@
 import type {
   Decision,
   Direction,
+  Entity,
   GameCommand,
   GameEvent,
   GameState,
+  Box,
   Player,
   Position,
 } from './types';
@@ -29,8 +31,8 @@ function isInside(state: GameState, position: Position): boolean {
   );
 }
 
-function hasEntityAt(state: GameState, position: Position): boolean {
-  return Object.values(state.entities).some(
+function getEntityAt(state: GameState, position: Position): Entity | undefined {
+  return Object.values(state.entities).find(
     (entity) => entity.position.x === position.x && entity.position.y === position.y,
   );
 }
@@ -45,6 +47,33 @@ function getPlayer(state: GameState): Player {
   return player;
 }
 
+function getBox(state: GameState, boxId: string): Box {
+  const box = state.entities[boxId];
+
+  if (!box || box.kind !== 'box') {
+    throw new Error('상자 상태를 찾을 수 없습니다.');
+  }
+
+  return box;
+}
+
+function playerMoveEvents(state: GameState, player: Player, target: Position): GameEvent[] {
+  const events: GameEvent[] = [
+    {
+      type: 'player/moved',
+      playerId: player.id,
+      from: player.position,
+      to: target,
+    },
+  ];
+
+  if (state.tiles[target.y][target.x] === 'exit') {
+    events.push({ type: 'game/completed' });
+  }
+
+  return events;
+}
+
 export function decide(state: GameState, command: GameCommand): Decision {
   const player = getPlayer(state);
   const target = nextPosition(player.position, command.direction);
@@ -53,12 +82,26 @@ export function decide(state: GameState, command: GameCommand): Decision {
     return { events: [], rejectedBy: 'out-of-bounds' };
   }
 
-  if (hasEntityAt(state, target)) {
-    return { events: [], rejectedBy: 'blocked-entity' };
+  const targetEntity = getEntityAt(state, target);
+
+  if (!targetEntity) {
+    return { events: playerMoveEvents(state, player, target) };
+  }
+
+  const boxTarget = nextPosition(targetEntity.position, command.direction);
+
+  if (!isInside(state, boxTarget) || getEntityAt(state, boxTarget)) {
+    return { events: [], rejectedBy: 'blocked-box' };
   }
 
   return {
     events: [
+      {
+        type: 'box/pushed',
+        boxId: targetEntity.id,
+        from: targetEntity.position,
+        to: boxTarget,
+      },
       {
         type: 'player/moved',
         playerId: player.id,
@@ -70,16 +113,42 @@ export function decide(state: GameState, command: GameCommand): Decision {
 }
 
 export function evolve(state: GameState, event: GameEvent): GameState {
-  const player = getPlayer(state);
+  switch (event.type) {
+    case 'player/moved': {
+      const player = getPlayer(state);
 
-  return {
-    ...state,
-    entities: {
-      ...state.entities,
-      [event.playerId]: {
-        ...player,
-        position: event.to,
-      },
-    },
-  };
+      return {
+        ...state,
+        entities: {
+          ...state.entities,
+          [event.playerId]: {
+            ...player,
+            position: event.to,
+          },
+        },
+      };
+    }
+
+    case 'box/pushed': {
+      const box = getBox(state, event.boxId);
+
+      return {
+        ...state,
+        entities: {
+          ...state.entities,
+          [event.boxId]: {
+            ...box,
+            position: event.to,
+          },
+        },
+      };
+    }
+
+    case 'game/completed':
+      return { ...state, status: 'completed' };
+  }
+}
+
+export function evolveAll(state: GameState, events: GameEvent[]): GameState {
+  return events.reduce(evolve, state);
 }
