@@ -73,6 +73,15 @@ src/
       └─ GameScene.ts
 ```
 
+## Testing
+
+- Use Vitest through its CLI for automated tests.
+- Tests describe observable behavior, not implementation details.
+- Test names are Korean sentences.
+- Test the domain and store: movement outcomes, box interactions, emitted events, and state transitions.
+- Do not test rendering asset paths, asset file names, sprite construction details, or animation frame metadata.
+- Verify Phaser integration with the production build and manual browser checks.
+
 ## Deferred decisions
 
 - Whether `10 x 20` means 10 columns by 20 rows or 20 columns by 10 rows.
