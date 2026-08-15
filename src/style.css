@@ -1,0 +1,26 @@
+:root {
+  background: #080e14;
+  color: #d7f9ff;
+  font-family: monospace;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+#app {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+}
+
+canvas {
+  image-rendering: pixelated;
+}
