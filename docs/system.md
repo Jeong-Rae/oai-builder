@@ -76,6 +76,13 @@ src/
 - Do not test rendering asset paths, asset file names, sprite construction details, or animation frame metadata.
 - Verify Phaser integration with the production build and manual browser checks.
 
+## Asset conversion
+
+- Original assets use `<name>.origin.png`; generated assets use `<name>.<size>.png` (for example, `tile.origin.png` and `tile.36.png`).
+- The conversion script supports `32`, `36`, `48`, and `64` pixels: `npm run asset:resize -- assets/tail/tile.origin.png 36`.
+- A source must be a `1254×1254` image. The script crops equal pixels from all four sides to obtain a size divisible by the target, then applies nearest-neighbor scaling.
+- Generated files are never overwritten unless `--force` is supplied. Existing `_1254` source names remain supported during the naming transition.
+
 ## Deferred decisions
 
 - The final win condition beyond the documented player-arrives-at-exit animation.

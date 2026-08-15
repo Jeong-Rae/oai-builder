@@ -1,11 +1,13 @@
 {
   "scripts": {
+    "asset:resize": "node scripts/resize-game-asset.mjs",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "test": "vitest",
     "test:run": "vitest run"
   },
   "devDependencies": {
+    "sharp": "^0.35.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
