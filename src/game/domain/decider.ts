@@ -97,6 +97,10 @@ export function decide(state: GameState, command: GameCommand): Decision {
     throw new Error(`${command.direction} 컨트롤의 소유자를 찾을 수 없습니다.`);
   }
 
+  if (owner.kind === 'handoff' || owner.kind === 'swapper') {
+    return { events: [], rejectedBy: 'fixed' };
+  }
+
   const target = nextPosition(owner.position, command.direction);
 
   if (!isInside(state, target)) {
@@ -111,6 +115,25 @@ export function decide(state: GameState, command: GameCommand): Decision {
 
   if (!targetEntity) {
     return { events: moveEvents(state, owner, target) };
+  }
+
+  if (owner.kind === 'normal' && targetEntity.kind === 'handoff' && targetEntity.controls.length > 0) {
+    return {
+      events: [
+        ...targetEntity.controls.map((direction) => ({
+          type: 'control/transferred' as const,
+          direction,
+          fromEntityId: targetEntity.id,
+          toEntityId: owner.id,
+        })),
+        {
+          type: 'control/transferred',
+          direction: command.direction,
+          fromEntityId: owner.id,
+          toEntityId: targetEntity.id,
+        },
+      ],
+    };
   }
 
   return {

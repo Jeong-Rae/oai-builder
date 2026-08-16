@@ -78,7 +78,7 @@ export type GameEvent =
       type: 'game/completed';
     };
 
-export type RejectionReason = 'out-of-bounds' | 'wall';
+export type RejectionReason = 'out-of-bounds' | 'wall' | 'fixed';
 
 export interface Decision {
   events: GameEvent[];

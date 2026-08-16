@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { decide, evolveAll } from '../../src/game/domain/decider';
 import { createInitialState } from '../../src/game/domain/level';
-import type { GameState, Normal, Position } from '../../src/game/domain/types';
+import type { GameState, Handoff, Normal, Position } from '../../src/game/domain/types';
 
 function createStateWithPlayer(position: Position) {
   const state = createInitialState({ boxCount: 0 });
@@ -21,6 +21,10 @@ function createStateWithPlayer(position: Position) {
 
 function normal(id: string, position: Position): Normal {
   return { id, kind: 'normal', position, controls: [] };
+}
+
+function handoff(id: string, position: Position, controls: Handoff['controls'] = []): Handoff {
+  return { id, kind: 'handoff', position, controls };
 }
 
 function createStateWithNormals(playerPosition: Position, normals: Normal[]) {
@@ -162,6 +166,64 @@ describe('플레이트', () => {
 
     expect(decision.events.map((event) => event.type)).toEqual(['entity/moved', 'plate/deactivated']);
     expect(next.plateStates['1,1']).toBe('inactive');
+  });
+});
+
+describe('핸드오프 앵커', () => {
+  it('비어 있는 앵커는 전달받은 컨트롤을 보유한다', () => {
+    const state = createStateWithPlayer({ x: 1, y: 1 });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        'handoff-1': handoff('handoff-1', { x: 2, y: 1 }),
+      },
+    };
+    const next = evolveAll(prepared, decide(prepared, { type: 'player/move', direction: 'right' }).events);
+
+    expect(next.entities.player.controls).not.toContain('right');
+    expect(next.entities['handoff-1'].controls).toEqual(['right']);
+  });
+
+  it('일반 오브젝트가 컨트롤 보유 앵커에 접촉하면 전체 컨트롤을 환승한다', () => {
+    const state = createInitialState({ boxCount: 0 });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, controls: ['down'] },
+        'normal-1': { ...normal('normal-1', { x: 1, y: 1 }), controls: ['right'] },
+        'handoff-1': handoff('handoff-1', { x: 2, y: 1 }, ['up', 'left']),
+      },
+    };
+    const decision = decide(prepared, { type: 'player/move', direction: 'right' });
+    const next = evolveAll(prepared, decision.events);
+
+    expect(decision.events).toEqual([
+      { type: 'control/transferred', direction: 'up', fromEntityId: 'handoff-1', toEntityId: 'normal-1' },
+      { type: 'control/transferred', direction: 'left', fromEntityId: 'handoff-1', toEntityId: 'normal-1' },
+      { type: 'control/transferred', direction: 'right', fromEntityId: 'normal-1', toEntityId: 'handoff-1' },
+    ]);
+    expect(next.entities['normal-1'].position).toEqual({ x: 1, y: 1 });
+    expect(next.entities['normal-1'].controls).toEqual(['up', 'left']);
+    expect(next.entities['handoff-1'].controls).toEqual(['right']);
+  });
+
+  it('앵커가 보유한 컨트롤을 입력해도 앵커는 이동하지 않는다', () => {
+    const state = createInitialState({ boxCount: 0 });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, controls: ['up', 'down', 'left'] },
+        'handoff-1': handoff('handoff-1', { x: 2, y: 1 }, ['right']),
+      },
+    };
+
+    expect(decide(prepared, { type: 'player/move', direction: 'right' })).toEqual({
+      events: [],
+      rejectedBy: 'fixed',
+    });
   });
 });
 
