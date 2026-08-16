@@ -37,6 +37,16 @@ function getEntityAt(state: GameState, position: Position): Entity | undefined {
   );
 }
 
+function isWall(state: GameState, position: Position): boolean {
+  return state.tiles[position.y][position.x] === 'wall';
+}
+
+function isAdjacentToExit(state: GameState, position: Position): boolean {
+  return state.tiles.some((row, y) =>
+    row.some((tile, x) => tile === 'exit' && Math.abs(position.x - x) + Math.abs(position.y - y) === 1),
+  );
+}
+
 function getPlayer(state: GameState): Player {
   const player = state.entities[state.playerId];
 
@@ -71,6 +81,10 @@ function playerMoveEvents(state: GameState, player: Player, target: Position): G
     events.push({ type: 'game/completed' });
   }
 
+  if (!state.gateOpened && isAdjacentToExit(state, target)) {
+    events.push({ type: 'gate/opened' });
+  }
+
   return events;
 }
 
@@ -80,6 +94,10 @@ export function decide(state: GameState, command: GameCommand): Decision {
 
   if (!isInside(state, target)) {
     return { events: [], rejectedBy: 'out-of-bounds' };
+  }
+
+  if (isWall(state, target)) {
+    return { events: [], rejectedBy: 'wall' };
   }
 
   const targetEntity = getEntityAt(state, target);
@@ -94,6 +112,10 @@ export function decide(state: GameState, command: GameCommand): Decision {
     return { events: [], rejectedBy: 'blocked-box' };
   }
 
+  if (isWall(state, boxTarget)) {
+    return { events: [], rejectedBy: 'wall' };
+  }
+
   return {
     events: [
       {
@@ -102,12 +124,7 @@ export function decide(state: GameState, command: GameCommand): Decision {
         from: targetEntity.position,
         to: boxTarget,
       },
-      {
-        type: 'player/moved',
-        playerId: player.id,
-        from: player.position,
-        to: target,
-      },
+      ...playerMoveEvents(state, player, target),
     ],
   };
 }
@@ -143,6 +160,9 @@ export function evolve(state: GameState, event: GameEvent): GameState {
         },
       };
     }
+
+    case 'gate/opened':
+      return { ...state, gateOpened: true };
 
     case 'game/completed':
       return { ...state, status: 'completed' };

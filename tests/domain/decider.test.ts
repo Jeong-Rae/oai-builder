@@ -74,6 +74,16 @@ describe('플레이어 이동', () => {
     expect(decision.events).toEqual([]);
     expect(decision.rejectedBy).toBe('out-of-bounds');
   });
+
+  it('플레이어는 벽 타일로 이동할 수 없다', () => {
+    const state = createInitialState({ boxCount: 0 });
+    state.tiles[8][0] = 'wall';
+
+    const decision = decide(state, { type: 'player/move', direction: 'up' });
+
+    expect(decision.events).toEqual([]);
+    expect(decision.rejectedBy).toBe('wall');
+  });
 });
 
 describe('상자 상호작용', () => {
@@ -118,6 +128,50 @@ describe('상자 상호작용', () => {
 
     expect(decision.events).toEqual([]);
     expect(decision.rejectedBy).toBe('blocked-box');
+  });
+
+  it('플레이어는 벽으로 상자를 밀 수 없다', () => {
+    const state = createStateWithBoxes(
+      { x: 1, y: 1 },
+      [{ id: 'box-1', kind: 'box', position: { x: 2, y: 1 } }],
+    );
+    state.tiles[1][3] = 'wall';
+
+    const decision = decide(state, { type: 'player/move', direction: 'right' });
+
+    expect(decision.events).toEqual([]);
+    expect(decision.rejectedBy).toBe('wall');
+  });
+});
+
+describe('Gate 열림', () => {
+  it('플레이어가 gate의 인접 칸에 도착하면 한 번 열린다', () => {
+    const state = createStateWithPlayer({ x: 17, y: 0 });
+    const firstDecision = decide(state, { type: 'player/move', direction: 'right' });
+    const opened = evolveAll(state, firstDecision.events);
+    const secondDecision = decide(opened, { type: 'player/move', direction: 'left' });
+
+    expect(firstDecision.events.map((event) => event.type)).toEqual([
+      'player/moved',
+      'gate/opened',
+    ]);
+    expect(opened.gateOpened).toBe(true);
+    expect(secondDecision.events.map((event) => event.type)).toEqual(['player/moved']);
+  });
+
+  it('상자를 밀며 gate의 인접 칸에 도착해도 열린다', () => {
+    const state = createStateWithBoxes(
+      { x: 17, y: 0 },
+      [{ id: 'box-1', kind: 'box', position: { x: 18, y: 0 } }],
+    );
+
+    const decision = decide(state, { type: 'player/move', direction: 'right' });
+
+    expect(decision.events.map((event) => event.type)).toEqual([
+      'box/pushed',
+      'player/moved',
+      'gate/opened',
+    ]);
   });
 });
 

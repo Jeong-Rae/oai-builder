@@ -55,7 +55,7 @@ export class GameScene extends Phaser.Scene {
 
     const exitPosition = toPixel({ x: BOARD_COLUMNS - 1, y: 0 });
     this.exitSprite = this.add
-      .image(exitPosition.x, exitPosition.y, exitTextureKeys[0])
+      .image(exitPosition.x, exitPosition.y, exitTextureKeys[game.gateOpened ? 3 : 0])
       .setDisplaySize(TILE_SIZE, TILE_SIZE);
 
     this.syncEntities(game);
@@ -112,11 +112,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   private syncExit(game: GameState, previous: GameState): void {
-    if (game.status === 'completed' && previous.status !== 'completed') {
+    if (game.gateOpened && !previous.gateOpened) {
       this.playExitAnimation();
     }
 
-    if (game.status === 'playing' && previous.status === 'completed') {
+    if (!game.gateOpened && previous.gateOpened) {
       this.exitSprite?.setTexture(exitTextureKeys[0]);
     }
   }

@@ -37,7 +37,7 @@ GameCommand + GameState -> decide -> GameEvent[] -> evolve -> next GameState
 ```
 
 - `player/move` is the initial command.
-- `player/moved`, `box/pushed`, and `game/completed` are the initial domain events.
+- `player/moved`, `box/pushed`, `gate/opened`, and `game/completed` are the initial domain events.
 - A blocked movement produces no event and returns a rejection reason (`out-of-bounds`, `wall`, or `blocked-box`).
 - A valid box push produces both the box and player movement events.
 - All events from one command are evolved before Zustand receives a single state update; observers never see intermediate movement state.
@@ -87,5 +87,5 @@ src/
 ## Deferred decisions
 
 - The final win condition beyond the documented player-arrives-at-exit animation.
-- Walls, goal tiles, level data, and solvable box placement.
+- Wall rendering, level data, and solvable box placement.
 - Movement tweening, sound, undo/redo, level progression, and persistent event history.

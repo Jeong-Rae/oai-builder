@@ -27,6 +27,7 @@ export interface GameState {
   tiles: TileKind[][];
   entities: Record<string, Entity>;
   playerId: 'player';
+  gateOpened: boolean;
   status: 'playing' | 'completed';
 }
 
@@ -49,10 +50,13 @@ export type GameEvent =
       to: Position;
     }
   | {
+      type: 'gate/opened';
+    }
+  | {
       type: 'game/completed';
     };
 
-export type RejectionReason = 'out-of-bounds' | 'blocked-box';
+export type RejectionReason = 'out-of-bounds' | 'wall' | 'blocked-box';
 
 export interface Decision {
   events: GameEvent[];
