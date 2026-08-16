@@ -7,8 +7,8 @@ import type { Entity, GameState, Position } from '../domain/types';
 
 const textureUrls = {
   tile: new URL('../../../assets/tail/tile.48.png', import.meta.url).href,
-  box: new URL('../../../assets/box/box.48.png', import.meta.url).href,
-  player: new URL('../../../assets/playable/playable.48.png', import.meta.url).href,
+  box: new URL('../../../assets/box/box.3d.48.png', import.meta.url).href,
+  player: new URL('../../../assets/playable/playable.origin.png', import.meta.url).href,
   exit1: new URL('../../../assets/gate/gate_1f.48.png', import.meta.url).href,
   exit2: new URL('../../../assets/gate/gate_2f.48.png', import.meta.url).href,
   exit3: new URL('../../../assets/gate/gate_3f.48.png', import.meta.url).href,
