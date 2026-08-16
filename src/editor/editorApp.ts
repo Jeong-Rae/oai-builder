@@ -17,28 +17,42 @@ const assetUrls = {
   right: new URL('../../assets/arrow/arrow_right.svg', import.meta.url).href,
 };
 
+type AssetKey = keyof typeof assetUrls;
+
+const assetLabels: Record<AssetKey, string> = {
+  tile: '필드 타일',
+  box: '일반 오브젝트',
+  player: '플레이어',
+  goalClosed: '닫힌 골',
+  goalOpen: '열린 골',
+  up: '위 방향 표시',
+  down: '아래 방향 표시',
+  left: '왼쪽 방향 표시',
+  right: '오른쪽 방향 표시',
+};
+
 interface ToolOption<T extends EditorTool> {
   tool: T;
   label: string;
-  image?: string;
+  asset?: AssetKey;
   badge?: string;
 }
 
 const fieldTools: Array<ToolOption<TileKind>> = [
   { tool: 'blank', label: '맵 외부', badge: '∅' },
-  { tool: 'floor', label: '바닥', image: assetUrls.tile },
-  { tool: 'wall', label: '벽', image: assetUrls.tile },
-  { tool: 'plate', label: '플레이트', image: assetUrls.tile },
-  { tool: 'wormhole', label: '웜홀', image: assetUrls.tile, badge: 'W' },
-  { tool: 'gate', label: '게이트', image: assetUrls.tile, badge: 'G' },
-  { tool: 'exit', label: '골', image: assetUrls.goalClosed },
+  { tool: 'floor', label: '바닥', asset: 'tile' },
+  { tool: 'wall', label: '벽', asset: 'tile' },
+  { tool: 'plate', label: '플레이트', asset: 'tile' },
+  { tool: 'wormhole', label: '웜홀', asset: 'tile', badge: 'W' },
+  { tool: 'gate', label: '게이트', asset: 'tile', badge: 'G' },
+  { tool: 'exit', label: '골', asset: 'goalClosed' },
 ];
 
 const objectTools: Array<ToolOption<MapObjectKind>> = [
-  { tool: 'player', label: '플레이어', image: assetUrls.player },
-  { tool: 'normal', label: '일반', image: assetUrls.box },
-  { tool: 'handoff', label: '핸드오프', image: assetUrls.box, badge: 'H' },
-  { tool: 'swapper', label: '스와퍼', image: assetUrls.box, badge: 'S' },
+  { tool: 'player', label: '플레이어', asset: 'player' },
+  { tool: 'normal', label: '일반', asset: 'box' },
+  { tool: 'handoff', label: '핸드오프', asset: 'box', badge: 'H' },
+  { tool: 'swapper', label: '스와퍼', asset: 'box', badge: 'S' },
 ];
 
 const rejectionMessages = {
@@ -57,14 +71,17 @@ function escapeHtml(value: string): string {
   })[character]!);
 }
 
-function toolButton({ tool, label, image, badge }: ToolOption<EditorTool>): string {
-  const visual = image
-    ? `<span class="tool-visual preview-${tool}"><img src="${image}" alt="" />${badge ? `<b>${badge}</b>` : ''}</span>`
+function toolButton({ tool, label, asset, badge }: ToolOption<EditorTool>, resolveAsset: (key: AssetKey) => string): string {
+  const visual = asset
+    ? `<span class="tool-visual preview-${tool}"><img data-asset-key="${asset}" src="${resolveAsset(asset)}" alt="" />${badge ? `<b>${badge}</b>` : ''}</span>`
     : `<span class="tool-symbol">${badge ?? ''}</span>`;
   return `<button class="tool" type="button" data-tool="${tool}">${visual}<span>${label}</span></button>`;
 }
 
 export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEditorStore()): () => void {
+  let localAssets: Partial<Record<AssetKey, string>> = {};
+  const resolveAsset = (key: AssetKey): string => localAssets[key] ?? assetUrls[key];
+
   root.innerHTML = `
     <div class="editor-shell">
       <header class="masthead">
@@ -91,19 +108,19 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
 
         <section>
           <p class="section-label">필드</p>
-          <div class="tool-grid">${fieldTools.map(toolButton).join('')}</div>
+          <div class="tool-grid">${fieldTools.map((tool) => toolButton(tool, resolveAsset)).join('')}</div>
         </section>
 
         <section>
           <p class="section-label">오브젝트</p>
-          <div class="tool-grid">${objectTools.map(toolButton).join('')}</div>
+          <div class="tool-grid">${objectTools.map((tool) => toolButton(tool, resolveAsset)).join('')}</div>
         </section>
 
         <section>
           <p class="section-label">수정</p>
           <div class="tool-grid">
-            ${toolButton({ tool: 'erase', label: '지우기', badge: '×' })}
-            ${toolButton({ tool: 'select', label: '살펴보기', badge: '+' })}
+            ${toolButton({ tool: 'erase', label: '지우기', badge: '×' }, resolveAsset)}
+            ${toolButton({ tool: 'select', label: '살펴보기', badge: '+' }, resolveAsset)}
           </div>
         </section>
       </aside>
@@ -132,6 +149,13 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
           <p class="section-label">파일</p>
           <button type="button" data-action="export">.map 내보내기</button>
           <label class="file-button">.map 불러오기<input type="file" accept=".map" data-map-input /></label>
+        </section>
+        <section class="asset-lab">
+          <p class="section-label">에셋 시험</p>
+          <label>적용 대상<select data-asset-target>${Object.entries(assetLabels).map(([key, label]) => `<option value="${key}">${label}</option>`).join('')}</select></label>
+          <label class="file-button">이미지 적용<input type="file" accept="image/*" data-asset-input /></label>
+          <button type="button" class="quiet" data-action="reset-assets">기본 에셋으로 복원</button>
+          <p class="asset-status" data-asset-status>브라우저에서만 적용되며 새로고침하면 사라집니다.</p>
         </section>
       </aside>
     </div>
@@ -249,6 +273,13 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     root.querySelectorAll<HTMLElement>('[data-tool]').forEach((button) => {
       button.classList.toggle('active', button.dataset.tool === state.tool);
     });
+    root.querySelectorAll<HTMLImageElement>('[data-asset-key]').forEach((image) => {
+      image.src = resolveAsset(image.dataset.assetKey as AssetKey);
+    });
+    const appliedAssets = Object.keys(localAssets).map((key) => assetLabels[key as AssetKey]);
+    root.querySelector<HTMLElement>('[data-asset-status]')!.textContent = appliedAssets.length === 0
+      ? '브라우저에서만 적용되며 새로고침하면 사라집니다.'
+      : `${appliedAssets.join(', ')} 적용 중 · 서버와 .map에는 저장되지 않습니다.`;
 
     grid.style.gridTemplateColumns = `2rem repeat(${draft.columns}, var(--cell-size))`;
     const cells = ['<span class="axis corner"></span>'];
@@ -265,15 +296,15 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const gateState = field === 'gate' ? gateOpen ? ' gate-open' : ' gate-closed' : '';
         const label = object ? `${field}, ${object.kind}` : field;
         const goal = field === 'exit'
-          ? `<img class="goal-asset" src="${game?.goalOpened ? assetUrls.goalOpen : assetUrls.goalClosed}" alt="" />`
+          ? `<img class="goal-asset" src="${game?.goalOpened ? resolveAsset('goalOpen') : resolveAsset('goalClosed')}" alt="" />`
           : '';
         const objectAsset = object
-          ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? assetUrls.player : assetUrls.box}" alt="" />${object.kind === 'handoff' ? '<b>H</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
+          ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? resolveAsset('player') : resolveAsset('box')}" alt="" />${object.kind === 'handoff' ? '<b>H</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
           : '';
         const controls = object?.controls.map((direction) =>
-          `<img class="control-asset control-${direction}" src="${assetUrls[direction]}" alt="${direction}" />`,
+          `<img class="control-asset control-${direction}" src="${resolveAsset(direction)}" alt="${direction}" />`,
         ).join('') ?? '';
-        const tileAsset = field === 'blank' ? '' : `<img class="tile-asset" src="${assetUrls.tile}" alt="" />`;
+        const tileAsset = field === 'blank' ? '' : `<img class="tile-asset" src="${resolveAsset('tile')}" alt="" />`;
         const fieldBadge = field === 'wormhole'
           ? `<span class="field-badge wormhole-badge">${wormholeLabels.get(key)}</span>`
           : field === 'gate' ? '<span class="field-badge gate-badge">G</span>' : '';
@@ -397,6 +428,41 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     showNotice(`${file.name} 파일을 불러왔습니다.`);
   });
 
+  const assetInput = root.querySelector<HTMLInputElement>('[data-asset-input]')!;
+  const assetTarget = root.querySelector<HTMLSelectElement>('[data-asset-target]')!;
+  assetInput.addEventListener('change', () => {
+    const file = assetInput.files?.[0];
+    assetInput.value = '';
+    if (!file) return;
+    if (file.type && !file.type.startsWith('image/')) {
+      showNotice('이미지 파일만 적용할 수 있습니다.');
+      return;
+    }
+
+    const key = assetTarget.value as AssetKey;
+    const nextUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const previousUrl = localAssets[key];
+      localAssets[key] = nextUrl;
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      render();
+      showNotice(`${assetLabels[key]}에 ${file.name}을 적용했습니다.`);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(nextUrl);
+      showNotice('이미지를 읽을 수 없습니다. 다른 파일을 선택하세요.');
+    };
+    image.src = nextUrl;
+  });
+
+  root.querySelector('[data-action="reset-assets"]')!.addEventListener('click', () => {
+    Object.values(localAssets).forEach((url) => URL.revokeObjectURL(url));
+    localAssets = {};
+    render();
+    showNotice('기본 에셋으로 복원했습니다.');
+  });
+
   const unsubscribeEditor = store.subscribe((state, previous) => {
     if (state.draft !== previous.draft) createTestState();
     render();
@@ -407,6 +473,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   return () => {
     unsubscribeEditor();
     stopTest();
+    Object.values(localAssets).forEach((url) => URL.revokeObjectURL(url));
     window.removeEventListener('keydown', handleKeyDown);
   };
 }
