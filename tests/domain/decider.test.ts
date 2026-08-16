@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { decide, evolveAll } from '../../src/game/domain/decider';
 import { createInitialState } from '../../src/game/domain/level';
-import type { Box, Position } from '../../src/game/domain/types';
+import type { Normal, Position } from '../../src/game/domain/types';
 
 function createStateWithPlayer(position: Position) {
   const state = createInitialState({ boxCount: 0 });
@@ -19,29 +19,29 @@ function createStateWithPlayer(position: Position) {
   };
 }
 
-function box(id: string, position: Position): Box {
-  return { id, kind: 'box', position, controls: [] };
+function normal(id: string, position: Position): Normal {
+  return { id, kind: 'normal', position, controls: [] };
 }
 
-function createStateWithBoxes(playerPosition: Position, boxes: Box[]) {
+function createStateWithNormals(playerPosition: Position, normals: Normal[]) {
   const state = createStateWithPlayer(playerPosition);
 
   return {
     ...state,
     entities: {
       ...state.entities,
-      ...Object.fromEntries(boxes.map((item) => [item.id, item])),
+      ...Object.fromEntries(normals.map((item) => [item.id, item])),
     },
   };
 }
 
 describe('방향 컨트롤', () => {
-  it('게임 시작 시 상자 다섯 개가 서로 다른 타일에 배치된다', () => {
+  it('게임 시작 시 일반 오브젝트 다섯 개가 서로 다른 타일에 배치된다', () => {
     const state = createInitialState({ random: () => 0 });
-    const boxes = Object.values(state.entities).filter((entity) => entity.kind === 'box');
-    const positions = new Set(boxes.map((item) => `${item.position.x},${item.position.y}`));
+    const normals = Object.values(state.entities).filter((entity) => entity.kind === 'normal');
+    const positions = new Set(normals.map((item) => `${item.position.x},${item.position.y}`));
 
-    expect(boxes).toHaveLength(5);
+    expect(normals).toHaveLength(5);
     expect(positions).toHaveLength(5);
     expect(positions.has('0,8')).toBe(false);
     expect(positions.has('8,0')).toBe(false);
@@ -80,7 +80,7 @@ describe('방향 컨트롤', () => {
 
 describe('컨트롤 전달', () => {
   it('오브젝트와 맞닿으면 위치를 유지하고 사용한 컨트롤만 전달한다', () => {
-    const state = createStateWithBoxes({ x: 1, y: 1 }, [box('box-1', { x: 2, y: 1 })]);
+    const state = createStateWithNormals({ x: 1, y: 1 }, [normal('normal-1', { x: 2, y: 1 })]);
     const decision = decide(state, { type: 'player/move', direction: 'right' });
     const next = evolveAll(state, decision.events);
 
@@ -89,31 +89,31 @@ describe('컨트롤 전달', () => {
         type: 'control/transferred',
         direction: 'right',
         fromEntityId: 'player',
-        toEntityId: 'box-1',
+        toEntityId: 'normal-1',
       },
     ]);
     expect(next.entities.player.position).toEqual({ x: 1, y: 1 });
-    expect(next.entities['box-1'].position).toEqual({ x: 2, y: 1 });
+    expect(next.entities['normal-1'].position).toEqual({ x: 2, y: 1 });
     expect(next.entities.player.controls).toEqual(['up', 'down', 'left']);
-    expect(next.entities['box-1'].controls).toEqual(['right']);
+    expect(next.entities['normal-1'].controls).toEqual(['right']);
   });
 
   it('전달된 방향키는 새 소유자 오브젝트를 이동시킨다', () => {
-    const state = createStateWithBoxes({ x: 1, y: 1 }, [box('box-1', { x: 2, y: 1 })]);
+    const state = createStateWithNormals({ x: 1, y: 1 }, [normal('normal-1', { x: 2, y: 1 })]);
     const transferred = evolveAll(state, decide(state, { type: 'player/move', direction: 'right' }).events);
     const next = evolveAll(transferred, decide(transferred, { type: 'player/move', direction: 'right' }).events);
 
     expect(next.entities.player.position).toEqual({ x: 1, y: 1 });
-    expect(next.entities['box-1'].position).toEqual({ x: 3, y: 1 });
+    expect(next.entities['normal-1'].position).toEqual({ x: 3, y: 1 });
   });
 
   it('다른 방향 컨트롤의 소유권은 유지한다', () => {
-    const state = createStateWithBoxes({ x: 1, y: 1 }, [box('box-1', { x: 2, y: 1 })]);
+    const state = createStateWithNormals({ x: 1, y: 1 }, [normal('normal-1', { x: 2, y: 1 })]);
     const transferred = evolveAll(state, decide(state, { type: 'player/move', direction: 'right' }).events);
     const next = evolveAll(transferred, decide(transferred, { type: 'player/move', direction: 'up' }).events);
 
     expect(next.entities.player.position).toEqual({ x: 1, y: 0 });
-    expect(next.entities['box-1'].position).toEqual({ x: 2, y: 1 });
+    expect(next.entities['normal-1'].position).toEqual({ x: 2, y: 1 });
   });
 });
 

@@ -5,7 +5,8 @@ export interface Position {
   y: number;
 }
 
-export type TileKind = 'floor' | 'wall' | 'exit';
+export type TileKind = 'floor' | 'wall' | 'exit' | 'plate';
+export type PlateState = 'inactive' | 'active';
 
 export interface Player {
   id: 'player';
@@ -14,14 +15,28 @@ export interface Player {
   controls: Direction[];
 }
 
-export interface Box {
+export interface Normal {
   id: string;
-  kind: 'box';
+  kind: 'normal';
   position: Position;
   controls: Direction[];
 }
 
-export type Entity = Player | Box;
+export interface Handoff {
+  id: string;
+  kind: 'handoff';
+  position: Position;
+  controls: Direction[];
+}
+
+export interface Swapper {
+  id: string;
+  kind: 'swapper';
+  position: Position;
+  controls: Direction[];
+}
+
+export type Entity = Player | Normal | Handoff | Swapper;
 
 export interface GameState {
   columns: number;
@@ -29,6 +44,7 @@ export interface GameState {
   tiles: TileKind[][];
   entities: Record<string, Entity>;
   playerId: 'player';
+  plateStates: Record<string, PlateState>;
   goalOpened: boolean;
   status: 'playing' | 'completed';
 }

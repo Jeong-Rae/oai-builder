@@ -1,4 +1,4 @@
-import type { Box, GameState, Position, TileKind } from './types';
+import type { GameState, Normal, Position, TileKind } from './types';
 
 export const BOARD_COLUMNS = 9;
 export const BOARD_ROWS = 9;
@@ -18,7 +18,7 @@ function createTiles(): TileKind[][] {
   );
 }
 
-function createBoxes(boxCount: number, random: () => number): Record<string, Box> {
+function createNormals(boxCount: number, random: () => number): Record<string, Normal> {
   const available: Position[] = [];
 
   for (let y = 0; y < BOARD_ROWS; y += 1) {
@@ -32,7 +32,7 @@ function createBoxes(boxCount: number, random: () => number): Record<string, Box
     }
   }
 
-  const boxes: Record<string, Box> = {};
+  const normals: Record<string, Normal> = {};
 
   for (let index = 0; index < boxCount; index += 1) {
     const remaining = available.length - index;
@@ -40,11 +40,11 @@ function createBoxes(boxCount: number, random: () => number): Record<string, Box
     const selected = index + offset;
     [available[index], available[selected]] = [available[selected], available[index]];
 
-    const id = `box-${index + 1}`;
-    boxes[id] = { id, kind: 'box', position: available[index], controls: [] };
+    const id = `normal-${index + 1}`;
+    normals[id] = { id, kind: 'normal', position: available[index], controls: [] };
   }
 
-  return boxes;
+  return normals;
 }
 
 export function createInitialState({
@@ -62,9 +62,10 @@ export function createInitialState({
         position: { x: 0, y: BOARD_ROWS - 1 },
         controls: ['up', 'down', 'left', 'right'],
       },
-      ...createBoxes(boxCount, random),
+      ...createNormals(boxCount, random),
     },
     playerId: 'player',
+    plateStates: {},
     goalOpened: false,
     status: 'playing',
   };
