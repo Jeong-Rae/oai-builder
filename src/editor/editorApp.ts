@@ -1,4 +1,4 @@
-import type { Direction, Position, TileKind } from '../game/domain/types';
+import type { Direction, GameState, Position, TileKind } from '../game/domain/types';
 import { isGateOpen } from '../game/domain/decider';
 import { directionFromKey, isUndoShortcut } from '../game/input';
 import { playerTextureForMove, playerTextureKeys } from '../game/playerAppearance';
@@ -8,33 +8,54 @@ import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type Editor
 import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFiles';
 
 const assetUrls = {
-  tile: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
-  box: new URL('../../assets/box/box.3d.96.png', import.meta.url).href,
-  player: new URL('../../assets/playable/player_default.96.png', import.meta.url).href,
+  floor: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
+  wall: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
+  plateInactive: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
+  plateActive: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
+  wormhole: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
+  gateClosed: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
+  gateOpen: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
+  normal: new URL('../../assets/box/box.3d.96.png', import.meta.url).href,
+  anchor: new URL('../../assets/box/box.3d.96.png', import.meta.url).href,
+  swapper: new URL('../../assets/box/box.3d.96.png', import.meta.url).href,
+  playerDefault: new URL('../../assets/playable/player_default.96.png', import.meta.url).href,
   playerUp: new URL('../../assets/playable/player_up.96.png', import.meta.url).href,
   playerDown: new URL('../../assets/playable/player_down.96.png', import.meta.url).href,
   playerLeft: new URL('../../assets/playable/player_left.96.png', import.meta.url).href,
   playerRight: new URL('../../assets/playable/player_right.96.png', import.meta.url).href,
-  goalClosed: new URL('../../assets/goal/goal_1f.96.png', import.meta.url).href,
-  goalOpen: new URL('../../assets/goal/goal_4f.96.png', import.meta.url).href,
+  goalFrame1: new URL('../../assets/goal/goal_1f.96.png', import.meta.url).href,
+  goalFrame2: new URL('../../assets/goal/goal_2f.96.png', import.meta.url).href,
+  goalFrame3: new URL('../../assets/goal/goal_3f.96.png', import.meta.url).href,
+  goalFrame4: new URL('../../assets/goal/goal_4f.96.png', import.meta.url).href,
   up: new URL('../../assets/arrow/arrow_up.svg', import.meta.url).href,
   down: new URL('../../assets/arrow/arrow_down.svg', import.meta.url).href,
   left: new URL('../../assets/arrow/arrow_left.svg', import.meta.url).href,
   right: new URL('../../assets/arrow/arrow_right.svg', import.meta.url).href,
 };
 
-type AssetKey = keyof typeof assetUrls;
+export type EditorAssetKey = keyof typeof assetUrls;
+type AssetKey = EditorAssetKey;
 
 const assetLabels: Record<AssetKey, string> = {
-  tile: '필드 타일',
-  box: '일반 오브젝트',
-  player: '플레이어',
+  floor: '바닥',
+  wall: '벽',
+  plateInactive: '플레이트 · 비활성',
+  plateActive: '플레이트 · 활성',
+  wormhole: '웜홀',
+  gateClosed: '게이트 · 닫힘',
+  gateOpen: '게이트 · 열림',
+  normal: '일반 오브젝트',
+  anchor: '앵커',
+  swapper: '스와퍼',
+  playerDefault: '플레이어 · 기본',
   playerUp: '플레이어 위 방향',
   playerDown: '플레이어 아래 방향',
   playerLeft: '플레이어 왼쪽 방향',
   playerRight: '플레이어 오른쪽 방향',
-  goalClosed: '닫힌 골',
-  goalOpen: '열린 골',
+  goalFrame1: '골 · 1프레임',
+  goalFrame2: '골 · 2프레임',
+  goalFrame3: '골 · 3프레임',
+  goalFrame4: '골 · 4프레임',
   up: '위 방향 표시',
   down: '아래 방향 표시',
   left: '왼쪽 방향 표시',
@@ -50,41 +71,64 @@ interface ToolOption<T extends EditorTool> {
 
 const fieldTools: Array<ToolOption<TileKind>> = [
   { tool: 'blank', label: '맵 외부', badge: '∅' },
-  { tool: 'floor', label: '바닥', asset: 'tile' },
-  { tool: 'wall', label: '벽', asset: 'tile' },
-  { tool: 'plate', label: '플레이트', asset: 'tile' },
-  { tool: 'wormhole', label: '웜홀', asset: 'tile', badge: 'W' },
-  { tool: 'gate', label: '게이트', asset: 'tile', badge: 'G' },
-  { tool: 'exit', label: '골', asset: 'goalClosed' },
+  { tool: 'floor', label: '바닥', asset: 'floor' },
+  { tool: 'wall', label: '벽', asset: 'wall' },
+  { tool: 'plate', label: '플레이트', asset: 'plateInactive' },
+  { tool: 'wormhole', label: '웜홀', asset: 'wormhole' },
+  { tool: 'gate', label: '게이트', asset: 'gateClosed' },
+  { tool: 'exit', label: '골', asset: 'goalFrame1' },
 ];
 
 const objectTools: Array<ToolOption<MapObjectKind>> = [
-  { tool: 'player', label: '플레이어', asset: 'player' },
-  { tool: 'normal', label: '일반', asset: 'box' },
-  { tool: 'anchor', label: '앵커', asset: 'box', badge: 'A' },
-  { tool: 'swapper', label: '스와퍼', asset: 'box', badge: 'S' },
+  { tool: 'player', label: '플레이어', asset: 'playerDefault' },
+  { tool: 'normal', label: '일반', asset: 'normal' },
+  { tool: 'anchor', label: '앵커', asset: 'anchor' },
+  { tool: 'swapper', label: '스와퍼', asset: 'swapper' },
 ];
 
 const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
-  floor: 'tile',
-  wall: 'tile',
-  plate: 'tile',
-  wormhole: 'tile',
-  gate: 'tile',
-  exit: 'goalClosed',
-  player: 'player',
-  normal: 'box',
-  anchor: 'box',
-  swapper: 'box',
+  floor: 'floor',
+  wall: 'wall',
+  plate: 'plateInactive',
+  wormhole: 'wormhole',
+  gate: 'gateClosed',
+  exit: 'goalFrame1',
+  player: 'playerDefault',
+  normal: 'normal',
+  anchor: 'anchor',
+  swapper: 'swapper',
 };
 
 const playerAssetByTexture: Record<string, AssetKey> = {
-  [playerTextureKeys.default]: 'player',
+  [playerTextureKeys.default]: 'playerDefault',
   [playerTextureKeys.up]: 'playerUp',
   [playerTextureKeys.down]: 'playerDown',
   [playerTextureKeys.left]: 'playerLeft',
   [playerTextureKeys.right]: 'playerRight',
 };
+
+const assetGroups: Array<{ label: string; keys: AssetKey[] }> = [
+  { label: '필드', keys: ['floor', 'wall', 'plateInactive', 'plateActive', 'wormhole', 'gateClosed', 'gateOpen'] },
+  { label: '오브젝트', keys: ['playerDefault', 'playerUp', 'playerDown', 'playerLeft', 'playerRight', 'normal', 'anchor', 'swapper'] },
+  { label: '골 애니메이션', keys: ['goalFrame1', 'goalFrame2', 'goalFrame3', 'goalFrame4'] },
+  { label: '방향 표시', keys: ['up', 'down', 'left', 'right'] },
+];
+
+export function assetForField(field: TileKind, game: GameState | undefined, key: string): AssetKey | undefined {
+  switch (field) {
+    case 'blank': return undefined;
+    case 'floor': return 'floor';
+    case 'wall': return 'wall';
+    case 'plate': return game?.plateStates[key] === 'active' ? 'plateActive' : 'plateInactive';
+    case 'wormhole': return 'wormhole';
+    case 'gate': return game && isGateOpen(game) ? 'gateOpen' : 'gateClosed';
+    case 'exit': return undefined;
+  }
+}
+
+export function goalAsset(frame: number): AssetKey {
+  return `goalFrame${frame}` as AssetKey;
+}
 
 const rejectionMessages = {
   'out-of-bounds': '보드 밖으로 이동할 수 없습니다.',
@@ -133,7 +177,7 @@ function toolButton({ tool, label, asset, badge }: ToolOption<EditorTool>, resol
 
 export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEditorStore()): () => void {
   let localAssets: Partial<Record<AssetKey, string>> = {};
-  let selectedAsset: AssetKey | undefined = assetsByTool.floor;
+  let selectedAsset: AssetKey = assetsByTool.floor!;
   const resolveAsset = (key: AssetKey): string => localAssets[key] ?? assetUrls[key];
   const playerAssetPreloads = Object.values(playerAssetByTexture).map((key) => {
     const image = new Image();
@@ -158,10 +202,25 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   const columnsInput = root.querySelector<HTMLInputElement>('[name="columns"]')!;
   const rowsInput = root.querySelector<HTMLInputElement>('[name="rows"]')!;
   const notice = root.querySelector<HTMLElement>('[data-notice]')!;
+  const assetSelect = root.querySelector<HTMLSelectElement>('[data-asset-select]')!;
+  assetGroups.forEach(({ label, keys }) => {
+    const group = document.createElement('optgroup');
+    group.label = label;
+    keys.forEach((key) => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = assetLabels[key];
+      group.append(option);
+    });
+    assetSelect.append(group);
+  });
+  assetSelect.value = selectedAsset;
   let testStore: GameStoreApi | undefined;
   let unsubscribeTest: (() => void) | undefined;
   let testMoved = false;
-  let playerAsset: AssetKey = 'player';
+  let playerAsset: AssetKey = 'playerDefault';
+  let goalFrame = 1;
+  let goalAnimationTimer: number | undefined;
 
   function showNotice(message: string): void {
     notice.textContent = message;
@@ -172,7 +231,27 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     unsubscribeTest = undefined;
     testStore = undefined;
     testMoved = false;
-    playerAsset = 'player';
+    playerAsset = 'playerDefault';
+    goalFrame = 1;
+    if (goalAnimationTimer !== undefined) window.clearTimeout(goalAnimationTimer);
+    goalAnimationTimer = undefined;
+  }
+
+  function playGoalAnimation(): void {
+    if (goalAnimationTimer !== undefined) window.clearTimeout(goalAnimationTimer);
+    goalFrame = 1;
+    const nextFrame = (): void => {
+      if (goalFrame >= 4) {
+        goalAnimationTimer = undefined;
+        return;
+      }
+      goalAnimationTimer = window.setTimeout(() => {
+        goalFrame += 1;
+        render();
+        nextFrame();
+      }, 180);
+    };
+    nextFrame();
   }
 
   function createTestState(): void {
@@ -180,8 +259,9 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     const state = store.getState();
     if (state.errors.length > 0) return;
     testStore = createGameStoreFromMap(state.draft);
-    unsubscribeTest = testStore.subscribe((state) => {
+    unsubscribeTest = testStore.subscribe((state, previous) => {
       testMoved = state.eventStream.length > 0;
+      if (!previous.game.goalOpened && state.game.goalOpened) playGoalAnimation();
     });
   }
 
@@ -236,15 +316,6 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       `${object.position.x},${object.position.y}`,
       object,
     ]));
-    const wormholeLabels = new Map<string, string>();
-    let wormholeIndex = 0;
-    draft.tiles.forEach((row, y) => row.forEach((field, x) => {
-      if (field !== 'wormhole') return;
-      wormholeLabels.set(`${x},${y}`, `W${wormholeIndex + 1}`);
-      wormholeIndex += 1;
-    }));
-    const gateOpen = game ? isGateOpen(game) : false;
-
     columnsInput.value = String(draft.columns);
     rowsInput.value = String(draft.rows);
     root.querySelector<HTMLElement>('[data-board-size]')!.textContent = `${draft.columns} × ${draft.rows}`;
@@ -267,12 +338,21 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     });
     const appliedAssets = Object.keys(localAssets).map((key) => assetLabels[key as AssetKey]);
     const assetTarget = root.querySelector<HTMLElement>('[data-asset-target]')!;
-    assetTarget.innerHTML = selectedAsset
-      ? `<img src="${resolveAsset(selectedAsset)}" alt="" /><span><b>${assetLabels[selectedAsset]}</b><small>좌측 도구에서 선택됨</small></span>`
-      : '<span class="asset-target-empty">이미지가 없는 도구입니다</span>';
+    assetSelect.value = selectedAsset;
+    assetTarget.replaceChildren();
+    const preview = document.createElement('img');
+    preview.src = resolveAsset(selectedAsset);
+    preview.alt = '';
+    const previewLabel = document.createElement('span');
+    const previewTitle = document.createElement('b');
+    previewTitle.textContent = assetLabels[selectedAsset];
+    const previewHint = document.createElement('small');
+    previewHint.textContent = localAssets[selectedAsset] ? '로컬 교체 이미지 적용 중' : '기본 런타임 이미지';
+    previewLabel.append(previewTitle, previewHint);
+    assetTarget.append(preview, previewLabel);
     const assetInput = root.querySelector<HTMLInputElement>('[data-asset-input]')!;
-    assetInput.disabled = !selectedAsset;
-    root.querySelector<HTMLElement>('[data-asset-input-label]')!.classList.toggle('disabled', !selectedAsset);
+    assetInput.disabled = false;
+    root.querySelector<HTMLElement>('[data-asset-input-label]')!.classList.remove('disabled');
     root.querySelector<HTMLElement>('[data-asset-status]')!.textContent = appliedAssets.length === 0
       ? '브라우저에서만 적용되며 새로고침하면 사라집니다.'
       : `${appliedAssets.join(', ')} 적용 중 · 서버와 .map에는 저장되지 않습니다.`;
@@ -288,23 +368,19 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const object = objectsByPosition.get(key);
         const selected = state.selected?.x === x && state.selected.y === y ? ' selected' : '';
         const field = draft.tiles[y][x];
-        const plateActive = field === 'plate' && game?.plateStates[key] === 'active' ? ' plate-active' : '';
-        const gateState = field === 'gate' ? gateOpen ? ' gate-open' : ' gate-closed' : '';
         const label = object ? `${field}, ${object.kind}` : field;
         const goal = field === 'exit'
-          ? `<img class="goal-asset" src="${game?.goalOpened ? resolveAsset('goalOpen') : resolveAsset('goalClosed')}" alt="" />`
+          ? `<img class="goal-asset" src="${resolveAsset(goalAsset(game?.goalOpened ? goalFrame : 1))}" alt="" />`
           : '';
         const objectAsset = object && !(object.kind === 'player' && retainedPlayer)
-          ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? resolveAsset(playerAsset) : resolveAsset('box')}" alt="" />${object.kind === 'anchor' ? '<b>A</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
+          ? `<span class="object-asset object-${object.kind}"><img src="${resolveAsset(object.kind === 'player' ? playerAsset : object.kind)}" alt="" /></span>`
           : '';
         const controls = object?.controls.map((direction) =>
           `<img class="control-asset control-${direction}" src="${resolveAsset(direction)}" alt="${direction}" />`,
         ).join('') ?? '';
-        const tileAsset = field === 'blank' ? '' : `<img class="tile-asset" src="${resolveAsset('tile')}" alt="" />`;
-        const fieldBadge = field === 'wormhole'
-          ? `<span class="field-badge wormhole-badge">${wormholeLabels.get(key)}</span>`
-          : field === 'gate' ? '<span class="field-badge gate-badge">G</span>' : '';
-        cells.push(`<button type="button" class="map-cell field-${field}${plateActive}${gateState}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${fieldBadge}${objectAsset}<span class="control-assets">${controls}</span></button>`);
+        const asset = assetForField(field, game, key);
+        const tileAsset = asset ? `<img class="tile-asset" src="${resolveAsset(asset)}" alt="" />` : '';
+        cells.push(`<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${objectAsset}<span class="control-assets">${controls}</span></button>`);
       }
     }
     retainedPlayer?.remove();
@@ -348,7 +424,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     if (isUndoShortcut(event) && testStore) {
       event.preventDefault();
       if (testStore.getState().undo()) {
-        playerAsset = 'player';
+        playerAsset = 'playerDefault';
         render();
         showNotice('최근 테스트 이동을 되돌렸습니다.');
       } else {
@@ -374,9 +450,14 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   root.querySelectorAll<HTMLElement>('[data-tool]').forEach((button) => {
     button.addEventListener('click', () => {
       const tool = button.dataset.tool as EditorTool;
-      selectedAsset = assetsByTool[tool];
+      selectedAsset = assetsByTool[tool] ?? selectedAsset;
       store.getState().setTool(tool);
     });
+  });
+
+  assetSelect.addEventListener('change', () => {
+    selectedAsset = assetSelect.value as AssetKey;
+    render();
   });
 
   grid.addEventListener('pointerdown', (event) => {
@@ -501,6 +582,15 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     localAssets = {};
     render();
     showNotice('기본 에셋으로 복원했습니다.');
+  });
+
+  root.querySelector('[data-action="reset-asset"]')!.addEventListener('click', () => {
+    const previousUrl = localAssets[selectedAsset];
+    if (!previousUrl) return showNotice(`${assetLabels[selectedAsset]}은 이미 기본 이미지입니다.`);
+    URL.revokeObjectURL(previousUrl);
+    delete localAssets[selectedAsset];
+    render();
+    showNotice(`${assetLabels[selectedAsset]}을 기본 이미지로 복원했습니다.`);
   });
 
   const unsubscribeEditor = store.subscribe((state, previous) => {

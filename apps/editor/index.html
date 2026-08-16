@@ -83,8 +83,12 @@
           </section>
           <section class="asset-lab">
             <p class="section-label">에셋 시험</p>
+            <label class="asset-select-label">교체할 에셋
+              <select data-asset-select aria-label="교체할 에셋"></select>
+            </label>
             <div class="asset-target" data-asset-target></div>
             <label class="file-button" data-asset-input-label>이미지 적용<input type="file" accept="image/*" data-asset-input /></label>
+            <button type="button" class="quiet" data-action="reset-asset">선택한 에셋 복원</button>
             <button type="button" class="quiet" data-action="reset-assets">기본 에셋으로 복원</button>
             <p class="asset-status" data-asset-status>브라우저에서만 적용되며 새로고침하면 사라집니다.</p>
           </section>
