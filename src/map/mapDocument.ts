@@ -43,10 +43,13 @@ export function createBlankMap(columns = 9, rows = 9): MapDocument {
 
 export function cloneMap(map: MapDocument): MapDocument {
   return {
-    ...map,
+    version: MAP_VERSION,
+    columns: map.columns,
+    rows: map.rows,
     tiles: map.tiles.map((row) => [...row]),
     objects: map.objects.map((object) => ({
-      ...object,
+      id: object.id,
+      kind: object.kind,
       position: { ...object.position },
     })),
   };

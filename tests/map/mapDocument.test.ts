@@ -54,4 +54,20 @@ describe('맵 문서', () => {
     expect(invalidJson.ok ? undefined : invalidJson.errors[0].code).toBe('json');
     expect(unsupported.ok ? undefined : unsupported.errors[0].code).toBe('version');
   });
+
+  it('불러온 문서에서 런타임 상태와 알 수 없는 키를 제거한다', () => {
+    const source = {
+      ...validMap(),
+      status: 'completed',
+      objects: validMap().objects.map((object) => ({ ...object, controls: ['up'] })),
+    };
+
+    const result = parseMap(JSON.stringify(source));
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(serializeMap(result.map)).not.toContain('status');
+      expect(serializeMap(result.map)).not.toContain('controls');
+    }
+  });
 });
