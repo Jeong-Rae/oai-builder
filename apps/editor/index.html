@@ -75,6 +75,13 @@
             <p class="section-label">검증 및 테스트</p>
             <div data-validation></div>
             <button type="button" class="restart-button" data-action="restart">배치 상태로 되돌리기</button>
+            <label class="path-mode-label">경로 기준
+              <select data-path-mode>
+                <option value="shortest">최소 명령 수</option>
+                <option value="interaction">상호작용 우선 · 이동 1 : 상호작용 10</option>
+              </select>
+            </label>
+            <p class="path-mode-hint">상호작용 우선은 가중 비용 기준이며, 상호작용 횟수만의 실제 최소를 보장하지 않습니다.</p>
             <div class="path-actions">
               <button type="button" class="pathfind-button" data-action="find-path">최소 경로 찾기</button>
               <button type="button" class="pathplay-button" data-action="play-path">움직여보기</button>

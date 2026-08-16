@@ -1,6 +1,6 @@
 import type { Direction, GameState, Position, TileKind } from '../game/domain/types';
 import { isGateOpen } from '../game/domain/decider';
-import { findPath, type PathResult } from '../game/domain/pathfinder';
+import { findBalancedPath, findPath, type PathResult } from '../game/domain/pathfinder';
 import { createGameStateFromMap } from '../game/domain/level';
 import { directionFromKey, isUndoShortcut } from '../game/input';
 import { playerTextureForMove, playerTextureKeys } from '../game/playerAppearance';
@@ -140,6 +140,7 @@ const rejectionMessages = {
 };
 
 const directionSymbols: Record<Direction, string> = { up: '↑', down: '↓', left: '←', right: '→' };
+type PathMode = 'shortest' | 'interaction';
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"]/g, (character) => ({
@@ -207,6 +208,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   const rowsInput = root.querySelector<HTMLInputElement>('[name="rows"]')!;
   const notice = root.querySelector<HTMLElement>('[data-notice]')!;
   const assetSelect = root.querySelector<HTMLSelectElement>('[data-asset-select]')!;
+  const pathModeSelect = root.querySelector<HTMLSelectElement>('[data-path-mode]')!;
   assetGroups.forEach(({ label, keys }) => {
     const group = document.createElement('optgroup');
     group.label = label;
@@ -227,6 +229,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   let goalAnimationTimer: number | undefined;
   let pathResult: PathResult | undefined;
   const pathCache = new Map<string, PathResult | null>();
+  let pathMode: PathMode = 'shortest';
   let playbackRun = 0;
   let playbackActive = false;
 
@@ -360,6 +363,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     const appliedAssets = Object.keys(localAssets).map((key) => assetLabels[key as AssetKey]);
     const assetTarget = root.querySelector<HTMLElement>('[data-asset-target]')!;
     assetSelect.value = selectedAsset;
+    pathModeSelect.value = pathMode;
     assetTarget.replaceChildren();
     const preview = document.createElement('img');
     preview.src = resolveAsset(selectedAsset);
@@ -442,8 +446,9 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     findPathButton.disabled = state.errors.length > 0;
     root.querySelector<HTMLButtonElement>('[data-action="play-path"]')!.disabled = !pathResult || playbackActive;
     const pathOutput = root.querySelector<HTMLElement>('[data-path-result]')!;
+    const balanced = pathResult && 'cost' in pathResult ? pathResult : undefined;
     pathOutput.textContent = pathResult
-      ? `${pathResult.steps.length}회 · ${pathResult.steps.map((step) => directionSymbols[step.direction]).join(' ')}${playbackActive ? ' · 재생 중' : ''}`
+      ? `${pathResult.steps.length}회 · ${pathResult.steps.map((step) => directionSymbols[step.direction]).join(' ')}${balanced ? ` · 비용 ${balanced.cost}` : ''}${playbackActive ? ' · 재생 중' : ''}`
       : '';
   }
 
@@ -492,6 +497,14 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
 
   assetSelect.addEventListener('change', () => {
     selectedAsset = assetSelect.value as AssetKey;
+    render();
+  });
+
+  pathModeSelect.addEventListener('change', () => {
+    pathMode = pathModeSelect.value as PathMode;
+    playbackRun += 1;
+    playbackActive = false;
+    pathResult = undefined;
     render();
   });
 
@@ -557,10 +570,10 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   root.querySelector('[data-action="find-path"]')!.addEventListener('click', () => {
     const state = store.getState();
     if (state.errors.length > 0) return;
-    const mapKey = serializeMap(state.draft);
+    const mapKey = `${pathMode}:${serializeMap(state.draft)}`;
     const cached = pathCache.get(mapKey);
     pathResult = cached === undefined
-      ? findPath(createGameStateFromMap(state.draft))
+      ? (pathMode === 'interaction' ? findBalancedPath : findPath)(createGameStateFromMap(state.draft))
       : cached ?? undefined;
     if (cached === undefined) pathCache.set(mapKey, pathResult ?? null);
     render();

@@ -121,6 +121,9 @@ h1 { margin: 0; font-family: Impact, Haettenschweiler, sans-serif; font-size: cl
 .valid { color: #65dca5; font-size: 0.82rem; }
 .error-list { display: grid; gap: 0.45rem; margin: 0; padding-left: 1.1rem; color: var(--red); font-size: 0.76rem; }
 .restart-button { width: 100%; margin-top: 0.7rem; padding: 0.65rem; border-color: var(--cyan); }
+.path-mode-label { display: grid; gap: 0.3rem; margin-top: 0.7rem; color: var(--muted); font-size: 0.72rem; }
+.path-mode-label select { min-width: 0; padding: 0.5rem; border: 1px solid var(--line); border-radius: 0.2rem; background: #08171d; color: var(--ink); }
+.path-mode-hint { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.68rem; line-height: 1.4; }
 .path-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-top: 0.45rem; }
 .pathfind-button, .pathplay-button { padding: 0.65rem 0.35rem; }
 .pathfind-button { border-color: var(--amber); color: var(--amber); }

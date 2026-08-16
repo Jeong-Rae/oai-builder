@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createGameStateFromMap } from '../../src/game/domain/level';
-import { findPath } from '../../src/game/domain/pathfinder';
+import { findBalancedPath, findPath } from '../../src/game/domain/pathfinder';
 import type { MapDocument } from '../../src/map/mapDocument';
 
 const map: MapDocument = {
@@ -25,5 +25,12 @@ describe('경로 찾기', () => {
     expect(result?.steps[0].moves[0]).toMatchObject({
       entityId: 'player', from: { x: 3, y: 2 }, wormhole: { x: 2, y: 2 }, to: { x: 2, y: 0 },
     });
+  });
+
+  it('일반 이동 1, 오브젝트 상호작용 10의 비용으로 경로를 찾는다', () => {
+    const result = findBalancedPath(createGameStateFromMap(map));
+
+    expect(result).toMatchObject({ cost: 15, interactionCount: 1, movementCount: 5 });
+    expect(result?.steps.map((step) => step.direction)).toEqual(['left', 'down', 'right', 'right', 'left', 'left']);
   });
 });

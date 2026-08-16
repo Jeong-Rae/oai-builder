@@ -45,7 +45,11 @@ function nextState(state, direction) {
   const targetEntity = entityAt(target);
   const next = structuredClone(state);
   if (targetEntity) {
-    if (owner.kind === 'swapper' || targetEntity.kind === 'swapper') {
+    if (targetEntity.kind === 'anchor' && targetEntity.controls.length > 0) {
+      const controls = [...next.entities[targetEntity.id].controls];
+      next.entities[targetEntity.id].controls = [];
+      next.entities[owner.id].controls.push(...controls);
+    } else if (owner.kind === 'swapper' || targetEntity.kind === 'swapper') {
       const controls = [...next.entities[owner.id].controls];
       next.entities[owner.id].controls = [...next.entities[targetEntity.id].controls];
       next.entities[targetEntity.id].controls = controls;
@@ -53,7 +57,7 @@ function nextState(state, direction) {
       next.entities[owner.id].controls = next.entities[owner.id].controls.filter((item) => item !== direction);
       next.entities[targetEntity.id].controls.push(direction);
     }
-    return next;
+    return { state: next, interaction: true };
   }
 
   let destination = target;
@@ -71,27 +75,42 @@ function nextState(state, direction) {
     if (tileAt(destination) === 'plate') next.plateStates[`${destination.x},${destination.y}`] = 'active';
   }
   if (moving.kind === 'player' && tileAt(destination) === 'exit') next.status = 'completed';
-  return next;
+  return { state: next, interaction: false };
 }
 
-const queue = [{ state: initialState(), path: [] }];
-const visited = new Set([key(queue[0].state)]);
+const queue = [{ state: initialState(), path: [], cost: 0, interactions: 0, movements: 0 }];
+const bestCost = new Map([[key(queue[0].state), 0]]);
 let expanded = 0;
 
-for (let head = 0; head < queue.length; head += 1) {
-  const { state, path } = queue[head];
+while (queue.length > 0) {
+  let lowest = 0;
+  for (let index = 1; index < queue.length; index += 1) {
+    if (queue[index].cost < queue[lowest].cost) lowest = index;
+  }
+  const { state, path, cost, interactions, movements } = queue.splice(lowest, 1)[0];
+  if (cost !== bestCost.get(key(state))) continue;
   expanded += 1;
   if (state.status === 'completed') {
     console.log(`path: ${path.join(' ')}`);
-    console.log(`moves: ${path.length}`);
+    console.log(`cost: ${cost} (movement ${movements} × 1, interaction ${interactions} × 10)`);
+    console.log(`commands: ${path.length}`);
     console.log(`expanded states: ${expanded}`);
     process.exit(0);
   }
   for (const direction of Object.keys(directions)) {
-    const next = nextState(state, direction);
-    if (!next || visited.has(key(next))) continue;
-    visited.add(key(next));
-    queue.push({ state: next, path: [...path, direction] });
+    const result = nextState(state, direction);
+    if (!result) continue;
+    const nextCost = cost + (result.interaction ? 10 : 1);
+    const nextKey = key(result.state);
+    if (nextCost >= (bestCost.get(nextKey) ?? Infinity)) continue;
+    bestCost.set(nextKey, nextCost);
+    queue.push({
+      state: result.state,
+      path: [...path, direction],
+      cost: nextCost,
+      interactions: interactions + Number(result.interaction),
+      movements: movements + Number(!result.interaction),
+    });
   }
 }
 
