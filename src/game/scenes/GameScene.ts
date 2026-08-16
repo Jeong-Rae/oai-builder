@@ -98,7 +98,7 @@ export class GameScene extends Phaser.Scene {
   private syncEntities(game: GameState): void {
     const entities = Object.values(game.entities);
 
-    for (const entity of entities.filter((candidate) => candidate.kind === 'normal')) {
+    for (const entity of entities.filter((candidate) => candidate.kind !== 'player')) {
       this.syncEntity(entity);
     }
 

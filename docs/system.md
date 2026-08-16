@@ -23,9 +23,9 @@ Phaser: Scene lifecycle, input, assets, sprites, animation, rendering
 
 - All logical positions use tile coordinates (`{ x, y }`); Phaser converts them to pixel coordinates for rendering.
 - The exit is represented as a tile rather than an entity, so an entity may occupy it.
-- `Player` and `Box` are entities with an `EntityId`, tile position, and owned direction controls.
+- `Player`, `Normal`, `Handoff`, and `Swapper` are entities with an `EntityId`, tile position, and owned direction controls.
 - Each direction control has exactly one owner. The player owns all four controls at game start.
-- `floor`, `wall`, and `exit` are tile kinds.
+- `floor`, `wall`, `exit`, and `plate` are tile kinds. Plates are stored as `inactive` or `active` by tile coordinate.
 - Entities are held in `Record<EntityId, Entity>`.
 - Entities do not call each other directly. Board interactions are decided centrally from the complete state.
 
@@ -38,9 +38,9 @@ GameCommand + GameState -> decide -> GameEvent[] -> evolve -> next GameState
 ```
 
 - `player/move` is the initial command.
-- `entity/moved`, `control/transferred`, `gate/opened`, and `game/completed` are the initial domain events.
+- `entity/moved`, `control/transferred`, `plate/activated`, `plate/deactivated`, `goal/opened`, and `game/completed` are the initial domain events.
 - A blocked movement produces no event and returns a rejection reason (`out-of-bounds` or `wall`).
-- Moving into an occupied tile keeps both positions unchanged and transfers the used direction control to that object.
+- Moving into a normal object keeps both positions unchanged and transfers the used direction control to that object. A normal object activates plates, receives a handoff anchor's full control set on contact, and swaps its full control set with a swapper on contact.
 - All events from one command are evolved before Zustand receives a single state update; observers never see intermediate movement state.
 
 ```text
