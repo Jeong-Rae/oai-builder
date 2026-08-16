@@ -112,6 +112,15 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   let localAssets: Partial<Record<AssetKey, string>> = {};
   let selectedAsset: AssetKey | undefined = assetsByTool.floor;
   const resolveAsset = (key: AssetKey): string => localAssets[key] ?? assetUrls[key];
+  const playerAssetPreloads = Object.values(playerAssetByTexture).map((key) => {
+    const image = new Image();
+    image.src = resolveAsset(key);
+    return image;
+  });
+  const playerAssetsReady = Promise.all(playerAssetPreloads.map(async (image) => {
+    await image.decode();
+    return image;
+  }));
 
   root.innerHTML = `
     <div class="editor-shell">
@@ -389,13 +398,15 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     root.querySelector<HTMLButtonElement>('[data-action="export"]')!.disabled = state.errors.length > 0;
   }
 
-  function handleKeyDown(event: KeyboardEvent): void {
+  async function handleKeyDown(event: KeyboardEvent): Promise<void> {
     const target = event.target;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return;
     const direction = directionFromKey(event.key);
     if (!direction || !testStore) return;
 
     event.preventDefault();
+    await playerAssetsReady;
+    if (!testStore) return;
     const game = testStore.getState().game;
     const decision = testStore.getState().dispatch({ type: 'player/move', direction });
     playerAsset = playerAssetByTexture[playerTextureForMove(game, direction, decision)];
