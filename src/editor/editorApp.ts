@@ -3,7 +3,7 @@ import { createPhaserGame } from '../game/createGame';
 import { createGameStoreFromMap, type GameStoreApi } from '../game/store/gameStore';
 import type { MapObjectKind } from '../map/mapDocument';
 import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type EditorTool } from './editorStore';
-import { downloadMap, mapFilename, readMapFile } from './mapFiles';
+import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFiles';
 
 const fieldTools: Array<{ tool: TileKind; label: string; glyph: string }> = [
   { tool: 'floor', label: '바닥', glyph: '·' },
@@ -309,7 +309,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
 
     if (store.getState().dirty && !window.confirm('저장하지 않은 맵을 교체하고 파일을 불러올까요?')) return;
     stopTest();
-    store.getState().replaceMap(result.map);
+    applyLoadedMap(store, result);
     showNotice(`${file.name} 파일을 불러왔습니다.`);
   });
 

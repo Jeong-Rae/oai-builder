@@ -7,4 +7,5 @@ if (!app) {
   throw new Error('Map Editor root element was not found.');
 }
 
-mountEditor(app);
+const unmount = mountEditor(app);
+window.addEventListener('pagehide', unmount, { once: true });

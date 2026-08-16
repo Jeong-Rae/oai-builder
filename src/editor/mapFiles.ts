@@ -1,4 +1,5 @@
 import { parseMap, serializeMap, type MapDocument, type MapResult } from '../map/mapDocument';
+import type { EditorStoreApi } from './editorStore';
 
 export function mapFilename(name: string): string {
   const trimmed = name.trim() || 'untitled';
@@ -11,6 +12,12 @@ export async function readMapFile(file: Pick<File, 'name' | 'text'>): Promise<Ma
   }
 
   return parseMap(await file.text());
+}
+
+export function applyLoadedMap(store: EditorStoreApi, result: MapResult): boolean {
+  if (!result.ok) return false;
+  store.getState().replaceMap(result.map);
+  return true;
 }
 
 export function downloadMap(map: MapDocument, name: string): void {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createEditorStore, resizeWouldDiscard } from '../../src/editor/editorStore';
+import { createGameStoreFromMap } from '../../src/game/store/gameStore';
 import { createBlankMap } from '../../src/map/mapDocument';
 
 describe('맵 에디터 저장소', () => {
@@ -66,5 +67,18 @@ describe('맵 에디터 저장소', () => {
     store.getState().setTile({ x: 0, y: 0 }, 'plate');
     store.getState().markSaved();
     expect(store.getState().dirty).toBe(false);
+  });
+
+  it('라이브 테스트의 이동은 맵 초안을 변경하지 않는다', () => {
+    const map = createBlankMap(3, 2);
+    map.tiles[0][2] = 'exit';
+    map.objects.push({ id: 'player', kind: 'player', position: { x: 0, y: 1 } });
+    const editor = createEditorStore(map);
+    const testGame = createGameStoreFromMap(editor.getState().draft);
+
+    testGame.getState().dispatch({ type: 'player/move', direction: 'right' });
+
+    expect(testGame.getState().game.entities.player.position).toEqual({ x: 1, y: 1 });
+    expect(editor.getState().draft.objects[0].position).toEqual({ x: 0, y: 1 });
   });
 });
