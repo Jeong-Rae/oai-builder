@@ -6,13 +6,13 @@ import { gameStore } from '../store/gameStore';
 import type { Entity, GameState, Position } from '../domain/types';
 
 const textureUrls = {
-  tile: new URL('../../../assets/tail/tile.48.png', import.meta.url).href,
-  box: new URL('../../../assets/box/box.3d.48.png', import.meta.url).href,
-  player: new URL('../../../assets/playable/playable.origin.png', import.meta.url).href,
-  exit1: new URL('../../../assets/gate/gate_1f.48.png', import.meta.url).href,
-  exit2: new URL('../../../assets/gate/gate_2f.48.png', import.meta.url).href,
-  exit3: new URL('../../../assets/gate/gate_3f.48.png', import.meta.url).href,
-  exit4: new URL('../../../assets/gate/gate_4f.48.png', import.meta.url).href,
+  tile: new URL('../../../assets/tail/tile.64.png', import.meta.url).href,
+  box: new URL('../../../assets/box/box.3d.64.png', import.meta.url).href,
+  player: new URL('../../../assets/playable/playable.64.png', import.meta.url).href,
+  exit1: new URL('../../../assets/gate/gate_1f.64.png', import.meta.url).href,
+  exit2: new URL('../../../assets/gate/gate_2f.64.png', import.meta.url).href,
+  exit3: new URL('../../../assets/gate/gate_3f.64.png', import.meta.url).href,
+  exit4: new URL('../../../assets/gate/gate_4f.64.png', import.meta.url).href,
 };
 
 const exitTextureKeys = ['exit-1', 'exit-2', 'exit-3', 'exit-4'];
