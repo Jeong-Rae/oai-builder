@@ -10,3 +10,7 @@ const directionsByKey: Record<string, Direction> = {
 export function directionFromKey(key: string): Direction | undefined {
   return directionsByKey[key];
 }
+
+export function isUndoShortcut(event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey'>): boolean {
+  return event.key.toLowerCase() === 'z' && (event.ctrlKey || event.metaKey) && !event.altKey;
+}

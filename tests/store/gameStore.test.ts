@@ -66,6 +66,46 @@ describe('게임 저장소', () => {
 
     expect(store.getState().game.entities.player.position).toEqual({ x: 0, y: 8 });
     expect(store.getState().game.status).toBe('playing');
+    expect(store.getState().eventStream).toEqual([]);
+  });
+
+  it('되돌리기는 최근 입력의 이벤트 묶음을 제거하고 초기 상태부터 다시 적용한다', () => {
+    const store = createGameStore({ boxCount: 0 });
+
+    store.getState().dispatch({ type: 'player/move', direction: 'right' });
+    store.getState().dispatch({ type: 'player/move', direction: 'up' });
+
+    expect(store.getState().eventStream).toHaveLength(2);
+    expect(store.getState().undo()).toBe(true);
+    expect(store.getState().game.entities.player.position).toEqual({ x: 1, y: 8 });
+    expect(store.getState().eventStream).toHaveLength(1);
+  });
+
+  it('한 입력에서 생성된 복수 이벤트는 함께 되돌린다', () => {
+    const map = createBlankMap(3, 2);
+    map.tiles[0][2] = 'exit';
+    map.tiles[1][2] = 'plate';
+    map.objects.push(
+      { id: 'player', kind: 'player', position: { x: 0, y: 1 } },
+      { id: 'normal-1', kind: 'normal', position: { x: 1, y: 1 } },
+    );
+    const store = createGameStoreFromMap(map);
+
+    store.getState().dispatch({ type: 'player/move', direction: 'right' });
+    store.getState().dispatch({ type: 'player/move', direction: 'right' });
+
+    expect(store.getState().eventStream[1].map((event) => event.type)).toEqual(['entity/moved', 'plate/activated']);
+    store.getState().undo();
+    expect(store.getState().game.entities['normal-1'].position).toEqual({ x: 1, y: 1 });
+    expect(store.getState().game.plateStates['2,1']).toBe('inactive');
+  });
+
+  it('되돌릴 이벤트가 없으면 상태를 변경하지 않는다', () => {
+    const store = createGameStore({ boxCount: 0 });
+    const before = store.getState().game;
+
+    expect(store.getState().undo()).toBe(false);
+    expect(store.getState().game).toBe(before);
   });
 
   it('이동과 플레이트 활성화는 한 번의 상태 갱신으로 적용한다', () => {

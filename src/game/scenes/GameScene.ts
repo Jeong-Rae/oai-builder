@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import { TILE_SIZE } from '../domain/level';
-import { directionFromKey } from '../input';
+import { directionFromKey, isUndoShortcut } from '../input';
 import { playerTextureForMove, playerTextureKeys } from '../playerAppearance';
 import { gameStore, type GameStoreApi } from '../store/gameStore';
 import type { Direction, Entity, GameState, Position } from '../domain/types';
@@ -95,6 +95,12 @@ export class GameScene extends Phaser.Scene {
 
   private handleKeyDown(event: KeyboardEvent): void {
     if (this.store.getState().game.status === 'completed') return;
+
+    if (isUndoShortcut(event)) {
+      event.preventDefault();
+      this.store.getState().undo();
+      return;
+    }
 
     const direction = directionFromKey(event.key);
 
