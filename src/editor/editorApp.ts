@@ -1,6 +1,9 @@
 import type { Position, TileKind } from '../game/domain/types';
+import { createPhaserGame } from '../game/createGame';
+import { createGameStoreFromMap, type GameStoreApi } from '../game/store/gameStore';
 import type { MapObjectKind } from '../map/mapDocument';
 import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type EditorTool } from './editorStore';
+import { downloadMap, mapFilename, readMapFile } from './mapFiles';
 
 const fieldTools: Array<{ tool: TileKind; label: string; glyph: string }> = [
   { tool: 'floor', label: '바닥', glyph: '·' },
@@ -105,9 +108,44 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   const columnsInput = root.querySelector<HTMLInputElement>('[name="columns"]')!;
   const rowsInput = root.querySelector<HTMLInputElement>('[name="rows"]')!;
   const notice = root.querySelector<HTMLElement>('[data-notice]')!;
+  const editorShell = root.querySelector<HTMLElement>('.editor-shell')!;
+  const testScreen = root.querySelector<HTMLElement>('[data-test-screen]')!;
+  const gameHost = root.querySelector<HTMLElement>('[data-game-host]')!;
+  const testStatus = root.querySelector<HTMLElement>('[data-test-status]')!;
+  let phaserGame: ReturnType<typeof createPhaserGame> | undefined;
+  let testStore: GameStoreApi | undefined;
+  let unsubscribeTest: (() => void) | undefined;
 
   function showNotice(message: string): void {
     notice.textContent = message;
+  }
+
+  function stopTest(): void {
+    unsubscribeTest?.();
+    unsubscribeTest = undefined;
+    phaserGame?.destroy(true);
+    phaserGame = undefined;
+    testStore = undefined;
+    gameHost.replaceChildren();
+  }
+
+  function syncTestStatus(): void {
+    if (!testStore) return;
+    testStatus.textContent = testStore.getState().game.status === 'completed'
+      ? '맵을 완료했습니다. 다시 시작하거나 편집으로 돌아갈 수 있습니다.'
+      : '방향키로 현재 맵을 테스트하세요.';
+  }
+
+  function startTest(): void {
+    const state = store.getState();
+    if (state.errors.length > 0) return;
+    stopTest();
+    editorShell.hidden = true;
+    testScreen.hidden = false;
+    testStore = createGameStoreFromMap(state.draft);
+    unsubscribeTest = testStore.subscribe(syncTestStatus);
+    phaserGame = createPhaserGame(gameHost, testStore);
+    syncTestStatus();
   }
 
   function positionFrom(target: EventTarget | null): Position | undefined {
@@ -235,7 +273,50 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     showNotice('새 맵을 만들었습니다. 플레이어와 골을 배치하세요.');
   });
 
+  root.querySelector('[data-action="test"]')!.addEventListener('click', startTest);
+  root.querySelector('[data-action="restart"]')!.addEventListener('click', startTest);
+  root.querySelector('[data-action="edit"]')!.addEventListener('click', () => {
+    stopTest();
+    testScreen.hidden = true;
+    editorShell.hidden = false;
+    showNotice('테스트를 종료했습니다. 맵 초안은 변경되지 않았습니다.');
+  });
+
+  root.querySelector('[data-action="export"]')!.addEventListener('click', () => {
+    const state = store.getState();
+    if (state.errors.length > 0) return;
+    const suggested = `map-${state.draft.columns}x${state.draft.rows}.map`;
+    const name = window.prompt('내보낼 파일 이름', suggested);
+    if (name === null) return;
+    downloadMap(state.draft, mapFilename(name));
+    state.markSaved();
+    showNotice(`${mapFilename(name)} 파일을 내보냈습니다.`);
+  });
+
+  const mapInput = root.querySelector<HTMLInputElement>('[data-map-input]')!;
+  mapInput.addEventListener('change', async () => {
+    const file = mapInput.files?.[0];
+    mapInput.value = '';
+    if (!file) return;
+
+    const result = await readMapFile(file);
+    if (!result.ok) {
+      showNotice(result.errors.map((error) => error.position
+        ? `${error.message} (${error.position.x}, ${error.position.y})`
+        : error.message).join(' / '));
+      return;
+    }
+
+    if (store.getState().dirty && !window.confirm('저장하지 않은 맵을 교체하고 파일을 불러올까요?')) return;
+    stopTest();
+    store.getState().replaceMap(result.map);
+    showNotice(`${file.name} 파일을 불러왔습니다.`);
+  });
+
   const unsubscribe = store.subscribe(render);
   render();
-  return unsubscribe;
+  return () => {
+    unsubscribe();
+    stopTest();
+  };
 }
