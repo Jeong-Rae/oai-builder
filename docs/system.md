@@ -19,7 +19,7 @@ Phaser: Scene lifecycle, input, assets, sprites, animation, rendering
 - `GameScene` keeps an `EntityId -> Phaser Sprite` mapping and synchronizes sprites from the store.
 - A `GameScene` subscription is disposed when the scene shuts down.
 - The game app and editor app have independent HTML and TypeScript entry points.
-- The game app never imports editor-only modules. The editor reuses the game domain and Phaser runtime for live tests.
+- The game app never imports editor-only modules. The editor reuses the game domain and Zustand command pipeline for inline live tests.
 
 ## Applications and deployment
 
@@ -42,7 +42,9 @@ apps/editor  -> dist/editor  -> editor subdomain
 - Entities are held in `Record<EntityId, Entity>`.
 - Entities do not call each other directly. Board interactions are decided centrally from the complete state.
 - A versioned `MapDocument` is the shared, editable level definition. It contains dimensions, tiles, and initial object positions but no mutable play state.
-- A live test creates a new game store from a `MapDocument`; movement during the test never changes the editor draft.
+- When an editor draft becomes valid, the editor creates a game store from its `MapDocument` and renders that state in the same cell grid used for placement.
+- Direction keys dispatch commands to the editor's test game store. Movement during a test never changes the editor draft, and the next map edit recreates the test store from the changed draft.
+- The editor cell grid and tool palette load the same tile, player, normal object, goal, and control-arrow assets as the game runtime. Field states and special object kinds add overlays where dedicated assets do not exist.
 - Version 1 `.map` files are UTF-8 JSON documents with `version`, `columns`, `rows`, `tiles`, and `objects` keys.
 
 ## State transition
