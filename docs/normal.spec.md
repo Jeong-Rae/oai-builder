@@ -1,17 +1,17 @@
-# 플레이어
+# 일반 오브젝트
 
-`OBJ-PLAYER` · 노멀 오브젝트
+`OBJ-NORMAL` · 노멀 오브젝트
 
-플레이어를 나타내는 노멀 오브젝트. 소유한 컨트롤의 입력에 따라 이동하거나, 충돌 대상의 상호작용 규칙을 수행한다.
+컨트롤을 소유하고 소유한 방향으로 이동하는 노멀 오브젝트. 충돌 시에는 대상의 종류와 상태에 따라 컨트롤을 전달·수신·교환한다.
 
 ## 기본 정보
 
 | 항목     | 값               |
 | ------ | --------------- |
-| 블록명    | 플레이어            |
-| 식별자    | `OBJ-PLAYER`    |
-| 키      | `object.player` |
-| 타입     | 노멀 |
+| 블록명    | 일반 오브젝트        |
+| 식별자    | `OBJ-NORMAL`    |
+| 키      | `object.normal` |
+| 타입     | 노멀              |
 | 이동 여부  | 가능 — 소유한 컨트롤 방향으로 1칸 |
 | 블록 이미지 | <!-- 작성 -->     |
 | 이동 단위  | 1칸              |
@@ -65,15 +65,16 @@
 
 | 프리뷰                  | 참조                               |
 | -------------------- | -------------------------------- |
-| `Default`            | `OBJ-PLAYER`                     |
-| `Control / Single`   | `OBJ-PLAYER / 1 Control`         |
-| `Control / Multiple` | `OBJ-PLAYER / Multiple Controls` |
-| `Move`               | `OBJ-PLAYER / Move`              |
-| `Transfer`           | `OBJ-PLAYER → OBJ-NORMAL`        |
+| `Default`            | `OBJ-NORMAL`                     |
+| `Control / Single`   | `OBJ-NORMAL / 1 Control`         |
+| `Control / Multiple` | `OBJ-NORMAL / Multiple Controls` |
+| `Move`               | `OBJ-NORMAL / Move`              |
+| `Transfer`           | `OBJ-NORMAL → OBJECT`            |
 
 ## 참조
 
-* `OBJ-NORMAL` — 일반 오브젝트
+* 앵커
+* 스와퍼
 * `CTRL-UP`
 * `CTRL-DOWN`
 * `CTRL-LEFT`
@@ -81,7 +82,6 @@
 
 ## 규칙 근거
 
-* CORE RULEBOOK · How to Read the Game
 * CORE RULEBOOK · Turn Resolution
 * CORE RULEBOOK · Ownership Transfer
-* CORE RULEBOOK · Object Reference · `플레이어의 기준점`
+* CORE RULEBOOK · Object Reference · `일반 오브젝트`

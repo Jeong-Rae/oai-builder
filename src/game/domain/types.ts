@@ -22,9 +22,9 @@ export interface Normal {
   controls: Direction[];
 }
 
-export interface Handoff {
+export interface Anchor {
   id: string;
-  kind: 'handoff';
+  kind: 'anchor';
   position: Position;
   controls: Direction[];
 }
@@ -36,7 +36,7 @@ export interface Swapper {
   controls: Direction[];
 }
 
-export type Entity = Player | Normal | Handoff | Swapper;
+export type Entity = Player | Normal | Anchor | Swapper;
 
 export interface GameState {
   columns: number;

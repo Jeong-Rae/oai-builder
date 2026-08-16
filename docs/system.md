@@ -36,7 +36,7 @@ apps/editor  -> dist/editor  -> editor subdomain
 
 - All logical positions use tile coordinates (`{ x, y }`); Phaser converts them to pixel coordinates for rendering.
 - The exit is represented as a tile rather than an entity, so an entity may occupy it.
-- `Player`, `Normal`, `Handoff`, and `Swapper` are entities with an `EntityId`, tile position, and owned direction controls.
+- `Player`, `Normal`, `Anchor`, and `Swapper` are entities with an `EntityId`, tile position, and owned direction controls.
 - Each direction control has exactly one owner. The player owns all four controls at game start.
 - `blank`, `floor`, `wall`, `exit`, and `plate` are tile kinds. `blank` represents map-exterior space without a rendered tile and rejects entry as `out-of-bounds`. Plates are stored as `inactive` or `active` by tile coordinate.
 - Entities are held in `Record<EntityId, Entity>`.
@@ -58,7 +58,7 @@ GameCommand + GameState -> decide -> GameEvent[] -> evolve -> next GameState
 - `player/move` is the initial command.
 - `entity/moved`, `control/transferred`, `plate/activated`, `plate/deactivated`, `goal/opened`, and `game/completed` are the initial domain events.
 - A blocked movement produces no event and returns a rejection reason (`out-of-bounds` or `wall`).
-- Moving into a normal object keeps both positions unchanged and transfers the used direction control to that object. A normal object activates plates, receives a handoff anchor's full control set on contact, and swaps its full control set with a swapper on contact.
+- Moving into a normal object keeps both positions unchanged and transfers the used direction control to that object. A normal object activates plates, gives its used control to an empty anchor or receives a populated anchor's full control set on contact, and swaps its full control set with a swapper on contact.
 - All events from one command are evolved before Zustand receives a single state update; observers never see intermediate movement state.
 
 ```text
@@ -122,5 +122,5 @@ src/
 ## Deferred decisions
 
 - The final win condition beyond the documented player-arrives-at-exit animation.
-- Dedicated wall, plate, handoff, and swapper art assets, and solvable map validation.
+- Dedicated wall, plate, anchor, and swapper art assets, and solvable map validation.
 - Movement tweening, sound, undo/redo, level progression, and persistent event history.

@@ -2,7 +2,7 @@ import type { Position, TileKind } from '../game/domain/types';
 
 export const MAP_VERSION = 1 as const;
 
-export type MapObjectKind = 'player' | 'normal' | 'handoff' | 'swapper';
+export type MapObjectKind = 'player' | 'normal' | 'anchor' | 'swapper';
 
 export interface MapObject {
   id: string;
@@ -29,7 +29,7 @@ export type MapResult =
   | { ok: false; errors: MapError[] };
 
 const tileKinds: TileKind[] = ['blank', 'floor', 'wall', 'plate', 'exit', 'wormhole', 'gate'];
-const objectKinds: MapObjectKind[] = ['player', 'normal', 'handoff', 'swapper'];
+const objectKinds: MapObjectKind[] = ['player', 'normal', 'anchor', 'swapper'];
 
 export function createBlankMap(columns = 9, rows = 9): MapDocument {
   return {

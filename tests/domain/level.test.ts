@@ -11,7 +11,7 @@ describe('맵 기반 게임 상태', () => {
     map.objects.push(
       { id: 'player', kind: 'player', position: { x: 0, y: 2 } },
       { id: 'normal-7', kind: 'normal', position: { x: 2, y: 1 } },
-      { id: 'handoff-2', kind: 'handoff', position: { x: 1, y: 0 } },
+      { id: 'anchor-2', kind: 'anchor', position: { x: 1, y: 0 } },
       { id: 'swapper-4', kind: 'swapper', position: { x: 2, y: 0 } },
     );
 
@@ -20,7 +20,7 @@ describe('맵 기반 게임 상태', () => {
     expect(game).toMatchObject({ columns: 4, rows: 3, tiles: map.tiles });
     expect(game.entities.player.controls).toEqual(['up', 'down', 'left', 'right']);
     expect(game.entities['normal-7']).toMatchObject({ kind: 'normal', position: { x: 2, y: 1 }, controls: [] });
-    expect(game.entities['handoff-2'].controls).toEqual([]);
+    expect(game.entities['anchor-2'].controls).toEqual([]);
     expect(game.entities['swapper-4'].controls).toEqual([]);
     expect(game.plateStates).toEqual({ '2,1': 'inactive' });
   });

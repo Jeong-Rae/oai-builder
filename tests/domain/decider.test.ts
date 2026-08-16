@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { decide, evolveAll } from '../../src/game/domain/decider';
 import { createInitialState } from '../../src/game/domain/level';
-import type { GameState, Handoff, Normal, Position, Swapper } from '../../src/game/domain/types';
+import type { Anchor, GameState, Normal, Position, Swapper } from '../../src/game/domain/types';
 
 function createStateWithPlayer(position: Position) {
   const state = createInitialState({ boxCount: 0 });
@@ -23,8 +23,8 @@ function normal(id: string, position: Position): Normal {
   return { id, kind: 'normal', position, controls: [] };
 }
 
-function handoff(id: string, position: Position, controls: Handoff['controls'] = []): Handoff {
-  return { id, kind: 'handoff', position, controls };
+function anchor(id: string, position: Position, controls: Anchor['controls'] = []): Anchor {
+  return { id, kind: 'anchor', position, controls };
 }
 
 function swapper(id: string, position: Position, controls: Swapper['controls'] = []): Swapper {
@@ -259,23 +259,23 @@ describe('게이트', () => {
   });
 });
 
-describe('핸드오프 앵커', () => {
+describe('앵커', () => {
   it('비어 있는 앵커는 전달받은 컨트롤을 보유한다', () => {
     const state = createStateWithPlayer({ x: 1, y: 1 });
     const prepared: GameState = {
       ...state,
       entities: {
         ...state.entities,
-        'handoff-1': handoff('handoff-1', { x: 2, y: 1 }),
+        'anchor-1': anchor('anchor-1', { x: 2, y: 1 }),
       },
     };
     const next = evolveAll(prepared, decide(prepared, { type: 'player/move', direction: 'right' }).events);
 
     expect(next.entities.player.controls).not.toContain('right');
-    expect(next.entities['handoff-1'].controls).toEqual(['right']);
+    expect(next.entities['anchor-1'].controls).toEqual(['right']);
   });
 
-  it('일반 오브젝트가 컨트롤 보유 앵커에 접촉하면 전체 컨트롤을 환승한다', () => {
+  it('컨트롤 보유 앵커에 접촉하면 앵커의 컨트롤 집합 전체를 받는다', () => {
     const state = createInitialState({ boxCount: 0 });
     const prepared: GameState = {
       ...state,
@@ -283,20 +283,19 @@ describe('핸드오프 앵커', () => {
         ...state.entities,
         player: { ...state.entities.player, controls: ['down'] },
         'normal-1': { ...normal('normal-1', { x: 1, y: 1 }), controls: ['right'] },
-        'handoff-1': handoff('handoff-1', { x: 2, y: 1 }, ['up', 'left']),
+        'anchor-1': anchor('anchor-1', { x: 2, y: 1 }, ['up', 'left']),
       },
     };
     const decision = decide(prepared, { type: 'player/move', direction: 'right' });
     const next = evolveAll(prepared, decision.events);
 
     expect(decision.events).toEqual([
-      { type: 'control/transferred', direction: 'up', fromEntityId: 'handoff-1', toEntityId: 'normal-1' },
-      { type: 'control/transferred', direction: 'left', fromEntityId: 'handoff-1', toEntityId: 'normal-1' },
-      { type: 'control/transferred', direction: 'right', fromEntityId: 'normal-1', toEntityId: 'handoff-1' },
+      { type: 'control/transferred', direction: 'up', fromEntityId: 'anchor-1', toEntityId: 'normal-1' },
+      { type: 'control/transferred', direction: 'left', fromEntityId: 'anchor-1', toEntityId: 'normal-1' },
     ]);
     expect(next.entities['normal-1'].position).toEqual({ x: 1, y: 1 });
-    expect(next.entities['normal-1'].controls).toEqual(['up', 'left']);
-    expect(next.entities['handoff-1'].controls).toEqual(['right']);
+    expect(next.entities['normal-1'].controls).toEqual(['right', 'up', 'left']);
+    expect(next.entities['anchor-1'].controls).toEqual([]);
   });
 
   it('앵커가 보유한 컨트롤을 입력해도 앵커는 이동하지 않는다', () => {
@@ -306,7 +305,7 @@ describe('핸드오프 앵커', () => {
       entities: {
         ...state.entities,
         player: { ...state.entities.player, controls: ['up', 'down', 'left'] },
-        'handoff-1': handoff('handoff-1', { x: 2, y: 1 }, ['right']),
+        'anchor-1': anchor('anchor-1', { x: 2, y: 1 }, ['right']),
       },
     };
 

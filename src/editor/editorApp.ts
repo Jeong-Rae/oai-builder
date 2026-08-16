@@ -60,7 +60,7 @@ const fieldTools: Array<ToolOption<TileKind>> = [
 const objectTools: Array<ToolOption<MapObjectKind>> = [
   { tool: 'player', label: '플레이어', asset: 'player' },
   { tool: 'normal', label: '일반', asset: 'box' },
-  { tool: 'handoff', label: '핸드오프', asset: 'box', badge: 'H' },
+  { tool: 'anchor', label: '앵커', asset: 'box', badge: 'A' },
   { tool: 'swapper', label: '스와퍼', asset: 'box', badge: 'S' },
 ];
 
@@ -73,7 +73,7 @@ const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
   exit: 'goalClosed',
   player: 'player',
   normal: 'box',
-  handoff: 'box',
+  anchor: 'box',
   swapper: 'box',
 };
 
@@ -348,7 +348,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
           ? `<img class="goal-asset" src="${game?.goalOpened ? resolveAsset('goalOpen') : resolveAsset('goalClosed')}" alt="" />`
           : '';
         const objectAsset = object
-          ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? resolveAsset(playerAsset) : resolveAsset('box')}" alt="" />${object.kind === 'handoff' ? '<b>H</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
+          ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? resolveAsset(playerAsset) : resolveAsset('box')}" alt="" />${object.kind === 'anchor' ? '<b>A</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
           : '';
         const controls = object?.controls.map((direction) =>
           `<img class="control-asset control-${direction}" src="${resolveAsset(direction)}" alt="${direction}" />`,
