@@ -77,11 +77,13 @@ describe('방향 컨트롤', () => {
     expect(next.entities.player.position).toEqual(expectedPosition);
   });
 
-  it('소유자는 보드 밖이나 벽으로 이동할 수 없다', () => {
+  it('소유자는 보드 밖, blank 필드 또는 벽으로 이동할 수 없다', () => {
     const state = createInitialState({ boxCount: 0 });
     state.tiles[7][0] = 'wall';
+    state.tiles[8][1] = 'blank';
 
     expect(decide(state, { type: 'player/move', direction: 'left' }).rejectedBy).toBe('out-of-bounds');
+    expect(decide(state, { type: 'player/move', direction: 'right' }).rejectedBy).toBe('out-of-bounds');
     expect(decide(state, { type: 'player/move', direction: 'up' }).rejectedBy).toBe('wall');
   });
 });
@@ -232,6 +234,21 @@ describe('핸드오프 앵커', () => {
 });
 
 describe('스와퍼', () => {
+  it('소유한 컨트롤을 입력하면 해당 방향으로 한 칸 이동한다', () => {
+    const state = createInitialState({ boxCount: 0 });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, controls: ['up', 'down', 'left'] },
+        'swapper-1': swapper('swapper-1', { x: 2, y: 1 }, ['right']),
+      },
+    };
+    const next = evolveAll(prepared, decide(prepared, { type: 'player/move', direction: 'right' }).events);
+
+    expect(next.entities['swapper-1'].position).toEqual({ x: 3, y: 1 });
+  });
+
   it('일반 오브젝트가 스와퍼에 접촉하면 두 컨트롤 집합 전체를 교환한다', () => {
     const state = createInitialState({ boxCount: 0 });
     const prepared: GameState = {

@@ -5,7 +5,7 @@ export interface Position {
   y: number;
 }
 
-export type TileKind = 'floor' | 'wall' | 'exit' | 'plate';
+export type TileKind = 'blank' | 'floor' | 'wall' | 'exit' | 'plate';
 export type PlateState = 'inactive' | 'active';
 
 export interface Player {

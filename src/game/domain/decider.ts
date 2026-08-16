@@ -39,6 +39,10 @@ function isWall(state: GameState, position: Position): boolean {
   return state.tiles[position.y][position.x] === 'wall';
 }
 
+function isBlank(state: GameState, position: Position): boolean {
+  return state.tiles[position.y][position.x] === 'blank';
+}
+
 function isAdjacentToGoal(state: GameState, position: Position): boolean {
   return state.tiles.some((row, y) =>
     row.some((tile, x) => tile === 'exit' && Math.abs(position.x - x) + Math.abs(position.y - y) === 1),
@@ -97,13 +101,13 @@ export function decide(state: GameState, command: GameCommand): Decision {
     throw new Error(`${command.direction} 컨트롤의 소유자를 찾을 수 없습니다.`);
   }
 
-  if (owner.kind === 'handoff' || owner.kind === 'swapper') {
+  if (owner.kind === 'handoff') {
     return { events: [], rejectedBy: 'fixed' };
   }
 
   const target = nextPosition(owner.position, command.direction);
 
-  if (!isInside(state, target)) {
+  if (!isInside(state, target) || isBlank(state, target)) {
     return { events: [], rejectedBy: 'out-of-bounds' };
   }
 

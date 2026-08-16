@@ -108,6 +108,13 @@ export class GameScene extends Phaser.Scene {
     for (let y = 0; y < game.rows; y += 1) {
       for (let x = 0; x < game.columns; x += 1) {
         const key = `${x},${y}`;
+        const tile = game.tiles[y][x];
+        if (tile === 'blank') {
+          this.tileSprites.get(key)?.destroy();
+          this.tileSprites.delete(key);
+          continue;
+        }
+
         const position = toPixel({ x, y });
         let sprite = this.tileSprites.get(key);
 
@@ -116,7 +123,6 @@ export class GameScene extends Phaser.Scene {
           this.tileSprites.set(key, sprite);
         }
 
-        const tile = game.tiles[y][x];
         const tint = tile === 'wall'
           ? 0x526477
           : tile === 'plate'

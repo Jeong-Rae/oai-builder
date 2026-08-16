@@ -92,6 +92,8 @@ h1 { margin: 0; font-family: Impact, Haettenschweiler, sans-serif; font-size: cl
 .map-cell { position: relative; display: grid; place-items: center; isolation: isolate; width: var(--cell-size); height: var(--cell-size); padding: 0; border: 1px solid #274752; border-radius: 0; overflow: hidden; background: #14313a; }
 .map-cell:hover { z-index: 1; border-color: var(--cyan); }
 .map-cell.selected { z-index: 2; outline: 2px solid var(--amber); outline-offset: -3px; }
+.field-blank { border-color: #162a31; background: repeating-linear-gradient(135deg, #061015 0 7px, #09161c 7px 14px); }
+.field-blank::after { content: ""; position: absolute; width: 0.32rem; height: 0.32rem; border-radius: 50%; background: #29414a; }
 .tile-asset, .goal-asset, .object-asset { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
 .tile-asset { z-index: -2; object-fit: cover; }
 .field-wall .tile-asset { filter: grayscale(1) brightness(0.52) contrast(1.35); }

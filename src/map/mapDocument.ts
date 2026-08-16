@@ -28,7 +28,7 @@ export type MapResult =
   | { ok: true; map: MapDocument }
   | { ok: false; errors: MapError[] };
 
-const tileKinds: TileKind[] = ['floor', 'wall', 'plate', 'exit'];
+const tileKinds: TileKind[] = ['blank', 'floor', 'wall', 'plate', 'exit'];
 const objectKinds: MapObjectKind[] = ['player', 'normal', 'handoff', 'swapper'];
 
 export function createBlankMap(columns = 9, rows = 9): MapDocument {
@@ -150,8 +150,13 @@ export function validateMap(value: unknown): MapResult {
 
       if (mapPosition.x < 0 || mapPosition.x >= validColumns || mapPosition.y < 0 || mapPosition.y >= validRows) {
         errors.push({ code: 'out-of-bounds', message: `${String(id)}이 맵 범위를 벗어났습니다.`, position: mapPosition });
-      } else if (Array.isArray(tiles) && Array.isArray(tiles[mapPosition.y]) && tiles[mapPosition.y][mapPosition.x] === 'wall') {
-        errors.push({ code: 'object-on-wall', message: `${String(id)}을 벽에 배치할 수 없습니다.`, position: mapPosition });
+      } else if (Array.isArray(tiles) && Array.isArray(tiles[mapPosition.y])) {
+        const tile = tiles[mapPosition.y][mapPosition.x];
+        if (tile === 'wall') {
+          errors.push({ code: 'object-on-wall', message: `${String(id)}을 벽에 배치할 수 없습니다.`, position: mapPosition });
+        } else if (tile === 'blank') {
+          errors.push({ code: 'object-on-blank', message: `${String(id)}을 맵 외부 영역에 배치할 수 없습니다.`, position: mapPosition });
+        }
       }
 
       if (occupied.has(key)) {

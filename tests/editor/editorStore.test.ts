@@ -55,6 +55,16 @@ describe('맵 에디터 저장소', () => {
     expect(store.getState().draft.tiles[0]).toEqual(['wall', 'floor']);
   });
 
+  it('blank 필드는 오브젝트를 제거하고 새 배치를 허용하지 않는다', () => {
+    const store = createEditorStore(createBlankMap(2, 2));
+    store.getState().placeObject({ x: 0, y: 0 }, 'normal');
+    store.getState().setTile({ x: 0, y: 0 }, 'blank');
+    store.getState().placeObject({ x: 0, y: 0 }, 'player');
+
+    expect(store.getState().draft.tiles[0][0]).toBe('blank');
+    expect(store.getState().draft.objects).toEqual([]);
+  });
+
   it('맵 교체와 저장 완료 상태를 관리한다', () => {
     const store = createEditorStore();
     store.getState().setTile({ x: 0, y: 0 }, 'wall');

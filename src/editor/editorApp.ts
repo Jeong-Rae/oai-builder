@@ -25,6 +25,7 @@ interface ToolOption<T extends EditorTool> {
 }
 
 const fieldTools: Array<ToolOption<TileKind>> = [
+  { tool: 'blank', label: '맵 외부', badge: '∅' },
   { tool: 'floor', label: '바닥', image: assetUrls.tile },
   { tool: 'wall', label: '벽', image: assetUrls.tile },
   { tool: 'plate', label: '플레이트', image: assetUrls.tile },
@@ -188,13 +189,13 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       return;
     }
     if (fieldTools.some(({ tool }) => tool === state.tool)) {
-      if (state.tool === 'wall' && object && !window.confirm(`${object.id}이 제거됩니다. 벽으로 변경할까요?`)) return;
+      if ((state.tool === 'wall' || state.tool === 'blank') && object && !window.confirm(`${object.id}이 제거됩니다. 필드를 변경할까요?`)) return;
       state.setTile(position, state.tool as TileKind);
       return;
     }
 
-    if (state.draft.tiles[position.y][position.x] === 'wall') {
-      showNotice('벽에는 오브젝트를 배치할 수 없습니다.');
+    if (['wall', 'blank'].includes(state.draft.tiles[position.y][position.x])) {
+      showNotice('벽 또는 맵 외부 영역에는 오브젝트를 배치할 수 없습니다.');
       return;
     }
     state.placeObject(position, state.tool as MapObjectKind);
@@ -252,7 +253,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const controls = object?.controls.map((direction) =>
           `<img class="control-asset control-${direction}" src="${assetUrls[direction]}" alt="${direction}" />`,
         ).join('') ?? '';
-        cells.push(`<button type="button" class="map-cell field-${field}${plateActive}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}"><img class="tile-asset" src="${assetUrls.tile}" alt="" />${goal}${objectAsset}<span class="control-assets">${controls}</span></button>`);
+        const tileAsset = field === 'blank' ? '' : `<img class="tile-asset" src="${assetUrls.tile}" alt="" />`;
+        cells.push(`<button type="button" class="map-cell field-${field}${plateActive}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${objectAsset}<span class="control-assets">${controls}</span></button>`);
       }
     }
     grid.innerHTML = cells.join('');

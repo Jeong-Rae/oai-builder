@@ -47,6 +47,18 @@ describe('맵 문서', () => {
     }
   });
 
+  it('blank 필드를 보존하고 해당 필드의 오브젝트를 거절한다', () => {
+    const map = validMap();
+    map.tiles[1][0] = 'blank';
+
+    const result = parseMap(serializeMap(map));
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.map((error) => error.code)).toContain('object-on-blank');
+    }
+  });
+
   it('잘못된 JSON과 지원하지 않는 버전을 구분한다', () => {
     const invalidJson = parseMap('{');
     const unsupported = parseMap(JSON.stringify({ ...validMap(), version: 2 }));

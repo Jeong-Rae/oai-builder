@@ -111,7 +111,7 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
       }
 
       draft.tiles[position.y][position.x] = kind;
-      if (kind === 'wall') {
+      if (kind === 'wall' || kind === 'blank') {
         draft.objects = draft.objects.filter((object) =>
           object.position.x !== position.x || object.position.y !== position.y,
         );
@@ -121,7 +121,7 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
 
     placeObject(position, kind) {
       const draft = cloneMap(get().draft);
-      if (!isInside(position, draft.columns, draft.rows) || draft.tiles[position.y][position.x] === 'wall') return;
+      if (!isInside(position, draft.columns, draft.rows) || ['wall', 'blank'].includes(draft.tiles[position.y][position.x])) return;
 
       draft.objects = draft.objects.filter((object) =>
         (object.position.x !== position.x || object.position.y !== position.y)
