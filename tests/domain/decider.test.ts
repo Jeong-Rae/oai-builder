@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { decide, evolve, evolveAll } from '../../src/game/domain/decider';
+import { decide, evolveAll } from '../../src/game/domain/decider';
 import { createInitialState } from '../../src/game/domain/level';
 import type { Box, Position } from '../../src/game/domain/types';
 
@@ -19,6 +19,10 @@ function createStateWithPlayer(position: Position) {
   };
 }
 
+function box(id: string, position: Position): Box {
+  return { id, kind: 'box', position, controls: [] };
+}
+
 function createStateWithBoxes(playerPosition: Position, boxes: Box[]) {
   const state = createStateWithPlayer(playerPosition);
 
@@ -26,71 +30,16 @@ function createStateWithBoxes(playerPosition: Position, boxes: Box[]) {
     ...state,
     entities: {
       ...state.entities,
-      ...Object.fromEntries(boxes.map((box) => [box.id, box])),
+      ...Object.fromEntries(boxes.map((item) => [item.id, item])),
     },
   };
 }
 
-describe('플레이어 이동', () => {
-  it('플레이어는 위쪽의 인접한 타일로 이동한다', () => {
-    const state = createInitialState({ boxCount: 0 });
-    const decision = decide(state, { type: 'player/move', direction: 'up' });
-
-    const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 0, y: 7 });
-  });
-
-  it('플레이어는 오른쪽의 인접한 타일로 이동한다', () => {
-    const state = createInitialState({ boxCount: 0 });
-    const decision = decide(state, { type: 'player/move', direction: 'right' });
-
-    expect(decision.rejectedBy).toBeUndefined();
-    expect(decision.events).toHaveLength(1);
-
-    const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 1, y: 8 });
-  });
-
-  it('플레이어는 아래쪽의 인접한 타일로 이동한다', () => {
-    const state = createStateWithPlayer({ x: 1, y: 7 });
-    const decision = decide(state, { type: 'player/move', direction: 'down' });
-
-    const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 1, y: 8 });
-  });
-
-  it('플레이어는 왼쪽의 인접한 타일로 이동한다', () => {
-    const state = createStateWithPlayer({ x: 1, y: 7 });
-    const decision = decide(state, { type: 'player/move', direction: 'left' });
-
-    const next = decision.events.reduce(evolve, state);
-    expect(next.entities.player.position).toEqual({ x: 0, y: 7 });
-  });
-
-  it('플레이어는 보드 밖으로 이동할 수 없다', () => {
-    const state = createInitialState({ boxCount: 0 });
-    const decision = decide(state, { type: 'player/move', direction: 'left' });
-
-    expect(decision.events).toEqual([]);
-    expect(decision.rejectedBy).toBe('out-of-bounds');
-  });
-
-  it('플레이어는 벽 타일로 이동할 수 없다', () => {
-    const state = createInitialState({ boxCount: 0 });
-    state.tiles[7][0] = 'wall';
-
-    const decision = decide(state, { type: 'player/move', direction: 'up' });
-
-    expect(decision.events).toEqual([]);
-    expect(decision.rejectedBy).toBe('wall');
-  });
-});
-
-describe('상자 상호작용', () => {
+describe('방향 컨트롤', () => {
   it('게임 시작 시 상자 다섯 개가 서로 다른 타일에 배치된다', () => {
     const state = createInitialState({ random: () => 0 });
     const boxes = Object.values(state.entities).filter((entity) => entity.kind === 'box');
-    const positions = new Set(boxes.map((box) => `${box.position.x},${box.position.y}`));
+    const positions = new Set(boxes.map((item) => `${item.position.x},${item.position.y}`));
 
     expect(boxes).toHaveLength(5);
     expect(positions).toHaveLength(5);
@@ -98,49 +47,73 @@ describe('상자 상호작용', () => {
     expect(positions.has('8,0')).toBe(false);
   });
 
-  it('플레이어는 앞의 상자를 빈 타일로 민다', () => {
-    const state = createStateWithBoxes(
-      { x: 1, y: 1 },
-      [{ id: 'box-1', kind: 'box', position: { x: 2, y: 1 } }],
-    );
+  it('게임 시작 시 플레이어가 네 방향 컨트롤을 모두 소유한다', () => {
+    const state = createInitialState({ boxCount: 0 });
 
+    expect(state.entities.player.controls).toEqual(['up', 'down', 'left', 'right']);
+  });
+
+  it.each([
+    ['위', { x: 0, y: 7 }, 'up'],
+    ['오른쪽', { x: 1, y: 8 }, 'right'],
+    ['아래', { x: 1, y: 8 }, 'down'],
+    ['왼쪽', { x: 0, y: 7 }, 'left'],
+  ] as const)('%s 컨트롤의 소유자는 해당 방향으로 한 칸 이동한다', (_, expectedPosition, direction) => {
+    const state = direction === 'down' || direction === 'left'
+      ? createStateWithPlayer({ x: 1, y: 7 })
+      : createInitialState({ boxCount: 0 });
+    const decision = decide(state, { type: 'player/move', direction });
+    const next = evolveAll(state, decision.events);
+
+    expect(decision.rejectedBy).toBeUndefined();
+    expect(next.entities.player.position).toEqual(expectedPosition);
+  });
+
+  it('소유자는 보드 밖이나 벽으로 이동할 수 없다', () => {
+    const state = createInitialState({ boxCount: 0 });
+    state.tiles[7][0] = 'wall';
+
+    expect(decide(state, { type: 'player/move', direction: 'left' }).rejectedBy).toBe('out-of-bounds');
+    expect(decide(state, { type: 'player/move', direction: 'up' }).rejectedBy).toBe('wall');
+  });
+});
+
+describe('컨트롤 전달', () => {
+  it('오브젝트와 맞닿으면 위치를 유지하고 사용한 컨트롤만 전달한다', () => {
+    const state = createStateWithBoxes({ x: 1, y: 1 }, [box('box-1', { x: 2, y: 1 })]);
     const decision = decide(state, { type: 'player/move', direction: 'right' });
     const next = evolveAll(state, decision.events);
 
-    expect(decision.events.map((event) => event.type)).toEqual([
-      'box/pushed',
-      'player/moved',
+    expect(decision.events).toEqual([
+      {
+        type: 'control/transferred',
+        direction: 'right',
+        fromEntityId: 'player',
+        toEntityId: 'box-1',
+      },
     ]);
-    expect(next.entities.player.position).toEqual({ x: 2, y: 1 });
+    expect(next.entities.player.position).toEqual({ x: 1, y: 1 });
+    expect(next.entities['box-1'].position).toEqual({ x: 2, y: 1 });
+    expect(next.entities.player.controls).toEqual(['up', 'down', 'left']);
+    expect(next.entities['box-1'].controls).toEqual(['right']);
+  });
+
+  it('전달된 방향키는 새 소유자 오브젝트를 이동시킨다', () => {
+    const state = createStateWithBoxes({ x: 1, y: 1 }, [box('box-1', { x: 2, y: 1 })]);
+    const transferred = evolveAll(state, decide(state, { type: 'player/move', direction: 'right' }).events);
+    const next = evolveAll(transferred, decide(transferred, { type: 'player/move', direction: 'right' }).events);
+
+    expect(next.entities.player.position).toEqual({ x: 1, y: 1 });
     expect(next.entities['box-1'].position).toEqual({ x: 3, y: 1 });
   });
 
-  it('플레이어는 다른 상자로 막힌 상자를 밀 수 없다', () => {
-    const state = createStateWithBoxes(
-      { x: 1, y: 1 },
-      [
-        { id: 'box-1', kind: 'box', position: { x: 2, y: 1 } },
-        { id: 'box-2', kind: 'box', position: { x: 3, y: 1 } },
-      ],
-    );
+  it('다른 방향 컨트롤의 소유권은 유지한다', () => {
+    const state = createStateWithBoxes({ x: 1, y: 1 }, [box('box-1', { x: 2, y: 1 })]);
+    const transferred = evolveAll(state, decide(state, { type: 'player/move', direction: 'right' }).events);
+    const next = evolveAll(transferred, decide(transferred, { type: 'player/move', direction: 'up' }).events);
 
-    const decision = decide(state, { type: 'player/move', direction: 'right' });
-
-    expect(decision.events).toEqual([]);
-    expect(decision.rejectedBy).toBe('blocked-box');
-  });
-
-  it('플레이어는 벽으로 상자를 밀 수 없다', () => {
-    const state = createStateWithBoxes(
-      { x: 1, y: 1 },
-      [{ id: 'box-1', kind: 'box', position: { x: 2, y: 1 } }],
-    );
-    state.tiles[1][3] = 'wall';
-
-    const decision = decide(state, { type: 'player/move', direction: 'right' });
-
-    expect(decision.events).toEqual([]);
-    expect(decision.rejectedBy).toBe('wall');
+    expect(next.entities.player.position).toEqual({ x: 1, y: 0 });
+    expect(next.entities['box-1'].position).toEqual({ x: 2, y: 1 });
   });
 });
 
@@ -152,26 +125,11 @@ describe('Gate 열림', () => {
     const secondDecision = decide(opened, { type: 'player/move', direction: 'left' });
 
     expect(firstDecision.events.map((event) => event.type)).toEqual([
-      'player/moved',
+      'entity/moved',
       'gate/opened',
     ]);
     expect(opened.gateOpened).toBe(true);
-    expect(secondDecision.events.map((event) => event.type)).toEqual(['player/moved']);
-  });
-
-  it('상자를 밀며 gate의 인접 칸에 도착해도 열린다', () => {
-    const state = createStateWithBoxes(
-      { x: 6, y: 0 },
-      [{ id: 'box-1', kind: 'box', position: { x: 7, y: 0 } }],
-    );
-
-    const decision = decide(state, { type: 'player/move', direction: 'right' });
-
-    expect(decision.events.map((event) => event.type)).toEqual([
-      'box/pushed',
-      'player/moved',
-      'gate/opened',
-    ]);
+    expect(secondDecision.events.map((event) => event.type)).toEqual(['entity/moved']);
   });
 });
 
@@ -182,7 +140,7 @@ describe('출구 도달', () => {
     const next = evolveAll(state, decision.events);
 
     expect(decision.events.map((event) => event.type)).toEqual([
-      'player/moved',
+      'entity/moved',
       'game/completed',
     ]);
     expect(next.status).toBe('completed');

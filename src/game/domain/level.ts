@@ -41,7 +41,7 @@ function createBoxes(boxCount: number, random: () => number): Record<string, Box
     [available[index], available[selected]] = [available[selected], available[index]];
 
     const id = `box-${index + 1}`;
-    boxes[id] = { id, kind: 'box', position: available[index] };
+    boxes[id] = { id, kind: 'box', position: available[index], controls: [] };
   }
 
   return boxes;
@@ -60,6 +60,7 @@ export function createInitialState({
         id: 'player',
         kind: 'player',
         position: { x: 0, y: BOARD_ROWS - 1 },
+        controls: ['up', 'down', 'left', 'right'],
       },
       ...createBoxes(boxCount, random),
     },

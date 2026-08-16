@@ -5,8 +5,6 @@ import type {
   GameCommand,
   GameEvent,
   GameState,
-  Box,
-  Player,
   Position,
 } from './types';
 
@@ -47,41 +45,21 @@ function isAdjacentToExit(state: GameState, position: Position): boolean {
   );
 }
 
-function getPlayer(state: GameState): Player {
-  const player = state.entities[state.playerId];
-
-  if (!player || player.kind !== 'player') {
-    throw new Error('플레이어 상태를 찾을 수 없습니다.');
-  }
-
-  return player;
-}
-
-function getBox(state: GameState, boxId: string): Box {
-  const box = state.entities[boxId];
-
-  if (!box || box.kind !== 'box') {
-    throw new Error('상자 상태를 찾을 수 없습니다.');
-  }
-
-  return box;
-}
-
-function playerMoveEvents(state: GameState, player: Player, target: Position): GameEvent[] {
+function moveEvents(state: GameState, entity: Entity, target: Position): GameEvent[] {
   const events: GameEvent[] = [
     {
-      type: 'player/moved',
-      playerId: player.id,
-      from: player.position,
+      type: 'entity/moved',
+      entityId: entity.id,
+      from: entity.position,
       to: target,
     },
   ];
 
-  if (state.tiles[target.y][target.x] === 'exit') {
+  if (entity.kind === 'player' && state.tiles[target.y][target.x] === 'exit') {
     events.push({ type: 'game/completed' });
   }
 
-  if (!state.gateOpened && isAdjacentToExit(state, target)) {
+  if (entity.kind === 'player' && !state.gateOpened && isAdjacentToExit(state, target)) {
     events.push({ type: 'gate/opened' });
   }
 
@@ -89,8 +67,15 @@ function playerMoveEvents(state: GameState, player: Player, target: Position): G
 }
 
 export function decide(state: GameState, command: GameCommand): Decision {
-  const player = getPlayer(state);
-  const target = nextPosition(player.position, command.direction);
+  const owner = Object.values(state.entities).find((entity) =>
+    entity.controls.includes(command.direction),
+  );
+
+  if (!owner) {
+    throw new Error(`${command.direction} 컨트롤의 소유자를 찾을 수 없습니다.`);
+  }
+
+  const target = nextPosition(owner.position, command.direction);
 
   if (!isInside(state, target)) {
     return { events: [], rejectedBy: 'out-of-bounds' };
@@ -103,59 +88,61 @@ export function decide(state: GameState, command: GameCommand): Decision {
   const targetEntity = getEntityAt(state, target);
 
   if (!targetEntity) {
-    return { events: playerMoveEvents(state, player, target) };
-  }
-
-  const boxTarget = nextPosition(targetEntity.position, command.direction);
-
-  if (!isInside(state, boxTarget) || getEntityAt(state, boxTarget)) {
-    return { events: [], rejectedBy: 'blocked-box' };
-  }
-
-  if (isWall(state, boxTarget)) {
-    return { events: [], rejectedBy: 'wall' };
+    return { events: moveEvents(state, owner, target) };
   }
 
   return {
     events: [
       {
-        type: 'box/pushed',
-        boxId: targetEntity.id,
-        from: targetEntity.position,
-        to: boxTarget,
+        type: 'control/transferred',
+        direction: command.direction,
+        fromEntityId: owner.id,
+        toEntityId: targetEntity.id,
       },
-      ...playerMoveEvents(state, player, target),
     ],
   };
 }
 
 export function evolve(state: GameState, event: GameEvent): GameState {
   switch (event.type) {
-    case 'player/moved': {
-      const player = getPlayer(state);
+    case 'entity/moved': {
+      const entity = state.entities[event.entityId];
+
+      if (!entity) {
+        throw new Error('이동할 오브젝트를 찾을 수 없습니다.');
+      }
 
       return {
         ...state,
         entities: {
           ...state.entities,
-          [event.playerId]: {
-            ...player,
+          [event.entityId]: {
+            ...entity,
             position: event.to,
           },
         },
       };
     }
 
-    case 'box/pushed': {
-      const box = getBox(state, event.boxId);
+    case 'control/transferred': {
+      const from = state.entities[event.fromEntityId];
+      const to = state.entities[event.toEntityId];
+
+      if (!from || !to) {
+        throw new Error('컨트롤을 전달할 오브젝트를 찾을 수 없습니다.');
+      }
 
       return {
         ...state,
         entities: {
           ...state.entities,
-          [event.boxId]: {
-            ...box,
-            position: event.to,
+          [event.fromEntityId]: {
+            ...from,
+            controls: from.controls.filter((direction) => direction !== event.direction),
+          },
+          [event.toEntityId]: {
+            ...to,
+            controls: [...to.controls, event.direction],
           },
         },
       };

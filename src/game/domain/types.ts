@@ -11,12 +11,14 @@ export interface Player {
   id: 'player';
   kind: 'player';
   position: Position;
+  controls: Direction[];
 }
 
 export interface Box {
   id: string;
   kind: 'box';
   position: Position;
+  controls: Direction[];
 }
 
 export type Entity = Player | Box;
@@ -38,16 +40,16 @@ export type GameCommand = {
 
 export type GameEvent =
   | {
-      type: 'player/moved';
-      playerId: 'player';
+      type: 'entity/moved';
+      entityId: string;
       from: Position;
       to: Position;
     }
   | {
-      type: 'box/pushed';
-      boxId: string;
-      from: Position;
-      to: Position;
+      type: 'control/transferred';
+      direction: Direction;
+      fromEntityId: string;
+      toEntityId: string;
     }
   | {
       type: 'gate/opened';
@@ -56,7 +58,7 @@ export type GameEvent =
       type: 'game/completed';
     };
 
-export type RejectionReason = 'out-of-bounds' | 'wall' | 'blocked-box';
+export type RejectionReason = 'out-of-bounds' | 'wall';
 
 export interface Decision {
   events: GameEvent[];

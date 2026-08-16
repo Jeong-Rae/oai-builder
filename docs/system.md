@@ -23,7 +23,8 @@ Phaser: Scene lifecycle, input, assets, sprites, animation, rendering
 
 - All logical positions use tile coordinates (`{ x, y }`); Phaser converts them to pixel coordinates for rendering.
 - The exit is represented as a tile rather than an entity, so an entity may occupy it.
-- `Player` and `Box` are entities with an `EntityId` and tile position.
+- `Player` and `Box` are entities with an `EntityId`, tile position, and owned direction controls.
+- Each direction control has exactly one owner. The player owns all four controls at game start.
 - `floor`, `wall`, and `exit` are tile kinds.
 - Entities are held in `Record<EntityId, Entity>`.
 - Entities do not call each other directly. Board interactions are decided centrally from the complete state.
@@ -37,9 +38,9 @@ GameCommand + GameState -> decide -> GameEvent[] -> evolve -> next GameState
 ```
 
 - `player/move` is the initial command.
-- `player/moved`, `box/pushed`, `gate/opened`, and `game/completed` are the initial domain events.
-- A blocked movement produces no event and returns a rejection reason (`out-of-bounds`, `wall`, or `blocked-box`).
-- A valid box push produces both the box and player movement events.
+- `entity/moved`, `control/transferred`, `gate/opened`, and `game/completed` are the initial domain events.
+- A blocked movement produces no event and returns a rejection reason (`out-of-bounds` or `wall`).
+- Moving into an occupied tile keeps both positions unchanged and transfers the used direction control to that object.
 - All events from one command are evolved before Zustand receives a single state update; observers never see intermediate movement state.
 
 ```text
@@ -48,7 +49,7 @@ keyboard input
 -> gameStore.dispatch(command)
 -> decide / evolve
 -> Zustand update
--> GameScene synchronizes sprites
+-> GameScene synchronizes sprites and ownership arrows
 ```
 
 ## Module layout

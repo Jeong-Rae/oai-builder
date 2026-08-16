@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import { BOARD_COLUMNS, BOARD_ROWS, TILE_SIZE } from '../domain/level';
 import { directionFromKey } from '../input';
 import { gameStore } from '../store/gameStore';
-import type { Entity, GameState, Position } from '../domain/types';
+import type { Direction, Entity, GameState, Position } from '../domain/types';
 
 const textureUrls = {
   tile: new URL('../../../assets/tail/tile.96.png', import.meta.url).href,
@@ -13,9 +13,19 @@ const textureUrls = {
   exit2: new URL('../../../assets/gate/gate_2f.96.png', import.meta.url).href,
   exit3: new URL('../../../assets/gate/gate_3f.96.png', import.meta.url).href,
   exit4: new URL('../../../assets/gate/gate_4f.96.png', import.meta.url).href,
+  arrowUp: new URL('../../../assets/arrow/arrow_up.svg', import.meta.url).href,
+  arrowDown: new URL('../../../assets/arrow/arrow_down.svg', import.meta.url).href,
+  arrowLeft: new URL('../../../assets/arrow/arrow_left.svg', import.meta.url).href,
+  arrowRight: new URL('../../../assets/arrow/arrow_right.svg', import.meta.url).href,
 };
 
 const exitTextureKeys = ['exit-1', 'exit-2', 'exit-3', 'exit-4'];
+const arrowTextureKeys: Record<Direction, string> = {
+  up: 'arrow-up',
+  down: 'arrow-down',
+  left: 'arrow-left',
+  right: 'arrow-right',
+};
 
 function toPixel(position: { x: number; y: number }) {
   return {
@@ -26,6 +36,7 @@ function toPixel(position: { x: number; y: number }) {
 
 export class GameScene extends Phaser.Scene {
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
+  private readonly controlSprites = new Map<string, Phaser.GameObjects.Image>();
   private exitSprite?: Phaser.GameObjects.Image;
   private unsubscribe?: () => void;
 
@@ -41,6 +52,10 @@ export class GameScene extends Phaser.Scene {
     this.load.image(exitTextureKeys[1], textureUrls.exit2);
     this.load.image(exitTextureKeys[2], textureUrls.exit3);
     this.load.image(exitTextureKeys[3], textureUrls.exit4);
+    this.load.image(arrowTextureKeys.up, textureUrls.arrowUp);
+    this.load.image(arrowTextureKeys.down, textureUrls.arrowDown);
+    this.load.image(arrowTextureKeys.left, textureUrls.arrowLeft);
+    this.load.image(arrowTextureKeys.right, textureUrls.arrowRight);
   }
 
   create(): void {
@@ -89,10 +104,42 @@ export class GameScene extends Phaser.Scene {
 
     this.syncEntity(game.entities[game.playerId]);
 
+    this.syncControls(entities);
+
     for (const [id, sprite] of this.entitySprites) {
       if (!game.entities[id]) {
         sprite.destroy();
         this.entitySprites.delete(id);
+      }
+    }
+  }
+
+  private syncControls(entities: Entity[]): void {
+    const active = new Set<string>();
+
+    for (const entity of entities) {
+      const position = toPixel(entity.position);
+      const count = entity.controls.length;
+
+      entity.controls.forEach((direction, index) => {
+        const key = `${entity.id}:${direction}`;
+        const offset = (index - (count - 1) / 2) * 18;
+        let sprite = this.controlSprites.get(key);
+
+        if (!sprite) {
+          sprite = this.add.image(position.x, position.y, arrowTextureKeys[direction]);
+          this.controlSprites.set(key, sprite);
+        }
+
+        sprite.setDisplaySize(20, 20).setPosition(position.x + offset, position.y - 28).setDepth(1);
+        active.add(key);
+      });
+    }
+
+    for (const [key, sprite] of this.controlSprites) {
+      if (!active.has(key)) {
+        sprite.destroy();
+        this.controlSprites.delete(key);
       }
     }
   }
