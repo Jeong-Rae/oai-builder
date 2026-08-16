@@ -1,5 +1,6 @@
 import type { Direction, Position, TileKind } from '../game/domain/types';
 import { directionFromKey } from '../game/input';
+import { playerTextureForMove, playerTextureKeys } from '../game/playerAppearance';
 import { createGameStoreFromMap, type GameStoreApi } from '../game/store/gameStore';
 import type { MapObjectKind } from '../map/mapDocument';
 import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type EditorTool } from './editorStore';
@@ -9,6 +10,10 @@ const assetUrls = {
   tile: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
   box: new URL('../../assets/box/box.3d.96.png', import.meta.url).href,
   player: new URL('../../assets/playable/player_default.96.png', import.meta.url).href,
+  playerUp: new URL('../../assets/playable/player_up.96.png', import.meta.url).href,
+  playerDown: new URL('../../assets/playable/player_down.96.png', import.meta.url).href,
+  playerLeft: new URL('../../assets/playable/player_left.96.png', import.meta.url).href,
+  playerRight: new URL('../../assets/playable/player_right.96.png', import.meta.url).href,
   goalClosed: new URL('../../assets/goal/goal_1f.96.png', import.meta.url).href,
   goalOpen: new URL('../../assets/goal/goal_4f.96.png', import.meta.url).href,
   up: new URL('../../assets/arrow/arrow_up.svg', import.meta.url).href,
@@ -23,6 +28,10 @@ const assetLabels: Record<AssetKey, string> = {
   tile: '필드 타일',
   box: '일반 오브젝트',
   player: '플레이어',
+  playerUp: '플레이어 위 방향',
+  playerDown: '플레이어 아래 방향',
+  playerLeft: '플레이어 왼쪽 방향',
+  playerRight: '플레이어 오른쪽 방향',
   goalClosed: '닫힌 골',
   goalOpen: '열린 골',
   up: '위 방향 표시',
@@ -66,6 +75,14 @@ const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
   normal: 'box',
   handoff: 'box',
   swapper: 'box',
+};
+
+const playerAssetByTexture: Record<string, AssetKey> = {
+  [playerTextureKeys.default]: 'player',
+  [playerTextureKeys.up]: 'playerUp',
+  [playerTextureKeys.down]: 'playerDown',
+  [playerTextureKeys.left]: 'playerLeft',
+  [playerTextureKeys.right]: 'playerRight',
 };
 
 const rejectionMessages = {
@@ -192,6 +209,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   let testStore: GameStoreApi | undefined;
   let unsubscribeTest: (() => void) | undefined;
   let testMoved = false;
+  let playerAsset: AssetKey = 'player';
 
   function showNotice(message: string): void {
     notice.textContent = message;
@@ -202,6 +220,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     unsubscribeTest = undefined;
     testStore = undefined;
     testMoved = false;
+    playerAsset = 'player';
   }
 
   function createTestState(): void {
@@ -329,7 +348,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
           ? `<img class="goal-asset" src="${game?.goalOpened ? resolveAsset('goalOpen') : resolveAsset('goalClosed')}" alt="" />`
           : '';
         const objectAsset = object
-          ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? resolveAsset('player') : resolveAsset('box')}" alt="" />${object.kind === 'handoff' ? '<b>H</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
+          ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? resolveAsset(playerAsset) : resolveAsset('box')}" alt="" />${object.kind === 'handoff' ? '<b>H</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
           : '';
         const controls = object?.controls.map((direction) =>
           `<img class="control-asset control-${direction}" src="${resolveAsset(direction)}" alt="${direction}" />`,
@@ -378,7 +397,10 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     if (!direction || !testStore) return;
 
     event.preventDefault();
+    const game = testStore.getState().game;
     const decision = testStore.getState().dispatch({ type: 'player/move', direction });
+    playerAsset = playerAssetByTexture[playerTextureForMove(game, direction, decision)];
+    render();
     if (decision.rejectedBy) showNotice(rejectionMessages[decision.rejectedBy]);
     else showNotice('테스트 상태만 이동했습니다. 맵 배치는 그대로 유지됩니다.');
   }
