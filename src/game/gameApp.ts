@@ -4,10 +4,11 @@ import mapText from '../../maps/001.map?raw';
 import { parseMap } from '../map/mapDocument';
 import { createPhaserGame } from './createGame';
 import { createGameStoreFromMap, type GameStoreApi } from './store/gameStore';
-import { stageGroups, stagesPerGroup, type Stage } from './stages';
+import { nextStage, stageGroups, stagesPerGroup, type Stage } from './stages';
 
 export class GameApp {
   private game?: Phaser.Game;
+  private unsubscribe?: () => void;
   private selectedStage: Stage = { group: 0, index: 0 };
 
   constructor(private readonly root: HTMLElement) {
@@ -15,6 +16,8 @@ export class GameApp {
   }
 
   private clear(): void {
+    this.unsubscribe?.();
+    this.unsubscribe = undefined;
     this.game?.destroy(true);
     this.game = undefined;
     this.root.replaceChildren();
@@ -84,8 +87,33 @@ export class GameApp {
     this.clear();
     const play = document.createElement('main');
     play.className = 'game-play';
-    play.innerHTML = `<p class="game-play__label">${stageGroups[this.selectedStage.group]} · ${this.selectedStage.index + 1}</p><div class="game-canvas" data-game-canvas></div>`;
+    play.innerHTML = `<p class="game-play__label">${stageGroups[this.selectedStage.group]} · ${this.selectedStage.index + 1}</p><nav class="game-nav"></nav><div class="game-canvas" data-game-canvas></div>`;
+    play.querySelector<HTMLElement>('.game-nav')!.append(this.button('홈으로', this.showHome));
     this.root.append(play);
     this.game = createPhaserGame(play.querySelector<HTMLElement>('[data-game-canvas]')!, store);
+    this.unsubscribe = store.subscribe((state, previous) => {
+      if (state.game.status === 'completed' && previous.game.status !== 'completed') this.showComplete();
+    });
+  }
+
+  private showComplete(): void {
+    this.clear();
+    const view = this.shell('스테이지 클리어!');
+    const burst = document.createElement('div');
+    burst.className = 'celebration';
+    for (let index = 0; index < 18; index += 1) {
+      const spark = document.createElement('i');
+      spark.style.setProperty('--angle', `${index * 20}deg`);
+      spark.style.setProperty('--delay', `${(index % 3) * 70}ms`);
+      burst.append(spark);
+    }
+    const actions = document.createElement('div');
+    actions.className = 'stage-grid';
+    actions.append(
+      this.button('다음 단계', () => void this.play(nextStage(this.selectedStage))),
+      this.button('다시해보기', () => void this.play(this.selectedStage)),
+      this.button('홈으로', this.showHome),
+    );
+    view.append(burst, actions);
   }
 }

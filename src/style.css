@@ -50,6 +50,35 @@ button:focus-visible { background: #81f0c5; outline: 3px solid #fff; outline-off
 
 .stage-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
 
-.game-play { display: grid; gap: 0.75rem; justify-items: center; }
+.game-play { display: grid; gap: 0.75rem; justify-items: center; position: relative; }
 
 .game-canvas { box-shadow: 0 0 0 6px #d7f9ff, 0 0 0 10px #263947; }
+
+.game-nav { position: absolute; right: 0; top: 0; z-index: 2; }
+
+.game-nav button { font-size: 0.75rem; padding: 0.55rem 0.75rem; }
+
+.celebration { height: 9rem; overflow: hidden; position: relative; width: 100%; }
+
+.celebration i {
+  animation: burst 900ms cubic-bezier(.1,.7,.2,1) infinite both;
+  animation-delay: var(--delay);
+  background: #81f0c5;
+  border-radius: 50%;
+  height: 0.8rem;
+  left: calc(50% - 0.4rem);
+  position: absolute;
+  top: calc(50% - 0.4rem);
+  transform: rotate(var(--angle)) translateY(-0.25rem);
+  width: 0.8rem;
+}
+
+@keyframes burst {
+  0% { opacity: 0; transform: rotate(var(--angle)) translateY(-0.25rem) scale(0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--angle)) translateY(-5rem) scale(1.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration i { animation: none; transform: rotate(var(--angle)) translateY(-4rem); }
+}

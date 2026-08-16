@@ -84,6 +84,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
+    if (this.store.getState().game.status === 'completed') return;
+
     const direction = directionFromKey(event.key);
 
     if (!direction) {
