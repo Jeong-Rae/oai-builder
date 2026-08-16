@@ -373,18 +373,28 @@ describe('스와퍼', () => {
 });
 
 describe('Goal 열림', () => {
-  it('플레이어가 goal의 인접 칸에 도착하면 한 번 열린다', () => {
-    const state = createStateWithPlayer({ x: 6, y: 0 });
-    const firstDecision = decide(state, { type: 'player/move', direction: 'right' });
-    const opened = evolveAll(state, firstDecision.events);
-    const secondDecision = decide(opened, { type: 'player/move', direction: 'left' });
+  it('플레이어가 goal의 대각선 칸에 도착하면 열린다', () => {
+    const state = createStateWithPlayer({ x: 6, y: 1 });
+    const decision = decide(state, { type: 'player/move', direction: 'right' });
+    const opened = evolveAll(state, decision.events);
 
-    expect(firstDecision.events.map((event) => event.type)).toEqual([
+    expect(decision.events.map((event) => event.type)).toEqual([
       'entity/moved',
       'goal/opened',
     ]);
     expect(opened.goalOpened).toBe(true);
-    expect(secondDecision.events.map((event) => event.type)).toEqual(['entity/moved']);
+  });
+
+  it('플레이어가 goal의 주변 3×3 범위를 벗어나면 닫힌다', () => {
+    const state = { ...createStateWithPlayer({ x: 7, y: 1 }), goalOpened: true };
+    const decision = decide(state, { type: 'player/move', direction: 'left' });
+    const closed = evolveAll(state, decision.events);
+
+    expect(decision.events.map((event) => event.type)).toEqual([
+      'entity/moved',
+      'goal/closed',
+    ]);
+    expect(closed.goalOpened).toBe(false);
   });
 });
 
@@ -397,6 +407,7 @@ describe('출구 도달', () => {
     expect(decision.events.map((event) => event.type)).toEqual([
       'entity/moved',
       'game/completed',
+      'goal/opened',
     ]);
     expect(next.status).toBe('completed');
   });

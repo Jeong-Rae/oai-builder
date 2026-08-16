@@ -77,7 +77,7 @@ export type GameEvent =
       position: Position;
     }
   | {
-      type: 'goal/opened';
+      type: 'goal/opened' | 'goal/closed';
     }
   | {
       type: 'game/completed';

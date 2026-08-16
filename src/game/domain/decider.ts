@@ -56,9 +56,9 @@ function wormholeDestination(state: GameState, position: Position): Position | u
   );
 }
 
-function isAdjacentToGoal(state: GameState, position: Position): boolean {
+function isNearGoal(state: GameState, position: Position): boolean {
   return state.tiles.some((row, y) =>
-    row.some((tile, x) => tile === 'exit' && Math.abs(position.x - x) + Math.abs(position.y - y) === 1),
+    row.some((tile, x) => tile === 'exit' && Math.max(Math.abs(position.x - x), Math.abs(position.y - y)) <= 1),
   );
 }
 
@@ -98,8 +98,11 @@ function moveEvents(state: GameState, entity: Entity, target: Position): GameEve
     events.push({ type: 'game/completed' });
   }
 
-  if (entity.kind === 'player' && !state.goalOpened && isAdjacentToGoal(state, target)) {
-    events.push({ type: 'goal/opened' });
+  if (entity.kind === 'player') {
+    const goalOpened = isNearGoal(state, target);
+    if (goalOpened !== state.goalOpened) {
+      events.push({ type: goalOpened ? 'goal/opened' : 'goal/closed' });
+    }
   }
 
   return events;
@@ -254,7 +257,8 @@ export function evolve(state: GameState, event: GameEvent): GameState {
       };
 
     case 'goal/opened':
-      return { ...state, goalOpened: true };
+    case 'goal/closed':
+      return { ...state, goalOpened: event.type === 'goal/opened' };
 
     case 'game/completed':
       return { ...state, status: 'completed' };

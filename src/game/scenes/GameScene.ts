@@ -45,6 +45,7 @@ export class GameScene extends Phaser.Scene {
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly controlSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileSprites = new Map<string, Phaser.GameObjects.Image>();
+  private goalAnimationTimers: Phaser.Time.TimerEvent[] = [];
   private goalSprite?: Phaser.GameObjects.Image;
   private unsubscribe?: () => void;
 
@@ -220,21 +221,29 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (!game.goalOpened && previous.goalOpened) {
+      this.stopGoalAnimation();
       this.goalSprite?.setTexture(goalTextureKeys[0]);
     }
   }
 
   private playGoalAnimation(): void {
-    goalTextureKeys.forEach((texture, index) => {
+    this.stopGoalAnimation();
+    this.goalAnimationTimers = goalTextureKeys.map((texture, index) =>
       this.time.delayedCall(index * 180, () => {
         this.goalSprite?.setTexture(texture);
-      });
-    });
+      }),
+    );
+  }
+
+  private stopGoalAnimation(): void {
+    this.goalAnimationTimers.forEach((timer) => this.time.removeEvent(timer));
+    this.goalAnimationTimers = [];
   }
 
   private shutdown(): void {
     this.unsubscribe?.();
     this.unsubscribe = undefined;
+    this.stopGoalAnimation();
     this.input.keyboard?.off('keydown', this.handleKeyDown, this);
   }
 }
