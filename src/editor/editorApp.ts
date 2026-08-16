@@ -8,7 +8,7 @@ import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFile
 const assetUrls = {
   tile: new URL('../../assets/tail/tile.96.png', import.meta.url).href,
   box: new URL('../../assets/box/box.3d.96.png', import.meta.url).href,
-  player: new URL('../../assets/playable/playable.96.png', import.meta.url).href,
+  player: new URL('../../assets/playable/player_default.96.png', import.meta.url).href,
   goalClosed: new URL('../../assets/goal/goal_1f.96.png', import.meta.url).href,
   goalOpen: new URL('../../assets/goal/goal_4f.96.png', import.meta.url).href,
   up: new URL('../../assets/arrow/arrow_up.svg', import.meta.url).href,
