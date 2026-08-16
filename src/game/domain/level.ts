@@ -8,14 +8,21 @@ const DEFAULT_BOX_COUNT = 5;
 export interface InitialStateOptions {
   boxCount?: number;
   random?: () => number;
+  tileOverrides?: Array<{ position: Position; kind: TileKind }>;
 }
 
-function createTiles(): TileKind[][] {
-  return Array.from({ length: BOARD_ROWS }, (_, y) =>
+function createTiles(tileOverrides: InitialStateOptions['tileOverrides'] = []): TileKind[][] {
+  const tiles: TileKind[][] = Array.from({ length: BOARD_ROWS }, (_, y) =>
     Array.from({ length: BOARD_COLUMNS }, (_, x) =>
       x === BOARD_COLUMNS - 1 && y === 0 ? 'exit' : 'floor',
     ),
   );
+
+  for (const { position, kind } of tileOverrides) {
+    tiles[position.y][position.x] = kind;
+  }
+
+  return tiles;
 }
 
 function createNormals(boxCount: number, random: () => number): Record<string, Normal> {
@@ -50,11 +57,14 @@ function createNormals(boxCount: number, random: () => number): Record<string, N
 export function createInitialState({
   boxCount = DEFAULT_BOX_COUNT,
   random = Math.random,
+  tileOverrides,
 }: InitialStateOptions = {}): GameState {
+  const tiles = createTiles(tileOverrides);
+
   return {
     columns: BOARD_COLUMNS,
     rows: BOARD_ROWS,
-    tiles: createTiles(),
+    tiles,
     entities: {
       player: {
         id: 'player',
@@ -65,7 +75,11 @@ export function createInitialState({
       ...createNormals(boxCount, random),
     },
     playerId: 'player',
-    plateStates: {},
+    plateStates: Object.fromEntries(
+      tiles.flatMap((row, y) =>
+        row.flatMap((tile, x) => (tile === 'plate' ? [[`${x},${y}`, 'inactive']] : [])),
+      ),
+    ),
     goalOpened: false,
     status: 'playing',
   };

@@ -45,6 +45,26 @@ function isAdjacentToGoal(state: GameState, position: Position): boolean {
   );
 }
 
+function plateEvents(state: GameState, entity: Entity, target: Position): GameEvent[] {
+  if (entity.kind !== 'normal') {
+    return [];
+  }
+
+  const events: GameEvent[] = [];
+  const fromKey = `${entity.position.x},${entity.position.y}`;
+  const targetKey = `${target.x},${target.y}`;
+
+  if (state.tiles[entity.position.y][entity.position.x] === 'plate' && state.plateStates[fromKey] === 'active') {
+    events.push({ type: 'plate/deactivated', position: entity.position });
+  }
+
+  if (state.tiles[target.y][target.x] === 'plate' && state.plateStates[targetKey] === 'inactive') {
+    events.push({ type: 'plate/activated', position: target });
+  }
+
+  return events;
+}
+
 function moveEvents(state: GameState, entity: Entity, target: Position): GameEvent[] {
   const events: GameEvent[] = [
     {
@@ -54,6 +74,8 @@ function moveEvents(state: GameState, entity: Entity, target: Position): GameEve
       to: target,
     },
   ];
+
+  events.push(...plateEvents(state, entity, target));
 
   if (entity.kind === 'player' && state.tiles[target.y][target.x] === 'exit') {
     events.push({ type: 'game/completed' });
@@ -147,6 +169,16 @@ export function evolve(state: GameState, event: GameEvent): GameState {
         },
       };
     }
+
+    case 'plate/activated':
+    case 'plate/deactivated':
+      return {
+        ...state,
+        plateStates: {
+          ...state.plateStates,
+          [`${event.position.x},${event.position.y}`]: event.type === 'plate/activated' ? 'active' : 'inactive',
+        },
+      };
 
     case 'goal/opened':
       return { ...state, goalOpened: true };

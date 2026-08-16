@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { decide, evolveAll } from '../../src/game/domain/decider';
 import { createInitialState } from '../../src/game/domain/level';
-import type { Normal, Position } from '../../src/game/domain/types';
+import type { GameState, Normal, Position } from '../../src/game/domain/types';
 
 function createStateWithPlayer(position: Position) {
   const state = createInitialState({ boxCount: 0 });
@@ -114,6 +114,54 @@ describe('컨트롤 전달', () => {
 
     expect(next.entities.player.position).toEqual({ x: 1, y: 0 });
     expect(next.entities['normal-1'].position).toEqual({ x: 2, y: 1 });
+  });
+});
+
+describe('플레이트', () => {
+  it('일반 오브젝트가 플레이트에 진입하면 활성화한다', () => {
+    const state = createInitialState({
+      boxCount: 0,
+      tileOverrides: [{ position: { x: 2, y: 1 }, kind: 'plate' }],
+    });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, position: { x: 0, y: 1 } },
+        'normal-1': normal('normal-1', { x: 1, y: 1 }),
+      },
+    };
+    const transferred = evolveAll(prepared, decide(prepared, { type: 'player/move', direction: 'right' }).events);
+    const decision = decide(transferred, { type: 'player/move', direction: 'right' });
+    const next = evolveAll(transferred, decision.events);
+
+    expect(decision.events.map((event) => event.type)).toEqual(['entity/moved', 'plate/activated']);
+    expect(next.entities['normal-1'].position).toEqual({ x: 2, y: 1 });
+    expect(next.plateStates['2,1']).toBe('active');
+  });
+
+  it('플레이트를 점유한 일반 오브젝트가 이탈하면 비활성화한다', () => {
+    const state = createInitialState({
+      boxCount: 0,
+      tileOverrides: [{ position: { x: 1, y: 1 }, kind: 'plate' }],
+    });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: {
+          ...state.entities.player,
+          controls: state.entities.player.controls.filter((direction) => direction !== 'right'),
+        },
+        'normal-1': { ...normal('normal-1', { x: 1, y: 1 }), controls: ['right'] },
+      },
+      plateStates: { '1,1': 'active' as const },
+    };
+    const decision = decide(prepared, { type: 'player/move', direction: 'right' });
+    const next = evolveAll(prepared, decision.events);
+
+    expect(decision.events.map((event) => event.type)).toEqual(['entity/moved', 'plate/deactivated']);
+    expect(next.plateStates['1,1']).toBe('inactive');
   });
 });
 

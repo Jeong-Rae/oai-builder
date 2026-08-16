@@ -68,6 +68,10 @@ export type GameEvent =
       toEntityId: string;
     }
   | {
+      type: 'plate/activated' | 'plate/deactivated';
+      position: Position;
+    }
+  | {
       type: 'goal/opened';
     }
   | {
