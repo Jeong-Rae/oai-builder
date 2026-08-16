@@ -1,8 +1,14 @@
 {
+  "type": "module",
   "scripts": {
     "asset:resize": "node scripts/resize-game-asset.mjs",
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "dev": "npm run dev:game",
+    "dev:game": "vite --config vite.game.config.ts",
+    "dev:editor": "vite --config vite.editor.config.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && npm run build:game && npm run build:editor",
+    "build:game": "vite build --config vite.game.config.ts",
+    "build:editor": "vite build --config vite.editor.config.ts",
     "test": "vitest",
     "test:run": "vitest run"
   },

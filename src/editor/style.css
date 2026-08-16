@@ -1,0 +1,13 @@
+:root {
+  background: #080e14;
+  color: #d7f9ff;
+  font-family: monospace;
+}
+
+body {
+  margin: 0;
+}
+
+#app {
+  min-height: 100vh;
+}

@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 
-import { BOARD_COLUMNS, BOARD_ROWS, TILE_SIZE } from './game/domain/level';
-import { GameScene } from './game/scenes/GameScene';
-import './style.css';
+import { BOARD_COLUMNS, BOARD_ROWS, TILE_SIZE } from './domain/level';
+import { GameScene } from './scenes/GameScene';
+import '../style.css';
 
 new Phaser.Game({
   type: Phaser.AUTO,
