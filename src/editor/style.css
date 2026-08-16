@@ -81,6 +81,9 @@ h1 { margin: 0; font-family: Impact, Haettenschweiler, sans-serif; font-size: cl
 .preview-gate img { filter: grayscale(1) brightness(0.58); }
 .tool.active { border-color: var(--cyan); background: var(--cyan); color: #052127; }
 .tool.active .tool-symbol { color: #052127; }
+.bulk-actions { display: grid; gap: 0.45rem; }
+.danger { border-color: #8a4340; color: #ffb7ae; }
+.danger:hover { border-color: var(--red); background: #512927; }
 .asset-lab { display: grid; gap: 0.55rem; }
 .asset-target { display: flex; align-items: center; gap: 0.6rem; min-height: 3.75rem; padding: 0.4rem; border: 1px solid var(--line); background: #0b1b22; }
 .asset-target img { width: 3rem; height: 3rem; object-fit: contain; image-rendering: pixelated; }

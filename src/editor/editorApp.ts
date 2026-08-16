@@ -137,6 +137,15 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
             ${toolButton({ tool: 'select', label: '살펴보기', badge: '+' }, resolveAsset)}
           </div>
         </section>
+
+        <section>
+          <p class="section-label">일괄 수정</p>
+          <div class="bulk-actions">
+            <button type="button" class="quiet" data-action="clear-fields">필드 지우기</button>
+            <button type="button" class="quiet" data-action="clear-objects">오브젝트 지우기</button>
+            <button type="button" class="danger" data-action="reset-map">맵 초기화</button>
+          </div>
+        </section>
       </aside>
 
       <section class="board-stage" aria-label="맵 편집 및 테스트 그리드">
@@ -414,6 +423,24 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     if (state.dirty && !window.confirm('저장하지 않은 맵을 지우고 새 맵을 만들까요?')) return;
     state.newMap(columnsInput.valueAsNumber, rowsInput.valueAsNumber);
     showNotice('새 맵을 만들었습니다. 플레이어와 골을 배치하세요.');
+  });
+
+  root.querySelector('[data-action="clear-fields"]')!.addEventListener('click', () => {
+    if (!window.confirm('모든 필드를 바닥으로 되돌릴까요? 골도 삭제됩니다.')) return;
+    store.getState().clearFields();
+    showNotice('모든 필드를 바닥으로 되돌렸습니다.');
+  });
+
+  root.querySelector('[data-action="clear-objects"]')!.addEventListener('click', () => {
+    if (!window.confirm('배치된 모든 오브젝트를 삭제할까요?')) return;
+    store.getState().clearObjects();
+    showNotice('모든 오브젝트를 삭제했습니다.');
+  });
+
+  root.querySelector('[data-action="reset-map"]')!.addEventListener('click', () => {
+    if (!window.confirm('현재 크기를 유지하고 필드와 오브젝트를 모두 초기화할까요?')) return;
+    store.getState().resetMap();
+    showNotice('맵을 초기화했습니다.');
   });
 
   root.querySelector('[data-action="restart"]')!.addEventListener('click', () => {

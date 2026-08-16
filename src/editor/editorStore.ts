@@ -19,6 +19,9 @@ export interface EditorState {
   tool: EditorTool;
   selected?: Position;
   newMap(columns: number, rows: number): void;
+  clearFields(): void;
+  clearObjects(): void;
+  resetMap(): void;
   resize(columns: number, rows: number): void;
   setTool(tool: EditorTool): void;
   select(position: Position): void;
@@ -75,6 +78,23 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
       if (!Number.isInteger(columns) || columns < 1 || !Number.isInteger(rows) || rows < 1) return;
       const draft = createBlankMap(columns, rows);
       set({ ...changed(draft), selected: undefined });
+    },
+
+    clearFields() {
+      const draft = cloneMap(get().draft);
+      draft.tiles = Array.from({ length: draft.rows }, () => Array<TileKind>(draft.columns).fill('floor'));
+      set({ ...changed(draft), selected: undefined });
+    },
+
+    clearObjects() {
+      const draft = cloneMap(get().draft);
+      draft.objects = [];
+      set({ ...changed(draft), selected: undefined });
+    },
+
+    resetMap() {
+      const { columns, rows } = get().draft;
+      set({ ...changed(createBlankMap(columns, rows)), selected: undefined });
     },
 
     resize(columns, rows) {

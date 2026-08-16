@@ -15,6 +15,26 @@ describe('맵 에디터 저장소', () => {
     expect(store.getState().draft.tiles[0].filter((tile) => tile === 'wormhole')).toHaveLength(2);
     expect(store.getState().draft.tiles[0][2]).toBe('floor');
   });
+
+  it('필드, 오브젝트 및 맵을 각각 초기화한다', () => {
+    const store = createEditorStore(createBlankMap(3, 2));
+    store.getState().setTile({ x: 1, y: 0 }, 'plate');
+    store.getState().setTile({ x: 2, y: 0 }, 'exit');
+    store.getState().placeObject({ x: 0, y: 1 }, 'player');
+    store.getState().placeObject({ x: 1, y: 1 }, 'normal');
+
+    store.getState().clearFields();
+    expect(store.getState().draft.tiles.flat()).toEqual(Array(6).fill('floor'));
+    expect(store.getState().draft.objects).toHaveLength(2);
+
+    store.getState().clearObjects();
+    expect(store.getState().draft.objects).toEqual([]);
+
+    store.getState().setTile({ x: 0, y: 0 }, 'wall');
+    store.getState().placeObject({ x: 1, y: 1 }, 'normal');
+    store.getState().resetMap();
+    expect(store.getState().draft).toEqual(createBlankMap(3, 2));
+  });
   it('맵 확장 시 기존 필드를 유지하고 새 셀을 바닥으로 만든다', () => {
     const store = createEditorStore();
     store.getState().setTile({ x: 1, y: 1 }, 'plate');
