@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 import { TILE_SIZE } from '../domain/level';
 import { directionFromKey } from '../input';
+import { playerTextureForMove, playerTextureKeys } from '../playerAppearance';
 import { gameStore, type GameStoreApi } from '../store/gameStore';
 import type { Direction, Entity, GameState, Position } from '../domain/types';
 import { isGateOpen } from '../domain/decider';
@@ -9,7 +10,11 @@ import { isGateOpen } from '../domain/decider';
 const textureUrls = {
   tile: new URL('../../../assets/tail/tile.96.png', import.meta.url).href,
   box: new URL('../../../assets/box/box.3d.96.png', import.meta.url).href,
-  player: new URL('../../../assets/playable/playable.96.png', import.meta.url).href,
+  playerDefault: new URL('../../../assets/playable/player_default.96.png', import.meta.url).href,
+  playerUp: new URL('../../../assets/playable/player_up.96.png', import.meta.url).href,
+  playerDown: new URL('../../../assets/playable/player_down.96.png', import.meta.url).href,
+  playerLeft: new URL('../../../assets/playable/player_left.96.png', import.meta.url).href,
+  playerRight: new URL('../../../assets/playable/player_right.96.png', import.meta.url).href,
   goal1: new URL('../../../assets/goal/goal_1f.96.png', import.meta.url).href,
   goal2: new URL('../../../assets/goal/goal_2f.96.png', import.meta.url).href,
   goal3: new URL('../../../assets/goal/goal_3f.96.png', import.meta.url).href,
@@ -51,7 +56,11 @@ export class GameScene extends Phaser.Scene {
   preload(): void {
     this.load.image('tile', textureUrls.tile);
     this.load.image('box', textureUrls.box);
-    this.load.image('player', textureUrls.player);
+    this.load.image(playerTextureKeys.default, textureUrls.playerDefault);
+    this.load.image(playerTextureKeys.up, textureUrls.playerUp);
+    this.load.image(playerTextureKeys.down, textureUrls.playerDown);
+    this.load.image(playerTextureKeys.left, textureUrls.playerLeft);
+    this.load.image(playerTextureKeys.right, textureUrls.playerRight);
     this.load.image(goalTextureKeys[0], textureUrls.goal1);
     this.load.image(goalTextureKeys[1], textureUrls.goal2);
     this.load.image(goalTextureKeys[2], textureUrls.goal3);
@@ -93,7 +102,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     event.preventDefault();
-    this.store.getState().dispatch({ type: 'player/move', direction });
+    const game = this.store.getState().game;
+    const decision = this.store.getState().dispatch({ type: 'player/move', direction });
+    this.entitySprites.get(game.playerId)?.setTexture(playerTextureForMove(game, direction, decision));
   }
 
   private findGoal(game: GameState): Position {
@@ -191,7 +202,7 @@ export class GameScene extends Phaser.Scene {
 
   private syncEntity(entity: Entity): void {
     const position = toPixel(entity.position);
-    const texture = entity.kind === 'player' ? 'player' : 'box';
+    const texture = entity.kind === 'player' ? playerTextureKeys.default : 'box';
     let sprite = this.entitySprites.get(entity.id);
 
     if (!sprite) {
