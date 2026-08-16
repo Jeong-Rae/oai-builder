@@ -29,6 +29,8 @@ const fieldTools: Array<ToolOption<TileKind>> = [
   { tool: 'floor', label: '바닥', image: assetUrls.tile },
   { tool: 'wall', label: '벽', image: assetUrls.tile },
   { tool: 'plate', label: '플레이트', image: assetUrls.tile },
+  { tool: 'wormhole', label: '웜홀', image: assetUrls.tile, badge: 'W' },
+  { tool: 'gate', label: '게이트', image: assetUrls.tile, badge: 'G' },
   { tool: 'exit', label: '골', image: assetUrls.goalClosed },
 ];
 
@@ -43,6 +45,7 @@ const rejectionMessages = {
   'out-of-bounds': '보드 밖으로 이동할 수 없습니다.',
   wall: '벽으로 이동할 수 없습니다.',
   fixed: '고정 오브젝트는 직접 이동할 수 없습니다.',
+  occupied: '반대편 웜홀 위치가 점유되어 있습니다.',
 };
 
 function escapeHtml(value: string): string {
@@ -190,6 +193,14 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     }
     if (fieldTools.some(({ tool }) => tool === state.tool)) {
       if ((state.tool === 'wall' || state.tool === 'blank') && object && !window.confirm(`${object.id}이 제거됩니다. 필드를 변경할까요?`)) return;
+      if (
+        state.tool === 'wormhole'
+        && state.draft.tiles[position.y][position.x] !== 'wormhole'
+        && state.draft.tiles.flat().filter((field) => field === 'wormhole').length >= 2
+      ) {
+        showNotice('웜홀은 두 개까지만 배치할 수 있습니다.');
+        return;
+      }
       state.setTile(position, state.tool as TileKind);
       return;
     }
@@ -212,6 +223,14 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       `${object.position.x},${object.position.y}`,
       object,
     ]));
+    const wormholeLabels = new Map<string, string>();
+    let wormholeIndex = 0;
+    draft.tiles.forEach((row, y) => row.forEach((field, x) => {
+      if (field !== 'wormhole') return;
+      wormholeLabels.set(`${x},${y}`, `W${wormholeIndex + 1}`);
+      wormholeIndex += 1;
+    }));
+    const gateOpen = game ? Object.values(game.plateStates).some((plate) => plate === 'active') : false;
 
     columnsInput.value = String(draft.columns);
     rowsInput.value = String(draft.rows);
@@ -243,6 +262,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const selected = state.selected?.x === x && state.selected.y === y ? ' selected' : '';
         const field = draft.tiles[y][x];
         const plateActive = field === 'plate' && game?.plateStates[key] === 'active' ? ' plate-active' : '';
+        const gateState = field === 'gate' ? gateOpen ? ' gate-open' : ' gate-closed' : '';
         const label = object ? `${field}, ${object.kind}` : field;
         const goal = field === 'exit'
           ? `<img class="goal-asset" src="${game?.goalOpened ? assetUrls.goalOpen : assetUrls.goalClosed}" alt="" />`
@@ -254,7 +274,10 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
           `<img class="control-asset control-${direction}" src="${assetUrls[direction]}" alt="${direction}" />`,
         ).join('') ?? '';
         const tileAsset = field === 'blank' ? '' : `<img class="tile-asset" src="${assetUrls.tile}" alt="" />`;
-        cells.push(`<button type="button" class="map-cell field-${field}${plateActive}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${objectAsset}<span class="control-assets">${controls}</span></button>`);
+        const fieldBadge = field === 'wormhole'
+          ? `<span class="field-badge wormhole-badge">${wormholeLabels.get(key)}</span>`
+          : field === 'gate' ? '<span class="field-badge gate-badge">G</span>' : '';
+        cells.push(`<button type="button" class="map-cell field-${field}${plateActive}${gateState}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${fieldBadge}${objectAsset}<span class="control-assets">${controls}</span></button>`);
       }
     }
     grid.innerHTML = cells.join('');

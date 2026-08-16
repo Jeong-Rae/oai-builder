@@ -5,6 +5,16 @@ import { createGameStoreFromMap } from '../../src/game/store/gameStore';
 import { createBlankMap } from '../../src/map/mapDocument';
 
 describe('맵 에디터 저장소', () => {
+  it('웜홀을 두 개까지만 배치한다', () => {
+    const store = createEditorStore();
+
+    store.getState().setTile({ x: 0, y: 0 }, 'wormhole');
+    store.getState().setTile({ x: 1, y: 0 }, 'wormhole');
+    store.getState().setTile({ x: 2, y: 0 }, 'wormhole');
+
+    expect(store.getState().draft.tiles[0].filter((tile) => tile === 'wormhole')).toHaveLength(2);
+    expect(store.getState().draft.tiles[0][2]).toBe('floor');
+  });
   it('맵 확장 시 기존 필드를 유지하고 새 셀을 바닥으로 만든다', () => {
     const store = createEditorStore();
     store.getState().setTile({ x: 1, y: 1 }, 'plate');

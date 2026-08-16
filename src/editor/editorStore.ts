@@ -105,6 +105,11 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
     setTile(position, kind) {
       const draft = cloneMap(get().draft);
       if (!isInside(position, draft.columns, draft.rows)) return;
+      if (
+        kind === 'wormhole'
+        && draft.tiles[position.y][position.x] !== 'wormhole'
+        && draft.tiles.flat().filter((tile) => tile === 'wormhole').length >= 2
+      ) return;
 
       if (kind === 'exit') {
         draft.tiles = draft.tiles.map((row) => row.map((tile) => tile === 'exit' ? 'floor' : tile));

@@ -4,6 +4,7 @@ import { TILE_SIZE } from '../domain/level';
 import { directionFromKey } from '../input';
 import { gameStore, type GameStoreApi } from '../store/gameStore';
 import type { Direction, Entity, GameState, Position } from '../domain/types';
+import { isGateOpen } from '../domain/decider';
 
 const textureUrls = {
   tile: new URL('../../../assets/tail/tile.96.png', import.meta.url).href,
@@ -127,7 +128,11 @@ export class GameScene extends Phaser.Scene {
           ? 0x526477
           : tile === 'plate'
             ? game.plateStates[key] === 'active' ? 0x5ee6a8 : 0xd5a84c
-            : tile === 'exit' ? 0x87b7ff : 0xffffff;
+            : tile === 'exit'
+              ? 0x87b7ff
+              : tile === 'wormhole'
+                ? 0x9b7cff
+                : tile === 'gate' ? isGateOpen(game) ? 0x5ee6a8 : 0x526477 : 0xffffff;
         sprite.setTint(tint);
       }
     }

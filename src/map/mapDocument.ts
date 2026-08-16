@@ -28,7 +28,7 @@ export type MapResult =
   | { ok: true; map: MapDocument }
   | { ok: false; errors: MapError[] };
 
-const tileKinds: TileKind[] = ['blank', 'floor', 'wall', 'plate', 'exit'];
+const tileKinds: TileKind[] = ['blank', 'floor', 'wall', 'plate', 'exit', 'wormhole', 'gate'];
 const objectKinds: MapObjectKind[] = ['player', 'normal', 'handoff', 'swapper'];
 
 export function createBlankMap(columns = 9, rows = 9): MapDocument {
@@ -82,6 +82,7 @@ export function validateMap(value: unknown): MapResult {
   const validColumns = Number.isInteger(columns) && Number(columns) > 0 ? Number(columns) : 0;
   const validRows = Number.isInteger(rows) && Number(rows) > 0 ? Number(rows) : 0;
   let exitCount = 0;
+  let wormholeCount = 0;
 
   if (!Array.isArray(tiles) || tiles.length !== validRows) {
     errors.push({ code: 'tiles', message: '필드 행 수가 맵의 행 수와 일치해야 합니다.' });
@@ -97,6 +98,8 @@ export function validateMap(value: unknown): MapResult {
           errors.push({ code: 'tile-kind', message: `지원하지 않는 필드입니다: ${String(tile)}`, position: { x, y } });
         } else if (tile === 'exit') {
           exitCount += 1;
+        } else if (tile === 'wormhole') {
+          wormholeCount += 1;
         }
       });
     });
@@ -104,6 +107,10 @@ export function validateMap(value: unknown): MapResult {
 
   if (exitCount !== 1) {
     errors.push({ code: 'exit-count', message: '골은 정확히 하나여야 합니다.' });
+  }
+
+  if (wormholeCount !== 0 && wormholeCount !== 2) {
+    errors.push({ code: 'wormhole-count', message: '웜홀은 사용하지 않거나 정확히 두 개여야 합니다.' });
   }
 
   let playerCount = 0;

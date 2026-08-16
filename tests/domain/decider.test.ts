@@ -175,6 +175,90 @@ describe('플레이트', () => {
   });
 });
 
+describe('웜홀', () => {
+  it('웜홀에 진입하면 고정된 반대편 웜홀로 이동한다', () => {
+    const state = createInitialState({
+      boxCount: 0,
+      tileOverrides: [
+        { position: { x: 2, y: 1 }, kind: 'wormhole' },
+        { position: { x: 6, y: 4 }, kind: 'wormhole' },
+      ],
+    });
+    const prepared = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, position: { x: 1, y: 1 } },
+      },
+    };
+    const decision = decide(prepared, { type: 'player/move', direction: 'right' });
+    const next = evolveAll(prepared, decision.events);
+
+    expect(decision.events[0]).toEqual({
+      type: 'entity/moved',
+      entityId: 'player',
+      from: { x: 1, y: 1 },
+      to: { x: 6, y: 4 },
+    });
+    expect(next.entities.player.position).toEqual({ x: 6, y: 4 });
+  });
+
+  it('반대편 웜홀을 다른 오브젝트가 점유하면 진입을 거절한다', () => {
+    const state = createStateWithNormals({ x: 1, y: 1 }, [normal('normal-1', { x: 6, y: 4 })]);
+    state.tiles[1][2] = 'wormhole';
+    state.tiles[4][6] = 'wormhole';
+    const decision = decide(state, { type: 'player/move', direction: 'right' });
+
+    expect(decision).toEqual({ events: [], rejectedBy: 'occupied' });
+  });
+});
+
+describe('게이트', () => {
+  it('활성 플레이트가 없으면 닫히고 하나라도 있으면 열린다', () => {
+    const state = createInitialState({
+      boxCount: 0,
+      tileOverrides: [
+        { position: { x: 0, y: 0 }, kind: 'plate' },
+        { position: { x: 2, y: 1 }, kind: 'gate' },
+      ],
+    });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, position: { x: 1, y: 1 } },
+      },
+    };
+
+    expect(decide(prepared, { type: 'player/move', direction: 'right' }).rejectedBy).toBe('wall');
+
+    const opened = { ...prepared, plateStates: { '0,0': 'active' as const } };
+    const next = evolveAll(opened, decide(opened, { type: 'player/move', direction: 'right' }).events);
+    expect(next.entities.player.position).toEqual({ x: 2, y: 1 });
+  });
+
+  it('플레이어가 플레이트를 점유해도 게이트를 열지 않는다', () => {
+    const state = createInitialState({
+      boxCount: 0,
+      tileOverrides: [
+        { position: { x: 1, y: 1 }, kind: 'plate' },
+        { position: { x: 2, y: 1 }, kind: 'gate' },
+      ],
+    });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, position: { x: 0, y: 1 } },
+      },
+    };
+    const onPlate = evolveAll(prepared, decide(prepared, { type: 'player/move', direction: 'right' }).events);
+
+    expect(onPlate.plateStates['1,1']).toBe('inactive');
+    expect(decide(onPlate, { type: 'player/move', direction: 'right' }).rejectedBy).toBe('wall');
+  });
+});
+
 describe('핸드오프 앵커', () => {
   it('비어 있는 앵커는 전달받은 컨트롤을 보유한다', () => {
     const state = createStateWithPlayer({ x: 1, y: 1 });

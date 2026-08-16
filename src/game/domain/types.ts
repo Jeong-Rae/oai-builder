@@ -5,7 +5,7 @@ export interface Position {
   y: number;
 }
 
-export type TileKind = 'blank' | 'floor' | 'wall' | 'exit' | 'plate';
+export type TileKind = 'blank' | 'floor' | 'wall' | 'exit' | 'plate' | 'wormhole' | 'gate';
 export type PlateState = 'inactive' | 'active';
 
 export interface Player {
@@ -78,7 +78,7 @@ export type GameEvent =
       type: 'game/completed';
     };
 
-export type RejectionReason = 'out-of-bounds' | 'wall' | 'fixed';
+export type RejectionReason = 'out-of-bounds' | 'wall' | 'fixed' | 'occupied';
 
 export interface Decision {
   events: GameEvent[];

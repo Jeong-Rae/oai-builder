@@ -43,6 +43,19 @@ function isBlank(state: GameState, position: Position): boolean {
   return state.tiles[position.y][position.x] === 'blank';
 }
 
+export function isGateOpen(state: GameState): boolean {
+  return Object.values(state.plateStates).some((plate) => plate === 'active');
+}
+
+function wormholeDestination(state: GameState, position: Position): Position | undefined {
+  const wormholes = state.tiles.flatMap((row, y) =>
+    row.flatMap((tile, x) => tile === 'wormhole' ? [{ x, y }] : []),
+  );
+  return wormholes.find((wormhole) =>
+    wormhole.x !== position.x || wormhole.y !== position.y
+  );
+}
+
 function isAdjacentToGoal(state: GameState, position: Position): boolean {
   return state.tiles.some((row, y) =>
     row.some((tile, x) => tile === 'exit' && Math.abs(position.x - x) + Math.abs(position.y - y) === 1),
@@ -115,9 +128,20 @@ export function decide(state: GameState, command: GameCommand): Decision {
     return { events: [], rejectedBy: 'wall' };
   }
 
+  if (state.tiles[target.y][target.x] === 'gate' && !isGateOpen(state)) {
+    return { events: [], rejectedBy: 'wall' };
+  }
+
   const targetEntity = getEntityAt(state, target);
 
   if (!targetEntity) {
+    if (state.tiles[target.y][target.x] === 'wormhole') {
+      const destination = wormholeDestination(state, target);
+      if (!destination || getEntityAt(state, destination)) {
+        return { events: [], rejectedBy: 'occupied' };
+      }
+      return { events: moveEvents(state, owner, destination) };
+    }
     return { events: moveEvents(state, owner, target) };
   }
 

@@ -59,6 +59,22 @@ describe('맵 문서', () => {
     }
   });
 
+  it('웜홀은 없거나 정확히 두 개일 때만 허용한다', () => {
+    const one = validMap();
+    one.tiles[1][2] = 'wormhole';
+    const two = validMap();
+    two.tiles[1][1] = 'wormhole';
+    two.tiles[1][2] = 'wormhole';
+    const three = validMap();
+    three.tiles[0][0] = 'wormhole';
+    three.tiles[1][1] = 'wormhole';
+    three.tiles[1][2] = 'wormhole';
+
+    expect(validateMap(one).ok).toBe(false);
+    expect(validateMap(two).ok).toBe(true);
+    expect(validateMap(three).ok).toBe(false);
+  });
+
   it('잘못된 JSON과 지원하지 않는 버전을 구분한다', () => {
     const invalidJson = parseMap('{');
     const unsupported = parseMap(JSON.stringify({ ...validMap(), version: 2 }));
