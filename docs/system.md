@@ -18,6 +18,19 @@ Phaser: Scene lifecycle, input, assets, sprites, animation, rendering
 - Phaser objects such as sprites, keyboard handlers, and tweens must never be stored in Zustand.
 - `GameScene` keeps an `EntityId -> Phaser Sprite` mapping and synchronizes sprites from the store.
 - A `GameScene` subscription is disposed when the scene shuts down.
+- The game app and editor app have independent HTML and TypeScript entry points.
+- The game app never imports editor-only modules. The editor reuses the game domain and Phaser runtime for live tests.
+
+## Applications and deployment
+
+```text
+apps/game    -> dist/game    -> game subdomain
+apps/editor  -> dist/editor  -> editor subdomain
+```
+
+- `npm run dev:game` and `npm run dev:editor` start each app independently.
+- `npm run build:game` and `npm run build:editor` create independently deployable artifacts.
+- `npm run build` type-checks the repository and builds both artifacts.
 
 ## Domain model
 
@@ -28,6 +41,9 @@ Phaser: Scene lifecycle, input, assets, sprites, animation, rendering
 - `floor`, `wall`, `exit`, and `plate` are tile kinds. Plates are stored as `inactive` or `active` by tile coordinate.
 - Entities are held in `Record<EntityId, Entity>`.
 - Entities do not call each other directly. Board interactions are decided centrally from the complete state.
+- A versioned `MapDocument` is the shared, editable level definition. It contains dimensions, tiles, and initial object positions but no mutable play state.
+- A live test creates a new game store from a `MapDocument`; movement during the test never changes the editor draft.
+- Version 1 `.map` files are UTF-8 JSON documents with `version`, `columns`, `rows`, `tiles`, and `objects` keys.
 
 ## State transition
 
@@ -55,9 +71,25 @@ keyboard input
 ## Module layout
 
 ```text
+apps/
+├─ game/
+│  ├─ index.html
+│  └─ main.ts
+└─ editor/
+   ├─ index.html
+   └─ main.ts
+
 src/
-├─ main.ts
+├─ map/
+│  └─ mapDocument.ts
+├─ editor/
+│  ├─ main.ts
+│  ├─ editorApp.ts
+│  ├─ editorStore.ts
+│  └─ mapFiles.ts
 └─ game/
+   ├─ main.ts
+   ├─ createGame.ts
    ├─ domain/
    │  ├─ types.ts
    │  ├─ level.ts
@@ -88,5 +120,5 @@ src/
 ## Deferred decisions
 
 - The final win condition beyond the documented player-arrives-at-exit animation.
-- Wall rendering, level data, and solvable box placement.
+- Dedicated wall, plate, handoff, and swapper art assets, and solvable map validation.
 - Movement tweening, sound, undo/redo, level progression, and persistent event history.
