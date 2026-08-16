@@ -230,7 +230,6 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     testStore = createGameStoreFromMap(state.draft);
     unsubscribeTest = testStore.subscribe(() => {
       testMoved = true;
-      render();
     });
   }
 
