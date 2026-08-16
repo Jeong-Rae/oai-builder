@@ -1,6 +1,5 @@
 import type Phaser from 'phaser';
 
-import mapText from '../../maps/001.map?raw';
 import { parseMap } from '../map/mapDocument';
 import { createPhaserGame } from './createGame';
 import { createGameStoreFromMap, type GameStoreApi } from './store/gameStore';
@@ -72,7 +71,9 @@ export class GameApp {
     loading.append(document.createTextNode('맵을 불러오는 중…'));
 
     try {
-      const result = parseMap(mapText);
+      const response = await fetch(new URL('../../maps/001.map', import.meta.url));
+      if (!response.ok) throw new Error('맵을 불러올 수 없습니다.');
+      const result = parseMap(await response.text());
       if (!result.ok) throw new Error('맵을 불러올 수 없습니다.');
       this.startGame(createGameStoreFromMap(result.map));
     } catch (error) {
