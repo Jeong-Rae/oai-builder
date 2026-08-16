@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* CONTROL Resourcebook — Toss (TDS) derived tokens */
+  --color-surface: var(--surface);
+  --color-body: var(--body);
+  --color-weak: var(--weak-bg);
+  --color-weak-foreground: var(--weak-fg);
+  --color-danger: var(--danger);
+  --color-panel: var(--panel);
+
+  --font-sans: var(--font-noto-sans-kr), 'Pretendard', -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+:root {
+  color-scheme: light;
+
+  --primary: #3182f6;
+  --primary-hover: #2272eb;
+  --primary-foreground: #ffffff;
+
+  --background: #ffffff;
+  --foreground: #191f28;
+  --body: #4e5968;
+  --muted-foreground: #8b95a1;
+  --muted: #f2f4f6;
+  --surface: #f2f4f6;
+  --panel: #fbfcfd;
+  --border: #e5e8eb;
+  --input: #e5e8eb;
+  --ring: #3182f6;
+
+  --card: #ffffff;
+  --card-foreground: #191f28;
+  --popover: #ffffff;
+  --popover-foreground: #191f28;
+  --secondary: #f2f4f6;
+  --secondary-foreground: #191f28;
+  --accent: #e8f3ff;
+  --accent-foreground: #1b64da;
+
+  --weak-bg: #e8f3ff;
+  --weak-fg: #1b64da;
+  --danger: #e42939;
+  --destructive: #e42939;
+
+  --radius: 10px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    line-height: 1.55;
+  }
+  code {
+    font-family: var(--font-mono);
+  }
+}
