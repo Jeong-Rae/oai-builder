@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { createInitialState } from '../../src/game/domain/level';
 import { createGameStore } from '../../src/game/store/gameStore';
+import type { GameState } from '../../src/game/domain/types';
 
 describe('게임 저장소', () => {
   it('이동 명령은 게임 상태를 한 번만 갱신한다', () => {
@@ -50,5 +52,34 @@ describe('게임 저장소', () => {
 
     expect(store.getState().game.entities.player.position).toEqual({ x: 0, y: 8 });
     expect(store.getState().game.status).toBe('playing');
+  });
+
+  it('이동과 플레이트 활성화는 한 번의 상태 갱신으로 적용한다', () => {
+    const store = createGameStore({ boxCount: 0 });
+    const game = createInitialState({
+      boxCount: 0,
+      tileOverrides: [{ position: { x: 2, y: 1 }, kind: 'plate' }],
+    });
+    const prepared: GameState = {
+      ...game,
+      entities: {
+        ...game.entities,
+        player: { ...game.entities.player, position: { x: 0, y: 1 } },
+        'normal-1': { id: 'normal-1', kind: 'normal', position: { x: 1, y: 1 }, controls: [] },
+      },
+    };
+    store.setState({ game: prepared });
+    store.getState().dispatch({ type: 'player/move', direction: 'right' });
+
+    let notificationCount = 0;
+    const unsubscribe = store.subscribe(() => {
+      notificationCount += 1;
+    });
+    const decision = store.getState().dispatch({ type: 'player/move', direction: 'right' });
+    unsubscribe();
+
+    expect(decision.events.map((event) => event.type)).toEqual(['entity/moved', 'plate/activated']);
+    expect(notificationCount).toBe(1);
+    expect(store.getState().game.plateStates['2,1']).toBe('active');
   });
 });
