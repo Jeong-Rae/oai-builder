@@ -102,11 +102,33 @@ function escapeHtml(value: string): string {
   })[character]!);
 }
 
-function toolButton({ tool, label, asset, badge }: ToolOption<EditorTool>, resolveAsset: (key: AssetKey) => string): string {
-  const visual = asset
-    ? `<span class="tool-visual preview-${tool}"><img data-asset-key="${asset}" src="${resolveAsset(asset)}" alt="" />${badge ? `<b>${badge}</b>` : ''}</span>`
-    : `<span class="tool-symbol">${badge ?? ''}</span>`;
-  return `<button class="tool" type="button" data-tool="${tool}">${visual}<span>${label}</span></button>`;
+function cloneTemplate(id: string): DocumentFragment {
+  const template = document.getElementById(id) as HTMLTemplateElement | null;
+  if (!template) throw new Error(`${id} 템플릿을 찾을 수 없습니다.`);
+  return template.content.cloneNode(true) as DocumentFragment;
+}
+
+function toolButton({ tool, label, asset, badge }: ToolOption<EditorTool>, resolveAsset: (key: AssetKey) => string): HTMLButtonElement {
+  const fragment = cloneTemplate('editor-tool-template');
+  const button = fragment.querySelector<HTMLButtonElement>('.tool')!;
+  const visual = fragment.querySelector<HTMLElement>('[data-asset-visual]')!;
+  const symbol = fragment.querySelector<HTMLElement>('[data-symbol]')!;
+
+  button.dataset.tool = tool;
+  fragment.querySelector<HTMLElement>('[data-label]')!.textContent = label;
+  visual.hidden = !asset;
+  symbol.hidden = Boolean(asset);
+  symbol.textContent = badge ?? '';
+
+  if (asset) {
+    visual.classList.add(`preview-${tool}`);
+    const image = fragment.querySelector<HTMLImageElement>('[data-tool-image]')!;
+    image.dataset.assetKey = asset;
+    image.src = resolveAsset(asset);
+    fragment.querySelector<HTMLElement>('[data-tool-badge]')!.textContent = badge ?? '';
+  }
+
+  return button;
 }
 
 export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEditorStore()): () => void {
@@ -123,93 +145,13 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     return image;
   }));
 
-  root.innerHTML = `
-    <div class="editor-shell">
-      <header class="masthead">
-        <div>
-          <p class="eyebrow">SOKOBAN / MAP LAB</p>
-          <h1>퍼즐 설계 도면</h1>
-        </div>
-        <div class="document-state" data-document-state></div>
-      </header>
-
-      <aside class="panel controls-panel" aria-label="맵 편집 도구">
-        <section>
-          <p class="section-label">보드 크기</p>
-          <div class="size-controls">
-            <label>열 N<input name="columns" type="number" min="1" value="9" /></label>
-            <span>×</span>
-            <label>행 M<input name="rows" type="number" min="1" value="9" /></label>
-          </div>
-          <div class="button-row">
-            <button type="button" data-action="resize">크기 적용</button>
-            <button type="button" class="quiet" data-action="new">새 맵</button>
-          </div>
-        </section>
-
-        <section>
-          <p class="section-label">필드</p>
-          <div class="tool-grid">${fieldTools.map((tool) => toolButton(tool, resolveAsset)).join('')}</div>
-        </section>
-
-        <section>
-          <p class="section-label">오브젝트</p>
-          <div class="tool-grid">${objectTools.map((tool) => toolButton(tool, resolveAsset)).join('')}</div>
-        </section>
-
-        <section>
-          <p class="section-label">수정</p>
-          <div class="tool-grid">
-            ${toolButton({ tool: 'erase', label: '지우기', badge: '×' }, resolveAsset)}
-            ${toolButton({ tool: 'select', label: '살펴보기', badge: '+' }, resolveAsset)}
-          </div>
-        </section>
-
-        <section>
-          <p class="section-label">일괄 수정</p>
-          <div class="bulk-actions">
-            <button type="button" class="quiet" data-action="clear-fields">필드 지우기</button>
-            <button type="button" class="quiet" data-action="clear-objects">오브젝트 지우기</button>
-            <button type="button" class="danger" data-action="reset-map">맵 초기화</button>
-          </div>
-        </section>
-      </aside>
-
-      <section class="board-stage" aria-label="맵 편집 및 테스트 그리드">
-        <div class="board-meta">
-          <span data-board-size></span>
-          <span class="live-state" data-live-state></span>
-          <span data-current-tool></span>
-        </div>
-        <div class="board-scroll" tabindex="0" aria-label="방향키로 즉시 테스트"><div class="map-grid" data-grid></div></div>
-        <p class="notice" role="status" data-notice></p>
-      </section>
-
-      <aside class="panel inspector-panel">
-        <section>
-          <p class="section-label">선택한 셀</p>
-          <div class="inspector" data-inspector>셀을 선택하세요.</div>
-        </section>
-        <section>
-          <p class="section-label">검증 및 테스트</p>
-          <div data-validation></div>
-          <button type="button" class="restart-button" data-action="restart">배치 상태로 되돌리기</button>
-        </section>
-        <section class="file-actions">
-          <p class="section-label">파일</p>
-          <button type="button" data-action="export">.map 내보내기</button>
-          <label class="file-button">.map 불러오기<input type="file" accept=".map" data-map-input /></label>
-        </section>
-        <section class="asset-lab">
-          <p class="section-label">에셋 시험</p>
-          <div class="asset-target" data-asset-target></div>
-          <label class="file-button" data-asset-input-label>이미지 적용<input type="file" accept="image/*" data-asset-input /></label>
-          <button type="button" class="quiet" data-action="reset-assets">기본 에셋으로 복원</button>
-          <p class="asset-status" data-asset-status>브라우저에서만 적용되며 새로고침하면 사라집니다.</p>
-        </section>
-      </aside>
-    </div>
-  `;
+  root.replaceChildren(cloneTemplate('editor-shell-template'));
+  root.querySelector<HTMLElement>('[data-field-tools]')!.append(...fieldTools.map((tool) => toolButton(tool, resolveAsset)));
+  root.querySelector<HTMLElement>('[data-object-tools]')!.append(...objectTools.map((tool) => toolButton(tool, resolveAsset)));
+  root.querySelector<HTMLElement>('[data-edit-tools]')!.append(
+    toolButton({ tool: 'erase', label: '지우기', badge: '×' }, resolveAsset),
+    toolButton({ tool: 'select', label: '살펴보기', badge: '+' }, resolveAsset),
+  );
 
   const grid = root.querySelector<HTMLElement>('[data-grid]')!;
   const board = root.querySelector<HTMLElement>('.board-scroll')!;
