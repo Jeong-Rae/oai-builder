@@ -82,7 +82,7 @@ src/
 - The conversion script supports `32`, `36`, `48`, and `64` pixels: `npm run asset:resize -- assets/tail/tile.origin.png 36`.
 - A source must be a `1254×1254` image. The script crops equal pixels from all four sides to obtain a size divisible by the target, then applies nearest-neighbor scaling.
 - Generated files are never overwritten unless `--force` is supplied. Existing `_1254` source names remain supported during the naming transition.
-- The default runtime asset size is `36`; `GameScene` loads the corresponding `.36.png` files.
+- The default runtime asset size is `48`; `GameScene` loads the corresponding `.48.png` files.
 
 ## Deferred decisions
 
