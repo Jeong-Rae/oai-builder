@@ -25,7 +25,7 @@ export interface EditorState {
   resize(columns: number, rows: number): void;
   setTool(tool: EditorTool): void;
   select(position: Position): void;
-  setTile(position: Position, kind: TileKind): void;
+  setTile(position: Position, kind: TileKind): boolean;
   placeObject(position: Position, kind: MapObjectKind): void;
   erase(position: Position): void;
   replaceMap(map: MapDocument): void;
@@ -124,12 +124,12 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
 
     setTile(position, kind) {
       const draft = cloneMap(get().draft);
-      if (!isInside(position, draft.columns, draft.rows)) return;
+      if (!isInside(position, draft.columns, draft.rows)) return false;
       if (
         kind === 'wormhole'
         && draft.tiles[position.y][position.x] !== 'wormhole'
         && draft.tiles.flat().filter((tile) => tile === 'wormhole').length >= 2
-      ) return;
+      ) return false;
 
       if (kind === 'exit') {
         draft.tiles = draft.tiles.map((row) => row.map((tile) => tile === 'exit' ? 'floor' : tile));
@@ -142,6 +142,7 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
         );
       }
       set(changed(draft));
+      return true;
     },
 
     placeObject(position, kind) {

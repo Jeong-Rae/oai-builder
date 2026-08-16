@@ -8,9 +8,9 @@ describe('맵 에디터 저장소', () => {
   it('웜홀을 두 개까지만 배치한다', () => {
     const store = createEditorStore();
 
-    store.getState().setTile({ x: 0, y: 0 }, 'wormhole');
-    store.getState().setTile({ x: 1, y: 0 }, 'wormhole');
-    store.getState().setTile({ x: 2, y: 0 }, 'wormhole');
+    expect(store.getState().setTile({ x: 0, y: 0 }, 'wormhole')).toBe(true);
+    expect(store.getState().setTile({ x: 1, y: 0 }, 'wormhole')).toBe(true);
+    expect(store.getState().setTile({ x: 2, y: 0 }, 'wormhole')).toBe(false);
 
     expect(store.getState().draft.tiles[0].filter((tile) => tile === 'wormhole')).toHaveLength(2);
     expect(store.getState().draft.tiles[0][2]).toBe('floor');
