@@ -1,6 +1,6 @@
 import type { Direction, Position, TileKind } from '../game/domain/types';
 import { isGateOpen } from '../game/domain/decider';
-import { directionFromKey } from '../game/input';
+import { directionFromKey, isUndoShortcut } from '../game/input';
 import { playerTextureForMove, playerTextureKeys } from '../game/playerAppearance';
 import { createGameStoreFromMap, type GameStoreApi } from '../game/store/gameStore';
 import type { MapObjectKind } from '../map/mapDocument';
@@ -180,8 +180,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     const state = store.getState();
     if (state.errors.length > 0) return;
     testStore = createGameStoreFromMap(state.draft);
-    unsubscribeTest = testStore.subscribe(() => {
-      testMoved = true;
+    unsubscribeTest = testStore.subscribe((state) => {
+      testMoved = state.eventStream.length > 0;
     });
   }
 
@@ -345,6 +345,18 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   async function handleKeyDown(event: KeyboardEvent): Promise<void> {
     const target = event.target;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return;
+    if (isUndoShortcut(event) && testStore) {
+      event.preventDefault();
+      if (testStore.getState().undo()) {
+        playerAsset = 'player';
+        render();
+        showNotice('최근 테스트 이동을 되돌렸습니다.');
+      } else {
+        showNotice('되돌릴 테스트 이동이 없습니다.');
+      }
+      return;
+    }
+
     const direction = directionFromKey(event.key);
     if (!direction || !testStore) return;
 
