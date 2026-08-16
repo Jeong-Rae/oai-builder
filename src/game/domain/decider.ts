@@ -39,7 +39,7 @@ function isWall(state: GameState, position: Position): boolean {
   return state.tiles[position.y][position.x] === 'wall';
 }
 
-function isAdjacentToExit(state: GameState, position: Position): boolean {
+function isAdjacentToGoal(state: GameState, position: Position): boolean {
   return state.tiles.some((row, y) =>
     row.some((tile, x) => tile === 'exit' && Math.abs(position.x - x) + Math.abs(position.y - y) === 1),
   );
@@ -59,8 +59,8 @@ function moveEvents(state: GameState, entity: Entity, target: Position): GameEve
     events.push({ type: 'game/completed' });
   }
 
-  if (entity.kind === 'player' && !state.gateOpened && isAdjacentToExit(state, target)) {
-    events.push({ type: 'gate/opened' });
+  if (entity.kind === 'player' && !state.goalOpened && isAdjacentToGoal(state, target)) {
+    events.push({ type: 'goal/opened' });
   }
 
   return events;
@@ -148,8 +148,8 @@ export function evolve(state: GameState, event: GameEvent): GameState {
       };
     }
 
-    case 'gate/opened':
-      return { ...state, gateOpened: true };
+    case 'goal/opened':
+      return { ...state, goalOpened: true };
 
     case 'game/completed':
       return { ...state, status: 'completed' };

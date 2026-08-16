@@ -117,8 +117,8 @@ describe('컨트롤 전달', () => {
   });
 });
 
-describe('Gate 열림', () => {
-  it('플레이어가 gate의 인접 칸에 도착하면 한 번 열린다', () => {
+describe('Goal 열림', () => {
+  it('플레이어가 goal의 인접 칸에 도착하면 한 번 열린다', () => {
     const state = createStateWithPlayer({ x: 6, y: 0 });
     const firstDecision = decide(state, { type: 'player/move', direction: 'right' });
     const opened = evolveAll(state, firstDecision.events);
@@ -126,9 +126,9 @@ describe('Gate 열림', () => {
 
     expect(firstDecision.events.map((event) => event.type)).toEqual([
       'entity/moved',
-      'gate/opened',
+      'goal/opened',
     ]);
-    expect(opened.gateOpened).toBe(true);
+    expect(opened.goalOpened).toBe(true);
     expect(secondDecision.events.map((event) => event.type)).toEqual(['entity/moved']);
   });
 });

@@ -65,7 +65,7 @@ export function createInitialState({
       ...createBoxes(boxCount, random),
     },
     playerId: 'player',
-    gateOpened: false,
+    goalOpened: false,
     status: 'playing',
   };
 }

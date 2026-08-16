@@ -9,17 +9,17 @@ const textureUrls = {
   tile: new URL('../../../assets/tail/tile.96.png', import.meta.url).href,
   box: new URL('../../../assets/box/box.3d.96.png', import.meta.url).href,
   player: new URL('../../../assets/playable/playable.96.png', import.meta.url).href,
-  exit1: new URL('../../../assets/gate/gate_1f.96.png', import.meta.url).href,
-  exit2: new URL('../../../assets/gate/gate_2f.96.png', import.meta.url).href,
-  exit3: new URL('../../../assets/gate/gate_3f.96.png', import.meta.url).href,
-  exit4: new URL('../../../assets/gate/gate_4f.96.png', import.meta.url).href,
+  goal1: new URL('../../../assets/goal/goal_1f.96.png', import.meta.url).href,
+  goal2: new URL('../../../assets/goal/goal_2f.96.png', import.meta.url).href,
+  goal3: new URL('../../../assets/goal/goal_3f.96.png', import.meta.url).href,
+  goal4: new URL('../../../assets/goal/goal_4f.96.png', import.meta.url).href,
   arrowUp: new URL('../../../assets/arrow/arrow_up.svg', import.meta.url).href,
   arrowDown: new URL('../../../assets/arrow/arrow_down.svg', import.meta.url).href,
   arrowLeft: new URL('../../../assets/arrow/arrow_left.svg', import.meta.url).href,
   arrowRight: new URL('../../../assets/arrow/arrow_right.svg', import.meta.url).href,
 };
 
-const exitTextureKeys = ['exit-1', 'exit-2', 'exit-3', 'exit-4'];
+const goalTextureKeys = ['goal-1', 'goal-2', 'goal-3', 'goal-4'];
 const arrowTextureKeys: Record<Direction, string> = {
   up: 'arrow-up',
   down: 'arrow-down',
@@ -37,7 +37,7 @@ function toPixel(position: { x: number; y: number }) {
 export class GameScene extends Phaser.Scene {
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly controlSprites = new Map<string, Phaser.GameObjects.Image>();
-  private exitSprite?: Phaser.GameObjects.Image;
+  private goalSprite?: Phaser.GameObjects.Image;
   private unsubscribe?: () => void;
 
   constructor() {
@@ -48,10 +48,10 @@ export class GameScene extends Phaser.Scene {
     this.load.image('tile', textureUrls.tile);
     this.load.image('box', textureUrls.box);
     this.load.image('player', textureUrls.player);
-    this.load.image(exitTextureKeys[0], textureUrls.exit1);
-    this.load.image(exitTextureKeys[1], textureUrls.exit2);
-    this.load.image(exitTextureKeys[2], textureUrls.exit3);
-    this.load.image(exitTextureKeys[3], textureUrls.exit4);
+    this.load.image(goalTextureKeys[0], textureUrls.goal1);
+    this.load.image(goalTextureKeys[1], textureUrls.goal2);
+    this.load.image(goalTextureKeys[2], textureUrls.goal3);
+    this.load.image(goalTextureKeys[3], textureUrls.goal4);
     this.load.image(arrowTextureKeys.up, textureUrls.arrowUp);
     this.load.image(arrowTextureKeys.down, textureUrls.arrowDown);
     this.load.image(arrowTextureKeys.left, textureUrls.arrowLeft);
@@ -68,9 +68,9 @@ export class GameScene extends Phaser.Scene {
 
     const game = gameStore.getState().game;
 
-    const exitPosition = toPixel({ x: BOARD_COLUMNS - 1, y: 0 });
-    this.exitSprite = this.add
-      .image(exitPosition.x, exitPosition.y, exitTextureKeys[game.gateOpened ? 3 : 0])
+    const goalPosition = toPixel({ x: BOARD_COLUMNS - 1, y: 0 });
+    this.goalSprite = this.add
+      .image(goalPosition.x, goalPosition.y, goalTextureKeys[game.goalOpened ? 3 : 0])
       .setDisplaySize(TILE_SIZE, TILE_SIZE);
 
     this.syncEntities(game);
@@ -78,7 +78,7 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown', this.handleKeyDown, this);
     this.unsubscribe = gameStore.subscribe((state, previous) => {
       this.syncEntities(state.game);
-      this.syncExit(state.game, previous.game);
+      this.syncGoal(state.game, previous.game);
     });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
@@ -158,20 +158,20 @@ export class GameScene extends Phaser.Scene {
     sprite.setPosition(position.x, position.y);
   }
 
-  private syncExit(game: GameState, previous: GameState): void {
-    if (game.gateOpened && !previous.gateOpened) {
-      this.playExitAnimation();
+  private syncGoal(game: GameState, previous: GameState): void {
+    if (game.goalOpened && !previous.goalOpened) {
+      this.playGoalAnimation();
     }
 
-    if (!game.gateOpened && previous.gateOpened) {
-      this.exitSprite?.setTexture(exitTextureKeys[0]);
+    if (!game.goalOpened && previous.goalOpened) {
+      this.goalSprite?.setTexture(goalTextureKeys[0]);
     }
   }
 
-  private playExitAnimation(): void {
-    exitTextureKeys.forEach((texture, index) => {
+  private playGoalAnimation(): void {
+    goalTextureKeys.forEach((texture, index) => {
       this.time.delayedCall(index * 180, () => {
-        this.exitSprite?.setTexture(texture);
+        this.goalSprite?.setTexture(texture);
       });
     });
   }

@@ -29,7 +29,7 @@ export interface GameState {
   tiles: TileKind[][];
   entities: Record<string, Entity>;
   playerId: 'player';
-  gateOpened: boolean;
+  goalOpened: boolean;
   status: 'playing' | 'completed';
 }
 
@@ -52,7 +52,7 @@ export type GameEvent =
       toEntityId: string;
     }
   | {
-      type: 'gate/opened';
+      type: 'goal/opened';
     }
   | {
       type: 'game/completed';
