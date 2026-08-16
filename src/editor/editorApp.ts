@@ -1,9 +1,11 @@
 import type { Direction, GameState, Position, TileKind } from '../game/domain/types';
 import { isGateOpen } from '../game/domain/decider';
+import { findPath, type PathResult } from '../game/domain/pathfinder';
+import { createGameStateFromMap } from '../game/domain/level';
 import { directionFromKey, isUndoShortcut } from '../game/input';
 import { playerTextureForMove, playerTextureKeys } from '../game/playerAppearance';
 import { createGameStoreFromMap, type GameStoreApi } from '../game/store/gameStore';
-import type { MapObjectKind } from '../map/mapDocument';
+import { serializeMap, type MapObjectKind } from '../map/mapDocument';
 import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type EditorTool } from './editorStore';
 import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFiles';
 
@@ -137,6 +139,8 @@ const rejectionMessages = {
   occupied: '반대편 웜홀 위치가 점유되어 있습니다.',
 };
 
+const directionSymbols: Record<Direction, string> = { up: '↑', down: '↓', left: '←', right: '→' };
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"]/g, (character) => ({
     '&': '&amp;',
@@ -221,12 +225,18 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   let playerAsset: AssetKey = 'playerDefault';
   let goalFrame = 1;
   let goalAnimationTimer: number | undefined;
+  let pathResult: PathResult | undefined;
+  const pathCache = new Map<string, PathResult | null>();
+  let playbackRun = 0;
+  let playbackActive = false;
 
   function showNotice(message: string): void {
     notice.textContent = message;
   }
 
   function stopTest(): void {
+    playbackRun += 1;
+    playbackActive = false;
     unsubscribeTest?.();
     unsubscribeTest = undefined;
     testStore = undefined;
@@ -254,8 +264,9 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     nextFrame();
   }
 
-  function createTestState(): void {
+  function createTestState(clearPath = true): void {
     stopTest();
+    if (clearPath) pathResult = undefined;
     const state = store.getState();
     if (state.errors.length > 0) return;
     testStore = createGameStoreFromMap(state.draft);
@@ -316,6 +327,16 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       `${object.position.x},${object.position.y}`,
       object,
     ]));
+    const pathOverlay = new Map<string, string[]>();
+    const addPathOverlay = (position: Position, content: string) => {
+      const key = `${position.x},${position.y}`;
+      pathOverlay.set(key, [...(pathOverlay.get(key) ?? []), content]);
+    };
+    pathResult?.steps.forEach((step) => step.moves.forEach((move) => {
+      addPathOverlay(move.from, `<span class="path-arrow" title="${move.step}회 ${directionSymbols[step.direction]}">${directionSymbols[step.direction]}</span>`);
+      if (move.wormhole) addPathOverlay(move.wormhole, '<span class="path-wormhole" title="웜홀 이동">↝</span>');
+      addPathOverlay(move.to, `<span class="path-step" title="${move.step}회">${move.step}</span>`);
+    }));
     columnsInput.value = String(draft.columns);
     rowsInput.value = String(draft.rows);
     root.querySelector<HTMLElement>('[data-board-size]')!.textContent = `${draft.columns} × ${draft.rows}`;
@@ -380,7 +401,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         ).join('') ?? '';
         const asset = assetForField(field, game, key);
         const tileAsset = asset ? `<img class="tile-asset" src="${resolveAsset(asset)}" alt="" />` : '';
-        cells.push(`<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${objectAsset}<span class="control-assets">${controls}</span></button>`);
+        const overlay = pathOverlay.get(key)?.join('') ?? '';
+        cells.push(`<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${objectAsset}<span class="path-overlay">${overlay}</span><span class="control-assets">${controls}</span></button>`);
       }
     }
     retainedPlayer?.remove();
@@ -416,6 +438,24 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
 
     root.querySelector<HTMLButtonElement>('[data-action="restart"]')!.disabled = !game;
     root.querySelector<HTMLButtonElement>('[data-action="export"]')!.disabled = state.errors.length > 0;
+    const findPathButton = root.querySelector<HTMLButtonElement>('[data-action="find-path"]')!;
+    findPathButton.disabled = state.errors.length > 0;
+    root.querySelector<HTMLButtonElement>('[data-action="play-path"]')!.disabled = !pathResult || playbackActive;
+    const pathOutput = root.querySelector<HTMLElement>('[data-path-result]')!;
+    pathOutput.textContent = pathResult
+      ? `${pathResult.steps.length}회 · ${pathResult.steps.map((step) => directionSymbols[step.direction]).join(' ')}${playbackActive ? ' · 재생 중' : ''}`
+      : '';
+  }
+
+  async function applyTestMove(direction: Direction): Promise<boolean> {
+    await playerAssetsReady;
+    if (!testStore) return false;
+    const game = testStore.getState().game;
+    const decision = testStore.getState().dispatch({ type: 'player/move', direction });
+    playerAsset = playerAssetByTexture[playerTextureForMove(game, direction, decision)];
+    render();
+    if (decision.rejectedBy) showNotice(rejectionMessages[decision.rejectedBy]);
+    return !decision.rejectedBy;
   }
 
   async function handleKeyDown(event: KeyboardEvent): Promise<void> {
@@ -437,14 +477,9 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     if (!direction || !testStore) return;
 
     event.preventDefault();
-    await playerAssetsReady;
-    if (!testStore) return;
-    const game = testStore.getState().game;
-    const decision = testStore.getState().dispatch({ type: 'player/move', direction });
-    playerAsset = playerAssetByTexture[playerTextureForMove(game, direction, decision)];
-    render();
-    if (decision.rejectedBy) showNotice(rejectionMessages[decision.rejectedBy]);
-    else showNotice('테스트 상태만 이동했습니다. 맵 배치는 그대로 유지됩니다.');
+    playbackRun += 1;
+    playbackActive = false;
+    if (await applyTestMove(direction)) showNotice('테스트 상태만 이동했습니다. 맵 배치는 그대로 유지됩니다.');
   }
 
   root.querySelectorAll<HTMLElement>('[data-tool]').forEach((button) => {
@@ -517,6 +552,38 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     render();
     showNotice('현재 맵 초안의 배치 상태로 되돌렸습니다.');
     board.focus();
+  });
+
+  root.querySelector('[data-action="find-path"]')!.addEventListener('click', () => {
+    const state = store.getState();
+    if (state.errors.length > 0) return;
+    const mapKey = serializeMap(state.draft);
+    const cached = pathCache.get(mapKey);
+    pathResult = cached === undefined
+      ? findPath(createGameStateFromMap(state.draft))
+      : cached ?? undefined;
+    if (cached === undefined) pathCache.set(mapKey, pathResult ?? null);
+    render();
+    showNotice(pathResult ? `최소 ${pathResult.steps.length}회 경로를 표시했습니다.` : '골에 도달하는 경로가 없습니다.');
+  });
+
+  root.querySelector('[data-action="play-path"]')!.addEventListener('click', async () => {
+    if (!pathResult || playbackActive) return;
+    createTestState(false);
+    const run = ++playbackRun;
+    playbackActive = true;
+    render();
+
+    for (const step of pathResult.steps) {
+      if (run !== playbackRun || !(await applyTestMove(step.direction))) break;
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 280));
+    }
+
+    if (run === playbackRun) {
+      playbackActive = false;
+      render();
+      showNotice('최소 경로 재생을 완료했습니다.');
+    }
   });
 
   root.querySelector('[data-action="export"]')!.addEventListener('click', () => {

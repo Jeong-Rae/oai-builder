@@ -121,6 +121,15 @@ h1 { margin: 0; font-family: Impact, Haettenschweiler, sans-serif; font-size: cl
 .valid { color: #65dca5; font-size: 0.82rem; }
 .error-list { display: grid; gap: 0.45rem; margin: 0; padding-left: 1.1rem; color: var(--red); font-size: 0.76rem; }
 .restart-button { width: 100%; margin-top: 0.7rem; padding: 0.65rem; border-color: var(--cyan); }
+.path-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-top: 0.45rem; }
+.pathfind-button, .pathplay-button { padding: 0.65rem 0.35rem; }
+.pathfind-button { border-color: var(--amber); color: var(--amber); }
+.pathplay-button { border-color: var(--cyan); color: var(--cyan); }
+.path-result { min-height: 1.25rem; margin-top: 0.5rem; color: var(--amber); font: 0.76rem/1.45 "SFMono-Regular", Consolas, monospace; word-spacing: 0.2em; }
+.path-overlay { position: absolute; z-index: 2; inset: 2px; display: flex; flex-wrap: wrap; align-content: space-between; justify-content: space-between; gap: 1px; pointer-events: none; }
+.path-arrow, .path-step, .path-wormhole { display: grid; place-items: center; min-width: 1rem; height: 1rem; padding: 0 0.16rem; border: 1px solid #f3b84a; border-radius: 999px; background: rgba(7, 23, 29, 0.84); color: #ffe1a1; font: 700 0.62rem/1 monospace; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); }
+.path-step { border-color: var(--cyan); color: var(--cyan); }
+.path-wormhole { border-style: dashed; color: #d6aaff; }
 .file-actions { display: grid; gap: 0.55rem; }
 .file-actions .section-label { margin-bottom: 0.2rem; }
 .file-actions button, .file-button { display: block; width: 100%; padding: 0.72rem; text-align: center; }
