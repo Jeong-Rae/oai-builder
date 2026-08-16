@@ -4,10 +4,10 @@ import process from 'node:process';
 import sharp from 'sharp';
 
 const SOURCE_SIZE = 1254;
-const SUPPORTED_SIZES = new Set([32, 36, 48, 64]);
+const SUPPORTED_SIZES = new Set([32, 36, 48, 64, 96]);
 
 function usage() {
-  return '사용법: npm run asset:resize -- <원본 PNG> <32|36|48|64> [--force]';
+  return '사용법: npm run asset:resize -- <원본 PNG> <32|36|48|64|96> [--force]';
 }
 
 function outputPathFor(sourcePath, size) {

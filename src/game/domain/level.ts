@@ -1,8 +1,8 @@
 import type { Box, GameState, Position, TileKind } from './types';
 
-export const BOARD_COLUMNS = 16;
-export const BOARD_ROWS = 16;
-export const TILE_SIZE = 48;
+export const BOARD_COLUMNS = 9;
+export const BOARD_ROWS = 9;
+export const TILE_SIZE = 96;
 const DEFAULT_BOX_COUNT = 5;
 
 export interface InitialStateOptions {
