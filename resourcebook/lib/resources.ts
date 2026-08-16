@@ -13,6 +13,12 @@ export interface Story {
   controls: string[]
 }
 
+export interface ResourceFrame {
+  id: string
+  label: string
+  imageUrl: string
+}
+
 export interface MetaChip {
   label: string
   code: string
@@ -87,6 +93,7 @@ export interface Resource {
   meta: MetaChip[]
   hasControlStrip: boolean
   stories: Story[]
+  frames?: ResourceFrame[]
   sections: Section[]
   sources: Source[]
   /** 대표 이미지 (헤더). DB의 hero_image_url 컬럼에서 병합된다. */
@@ -352,6 +359,12 @@ export const SEED_RESOURCES: Resource[] = [
       { label: 'Link', code: 'FIELD-PLATE' },
     ],
     hasControlStrip: false,
+    frames: [
+      { id: 'frame-1', label: '프레임 1', imageUrl: 'https://wfbdauyahltgoqirecql.supabase.co/storage/v1/object/public/resource-images/gate/frames/gate_1f.1254.png' },
+      { id: 'frame-2', label: '프레임 2', imageUrl: 'https://wfbdauyahltgoqirecql.supabase.co/storage/v1/object/public/resource-images/gate/frames/gate_2f.1254.png' },
+      { id: 'frame-3', label: '프레임 3', imageUrl: 'https://wfbdauyahltgoqirecql.supabase.co/storage/v1/object/public/resource-images/gate/frames/gate_3f.1254.png' },
+      { id: 'frame-4', label: '프레임 4', imageUrl: 'https://wfbdauyahltgoqirecql.supabase.co/storage/v1/object/public/resource-images/gate/frames/gate_4f.1254.png' },
+    ],
     stories: [
       { id: 'open', title: '열림', desc: '연결된 플레이트가 모두 활성인 상태.', ref: 'FIELD-GATE / open', state: 'FIELD-GATE / open', controls: [] },
       { id: 'closed', title: '닫힘', desc: '게이트의 closed 상태.', ref: 'FIELD-GATE / closed', state: 'FIELD-GATE / closed', controls: [] },

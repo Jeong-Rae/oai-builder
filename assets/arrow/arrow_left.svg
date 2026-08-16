@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" shape-rendering="crispEdges">
+  <title>CONTROL Left Arrow</title>
+  <desc>Standalone pixel-art floating directional indicator with dark metallic frame and cyan glow.</desc>
+  <g transform="rotate(270 32 32)">
+
+  <!-- 2 px offset pixel shadow -->
+  <g transform="translate(2 2)" fill="#151a1f" opacity="0.95">
+    <path d="M28 6H36V10H40V14H44V18H48V22H52V26H56V34H44V58H20V34H8V26H12V22H16V18H20V14H24V10H28Z"/>
+  </g>
+
+  <!-- outer dark frame -->
+  <path fill="#242b31" d="M28 4H36V8H40V12H44V16H48V20H52V24H56V32H44V56H20V32H8V24H12V20H16V16H20V12H24V8H28Z"/>
+
+  <!-- metal rim -->
+  <path fill="#59616a" d="M28 8H36V12H40V16H44V20H48V24H52V28H40V52H24V28H12V24H16V20H20V16H24V12H28Z"/>
+
+  <!-- light bevel pixels -->
+  <path fill="#87919b" d="M28 8H36V12H40V16H44V20H48V24H44V22H40V18H36V14H28V16H24V20H20V24H16V26H12V24H16V20H20V16H24V12H28Z"/>
+  <rect x="24" y="28" width="4" height="20" fill="#7e8790"/>
+
+  <!-- inner charcoal face -->
+  <path fill="#313940" d="M30 12H34V16H38V20H42V24H46V26H36V50H28V26H18V24H22V20H26V16H30Z"/>
+
+  <!-- cyan luminous arrow core -->
+  <path fill="#35f1f3" d="M30 16H34V20H38V24H42V28H36V46H28V28H22V24H26V20H30Z"/>
+
+  <!-- cyan shadow / depth -->
+  <path fill="#08bfc7" d="M28 28H32V46H28ZM22 24H26V28H22ZM26 20H30V24H26Z"/>
+
+  <!-- white-hot pixel highlights -->
+  <rect x="30" y="18" width="4" height="4" fill="#b9ffff"/>
+  <rect x="32" y="28" width="2" height="12" fill="#a8ffff"/>
+
+  <!-- small HUD accent pixels -->
+  <rect x="16" y="28" width="4" height="4" fill="#39edf0"/>
+  <rect x="44" y="28" width="4" height="4" fill="#39edf0"/>
+
+  </g>
+</svg>

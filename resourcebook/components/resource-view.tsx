@@ -4,6 +4,7 @@ import { SpecTable } from '@/components/spec-table'
 import { InlineCell } from '@/components/inline-cell'
 import { Storybook } from '@/components/storybook'
 import { ResourceEditor } from '@/components/resource-editor'
+import { FrameViewer } from '@/components/frame-viewer'
 
 function SectionBlock({ section }: { section: Section }) {
   return (
@@ -173,6 +174,8 @@ export function ResourceView({ resource }: { resource: Resource }) {
           />
         </div>
       ) : null}
+
+      {resource.frames?.length ? <FrameViewer frames={resource.frames} /> : null}
 
       <div className="mt-[22px] flex flex-wrap gap-2">
         {resource.meta.map((chip, i) => (

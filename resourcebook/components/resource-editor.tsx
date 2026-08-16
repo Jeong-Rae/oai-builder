@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pencil, Trash2, Loader2, X } from 'lucide-react'
-import type { Resource } from '@/lib/resources'
+import type { Resource, ResourceFrame, Section } from '@/lib/resources'
 import { CoreFields, type CoreFieldValues } from '@/components/core-fields'
 import { ImageUpload } from '@/components/image-upload'
+import { FrameEditor } from '@/components/frame-editor'
+import { TableSectionsEditor } from '@/components/table-sections-editor'
 import {
   updateResourceCore,
   updateResourceImages,
@@ -33,6 +35,8 @@ export function ResourceEditor({ resource }: { resource: Resource }) {
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(
     resource.previewImageUrl ?? null,
   )
+  const [frames, setFrames] = useState<ResourceFrame[]>(resource.frames ?? [])
+  const [sections, setSections] = useState<Section[]>(resource.sections)
 
   function openEditor() {
     setValues({
@@ -45,6 +49,8 @@ export function ResourceEditor({ resource }: { resource: Resource }) {
     })
     setHeroImageUrl(resource.heroImageUrl ?? null)
     setPreviewImageUrl(resource.previewImageUrl ?? null)
+    setFrames(resource.frames ?? [])
+    setSections(resource.sections)
     setError(null)
     setOpen(true)
   }
@@ -54,9 +60,13 @@ export function ResourceEditor({ resource }: { resource: Resource }) {
       setError('이름과 식별자는 필수입니다.')
       return
     }
+    if (frames.some((frame) => !frame.label.trim() || !frame.imageUrl)) {
+      setError('모든 프레임에 이름과 이미지를 지정하세요.')
+      return
+    }
     setSaving(true)
     setError(null)
-    const coreResult = await updateResourceCore(resource.slug, values)
+    const coreResult = await updateResourceCore(resource.slug, { ...values, sections, frames })
     if (!coreResult.ok) {
       setError(coreResult.error ?? '저장에 실패했습니다.')
       setSaving(false)
@@ -144,6 +154,9 @@ export function ResourceEditor({ resource }: { resource: Resource }) {
                   onChange={setPreviewImageUrl}
                 />
               </div>
+
+              <FrameEditor frames={frames} slug={resource.slug} onChange={setFrames} />
+              <TableSectionsEditor sections={sections} onChange={setSections} />
 
               {error ? (
                 <p className="mt-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">

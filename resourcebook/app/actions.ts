@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
-import { SEED_RESOURCES, type Resource, type Cell } from "@/lib/resources"
+import { SEED_RESOURCES, type Resource, type Cell, type ResourceFrame, type Section } from "@/lib/resources"
 
 export interface ActionResult {
   ok: boolean
@@ -17,6 +17,11 @@ interface CoreFields {
   navLabel: string
   group: "필드" | "오브젝트"
   hasControlStrip: boolean
+}
+
+interface ResourceContentInput extends CoreFields {
+  sections: Section[]
+  frames: ResourceFrame[]
 }
 
 function slugify(input: string): string {
@@ -73,7 +78,7 @@ async function seedResources(supabase: Awaited<ReturnType<typeof createClient>>)
 /** 기존 리소스의 핵심 필드를 수정한다. */
 export async function updateResourceCore(
   slug: string,
-  fields: CoreFields,
+  fields: ResourceContentInput,
 ): Promise<ActionResult> {
   const client = await getDatabaseClient()
   if ("error" in client) return { ok: false, error: client.error }
@@ -99,6 +104,8 @@ export async function updateResourceCore(
     navLabel: fields.navLabel,
     group: fields.group,
     hasControlStrip: fields.hasControlStrip,
+    sections: fields.sections,
+    frames: fields.frames,
   } as Resource
   nextData = syncAttributeTable(nextData)
 
@@ -177,7 +184,16 @@ export async function createResource(fields: CoreFields): Promise<ActionResult> 
         state: fields.code,
         controls: [],
       },
+      {
+        id: "controls",
+        title: "컨트롤",
+        desc: `${fields.name}에 연결된 컨트롤 상태.`,
+        ref: fields.code,
+        state: `${fields.code} / controls`,
+        controls: [],
+      },
     ],
+    frames: [],
     sections: [
       {
         type: "table",
