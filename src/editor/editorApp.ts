@@ -293,6 +293,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     const visibleObjects = game
       ? Object.values(game.entities)
       : draft.objects.map((object) => ({ ...object, controls: [] as Direction[] }));
+    const player = visibleObjects.find((object) => object.kind === 'player');
+    const retainedPlayer = grid.querySelector<HTMLElement>('.object-player');
     const objectsByPosition = new Map(visibleObjects.map((object) => [
       `${object.position.x},${object.position.y}`,
       object,
@@ -355,7 +357,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const goal = field === 'exit'
           ? `<img class="goal-asset" src="${game?.goalOpened ? resolveAsset('goalOpen') : resolveAsset('goalClosed')}" alt="" />`
           : '';
-        const objectAsset = object
+        const objectAsset = object && !(object.kind === 'player' && retainedPlayer)
           ? `<span class="object-asset object-${object.kind}"><img src="${object.kind === 'player' ? resolveAsset(playerAsset) : resolveAsset('box')}" alt="" />${object.kind === 'anchor' ? '<b>A</b>' : object.kind === 'swapper' ? '<b>S</b>' : ''}</span>`
           : '';
         const controls = object?.controls.map((direction) =>
@@ -368,7 +370,12 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         cells.push(`<button type="button" class="map-cell field-${field}${plateActive}${gateState}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${fieldBadge}${objectAsset}<span class="control-assets">${controls}</span></button>`);
       }
     }
+    retainedPlayer?.remove();
     grid.innerHTML = cells.join('');
+    if (retainedPlayer && player) {
+      retainedPlayer.querySelector('img')!.src = resolveAsset(playerAsset);
+      grid.querySelector<HTMLElement>(`[data-cell][data-x="${player.position.x}"][data-y="${player.position.y}"]`)?.append(retainedPlayer);
+    }
 
     const inspector = root.querySelector<HTMLElement>('[data-inspector]')!;
     if (!state.selected) {
