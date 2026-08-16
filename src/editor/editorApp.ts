@@ -1,4 +1,5 @@
 import type { Direction, Position, TileKind } from '../game/domain/types';
+import { isGateOpen } from '../game/domain/decider';
 import { directionFromKey } from '../game/input';
 import { playerTextureForMove, playerTextureKeys } from '../game/playerAppearance';
 import { createGameStoreFromMap, type GameStoreApi } from '../game/store/gameStore';
@@ -267,15 +268,9 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     }
     if (fieldTools.some(({ tool }) => tool === state.tool)) {
       if ((state.tool === 'wall' || state.tool === 'blank') && object && !window.confirm(`${object.id}이 제거됩니다. 필드를 변경할까요?`)) return;
-      if (
-        state.tool === 'wormhole'
-        && state.draft.tiles[position.y][position.x] !== 'wormhole'
-        && state.draft.tiles.flat().filter((field) => field === 'wormhole').length >= 2
-      ) {
+      if (!state.setTile(position, state.tool as TileKind)) {
         showNotice('웜홀은 두 개까지만 배치할 수 있습니다.');
-        return;
       }
-      state.setTile(position, state.tool as TileKind);
       return;
     }
 
@@ -306,7 +301,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       wormholeLabels.set(`${x},${y}`, `W${wormholeIndex + 1}`);
       wormholeIndex += 1;
     }));
-    const gateOpen = game ? Object.values(game.plateStates).some((plate) => plate === 'active') : false;
+    const gateOpen = game ? isGateOpen(game) : false;
 
     columnsInput.value = String(draft.columns);
     rowsInput.value = String(draft.rows);
