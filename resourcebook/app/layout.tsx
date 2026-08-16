@@ -7,6 +7,8 @@ import { Topbar } from '@/components/topbar'
 import { getAllResources } from '@/lib/queries'
 import { buildNavGroups } from '@/lib/resources'
 
+export const dynamic = 'force-dynamic'
+
 const notoSansKr = Noto_Sans_KR({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],

@@ -28,46 +28,23 @@ function rowToResource(row: ResourceRow): Resource {
   }
 }
 
-/** DB가 비어 있으면 정적 시드 데이터를 최초 1회 삽입한다. */
-async function seedIfEmpty() {
-  const supabase = await createClient()
-  const { count, error } = await supabase
-    .from("resources")
-    .select("id", { count: "exact", head: true })
-
-  if (error) {
-    console.log("[v0] seedIfEmpty count error:", error.message)
-    return
-  }
-  if (count && count > 0) return
-
-  const rows = SEED_RESOURCES.map((r, i) => ({
-    slug: r.slug,
-    group: r.group,
-    sort_order: i,
-    data: r,
-    hero_image_url: null,
-    preview_image_url: null,
-  }))
-
-  const { error: insertError } = await supabase
-    .from("resources")
-    .insert(rows)
-
-  if (insertError) {
-    console.log("[v0] seed insert error:", insertError.message)
-  }
-}
-
 export async function getAllResources(): Promise<Resource[]> {
-  await seedIfEmpty()
-  const supabase = await createClient()
-  const { data, error } = await supabase.from("resources").select("*")
-
-  if (error) {
-    console.log("[v0] getAllResources error:", error.message)
+  let data: ResourceRow[] | null = null
+  let error: { message: string } | null = null
+  try {
+    const result = await (await createClient()).from("resources").select("*")
+    data = result.data as ResourceRow[] | null
+    error = result.error
+  } catch (cause) {
+    console.log("[resourcebook] Supabase is not configured:", cause)
     return SEED_RESOURCES
   }
+
+  if (error) {
+    console.log("[resourcebook] getAllResources error:", error.message)
+    return SEED_RESOURCES
+  }
+  if (!data?.length) return SEED_RESOURCES
 
   const rank = (g: string) => {
     const i = GROUPS.indexOf(g as Resource["group"])
@@ -83,20 +60,27 @@ export async function getAllResources(): Promise<Resource[]> {
 export async function getResourceBySlug(
   slug: string,
 ): Promise<Resource | null> {
-  await seedIfEmpty()
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("resources")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle()
+  let data: ResourceRow | null = null
+  let error: { message: string } | null = null
+  try {
+    const result = await (await createClient())
+      .from("resources")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle()
+    data = result.data as ResourceRow | null
+    error = result.error
+  } catch (cause) {
+    console.log("[resourcebook] Supabase is not configured:", cause)
+    return SEED_RESOURCES.find((resource) => resource.slug === slug) ?? null
+  }
 
   if (error) {
-    console.log("[v0] getResourceBySlug error:", error.message)
-    return null
+    console.log("[resourcebook] getResourceBySlug error:", error.message)
+    return SEED_RESOURCES.find((resource) => resource.slug === slug) ?? null
   }
-  if (!data) return null
-  return rowToResource(data as ResourceRow)
+  if (!data) return SEED_RESOURCES.find((resource) => resource.slug === slug) ?? null
+  return rowToResource(data)
 }
 
 export async function getNavGroups(): Promise<NavGroup[]> {
