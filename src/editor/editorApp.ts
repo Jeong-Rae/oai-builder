@@ -55,6 +55,19 @@ const objectTools: Array<ToolOption<MapObjectKind>> = [
   { tool: 'swapper', label: '스와퍼', asset: 'box', badge: 'S' },
 ];
 
+const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
+  floor: 'tile',
+  wall: 'tile',
+  plate: 'tile',
+  wormhole: 'tile',
+  gate: 'tile',
+  exit: 'goalClosed',
+  player: 'player',
+  normal: 'box',
+  handoff: 'box',
+  swapper: 'box',
+};
+
 const rejectionMessages = {
   'out-of-bounds': '보드 밖으로 이동할 수 없습니다.',
   wall: '벽으로 이동할 수 없습니다.',
@@ -80,6 +93,7 @@ function toolButton({ tool, label, asset, badge }: ToolOption<EditorTool>, resol
 
 export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEditorStore()): () => void {
   let localAssets: Partial<Record<AssetKey, string>> = {};
+  let selectedAsset: AssetKey | undefined = assetsByTool.floor;
   const resolveAsset = (key: AssetKey): string => localAssets[key] ?? assetUrls[key];
 
   root.innerHTML = `
@@ -152,8 +166,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         </section>
         <section class="asset-lab">
           <p class="section-label">에셋 시험</p>
-          <label>적용 대상<select data-asset-target>${Object.entries(assetLabels).map(([key, label]) => `<option value="${key}">${label}</option>`).join('')}</select></label>
-          <label class="file-button">이미지 적용<input type="file" accept="image/*" data-asset-input /></label>
+          <div class="asset-target" data-asset-target></div>
+          <label class="file-button" data-asset-input-label>이미지 적용<input type="file" accept="image/*" data-asset-input /></label>
           <button type="button" class="quiet" data-action="reset-assets">기본 에셋으로 복원</button>
           <p class="asset-status" data-asset-status>브라우저에서만 적용되며 새로고침하면 사라집니다.</p>
         </section>
@@ -277,6 +291,13 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       image.src = resolveAsset(image.dataset.assetKey as AssetKey);
     });
     const appliedAssets = Object.keys(localAssets).map((key) => assetLabels[key as AssetKey]);
+    const assetTarget = root.querySelector<HTMLElement>('[data-asset-target]')!;
+    assetTarget.innerHTML = selectedAsset
+      ? `<img src="${resolveAsset(selectedAsset)}" alt="" /><span><b>${assetLabels[selectedAsset]}</b><small>좌측 도구에서 선택됨</small></span>`
+      : '<span class="asset-target-empty">이미지가 없는 도구입니다</span>';
+    const assetInput = root.querySelector<HTMLInputElement>('[data-asset-input]')!;
+    assetInput.disabled = !selectedAsset;
+    root.querySelector<HTMLElement>('[data-asset-input-label]')!.classList.toggle('disabled', !selectedAsset);
     root.querySelector<HTMLElement>('[data-asset-status]')!.textContent = appliedAssets.length === 0
       ? '브라우저에서만 적용되며 새로고침하면 사라집니다.'
       : `${appliedAssets.join(', ')} 적용 중 · 서버와 .map에는 저장되지 않습니다.`;
@@ -354,7 +375,11 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   }
 
   root.querySelectorAll<HTMLElement>('[data-tool]').forEach((button) => {
-    button.addEventListener('click', () => store.getState().setTool(button.dataset.tool as EditorTool));
+    button.addEventListener('click', () => {
+      const tool = button.dataset.tool as EditorTool;
+      selectedAsset = assetsByTool[tool];
+      store.getState().setTool(tool);
+    });
   });
 
   grid.addEventListener('pointerdown', (event) => {
@@ -429,7 +454,6 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   });
 
   const assetInput = root.querySelector<HTMLInputElement>('[data-asset-input]')!;
-  const assetTarget = root.querySelector<HTMLSelectElement>('[data-asset-target]')!;
   assetInput.addEventListener('change', () => {
     const file = assetInput.files?.[0];
     assetInput.value = '';
@@ -439,7 +463,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       return;
     }
 
-    const key = assetTarget.value as AssetKey;
+    if (!selectedAsset) return;
+    const key = selectedAsset;
     const nextUrl = URL.createObjectURL(file);
     const image = new Image();
     image.onload = () => {

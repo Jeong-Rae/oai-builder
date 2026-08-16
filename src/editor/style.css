@@ -17,7 +17,7 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; min-width: 320px; }
-button, input, select { font: inherit; }
+button, input { font: inherit; }
 button, .file-button {
   border: 1px solid var(--line);
   border-radius: 0.25rem;
@@ -26,7 +26,7 @@ button, .file-button {
   cursor: pointer;
 }
 button:hover, .file-button:hover { border-color: var(--cyan); }
-button:focus-visible, input:focus-visible, select:focus-visible, .file-button:focus-within { outline: 2px solid var(--amber); outline-offset: 2px; }
+button:focus-visible, input:focus-visible, .file-button:focus-within { outline: 2px solid var(--amber); outline-offset: 2px; }
 button:disabled { cursor: not-allowed; opacity: 0.38; }
 
 .editor-shell {
@@ -82,8 +82,12 @@ h1 { margin: 0; font-family: Impact, Haettenschweiler, sans-serif; font-size: cl
 .tool.active { border-color: var(--cyan); background: var(--cyan); color: #052127; }
 .tool.active .tool-symbol { color: #052127; }
 .asset-lab { display: grid; gap: 0.55rem; }
-.asset-lab > label:not(.file-button) { display: grid; gap: 0.28rem; color: var(--muted); font-size: 0.76rem; }
-.asset-lab select { width: 100%; border: 1px solid var(--line); border-radius: 0.25rem; padding: 0.45rem; background: #0b1b22; color: var(--ink); }
+.asset-target { display: flex; align-items: center; gap: 0.6rem; min-height: 3.75rem; padding: 0.4rem; border: 1px solid var(--line); background: #0b1b22; }
+.asset-target img { width: 3rem; height: 3rem; object-fit: contain; image-rendering: pixelated; }
+.asset-target b, .asset-target small { display: block; }
+.asset-target b { font-size: 0.8rem; }
+.asset-target small, .asset-target-empty { color: var(--muted); font-size: 0.7rem; }
+.file-button.disabled { cursor: not-allowed; opacity: 0.38; }
 .asset-status { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.45; }
 
 .board-stage { display: grid; min-width: 0; grid-template-rows: auto 1fr auto; padding: 1rem; overflow: hidden; }
