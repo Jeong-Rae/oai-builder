@@ -24,3 +24,32 @@ body {
 canvas {
   image-rendering: pixelated;
 }
+
+button {
+  border: 0;
+  background: #d7f9ff;
+  color: #080e14;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 0.9rem 1.2rem;
+}
+
+button:hover,
+button:focus-visible { background: #81f0c5; outline: 3px solid #fff; outline-offset: 3px; }
+
+.game-menu,
+.game-play { width: min(92vw, 760px); }
+
+.game-menu { display: grid; gap: 1.25rem; text-align: center; }
+
+.game-menu h1 { color: #fff; font-size: clamp(2rem, 8vw, 4.5rem); margin: 0; }
+
+.game-menu__eyebrow,
+.game-play__label { color: #81f0c5; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.16em; margin: 0; }
+
+.stage-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+
+.game-play { display: grid; gap: 0.75rem; justify-items: center; }
+
+.game-canvas { box-shadow: 0 0 0 6px #d7f9ff, 0 0 0 10px #263947; }

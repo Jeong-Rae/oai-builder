@@ -1,4 +1,3 @@
-import { createPhaserGame } from './createGame';
-import '../style.css';
+import { GameApp } from './gameApp';
 
-createPhaserGame('app');
+new GameApp(document.querySelector<HTMLElement>('#app')!);
