@@ -1,4 +1,5 @@
-import type { GameState, Normal, Position, TileKind } from './types';
+import type { MapDocument } from '../../map/mapDocument';
+import type { Entity, GameState, Normal, Position, TileKind } from './types';
 
 export const BOARD_COLUMNS = 9;
 export const BOARD_ROWS = 9;
@@ -77,6 +78,37 @@ export function createInitialState({
     playerId: 'player',
     plateStates: Object.fromEntries(
       tiles.flatMap((row, y) =>
+        row.flatMap((tile, x) => (tile === 'plate' ? [[`${x},${y}`, 'inactive']] : [])),
+      ),
+    ),
+    goalOpened: false,
+    status: 'playing',
+  };
+}
+
+export function createGameStateFromMap(map: MapDocument): GameState {
+  const entities: Record<string, Entity> = {};
+
+  for (const object of map.objects) {
+    const controls = object.kind === 'player' ? (['up', 'down', 'left', 'right'] as const) : [];
+    const entity = {
+      id: object.kind === 'player' ? 'player' : object.id,
+      kind: object.kind,
+      position: { ...object.position },
+      controls: [...controls],
+    } as Entity;
+
+    entities[entity.id] = entity;
+  }
+
+  return {
+    columns: map.columns,
+    rows: map.rows,
+    tiles: map.tiles.map((row) => [...row]),
+    entities,
+    playerId: 'player',
+    plateStates: Object.fromEntries(
+      map.tiles.flatMap((row, y) =>
         row.flatMap((tile, x) => (tile === 'plate' ? [[`${x},${y}`, 'inactive']] : [])),
       ),
     ),
