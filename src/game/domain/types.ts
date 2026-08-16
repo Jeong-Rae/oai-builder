@@ -68,6 +68,11 @@ export type GameEvent =
       toEntityId: string;
     }
   | {
+      type: 'controls/swapped';
+      firstEntityId: string;
+      secondEntityId: string;
+    }
+  | {
       type: 'plate/activated' | 'plate/deactivated';
       position: Position;
     }

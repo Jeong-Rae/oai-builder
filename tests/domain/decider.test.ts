@@ -333,7 +333,7 @@ describe('스와퍼', () => {
     expect(next.entities['swapper-1'].position).toEqual({ x: 3, y: 1 });
   });
 
-  it('일반 오브젝트가 스와퍼에 접촉하면 두 컨트롤 집합 전체를 교환한다', () => {
+  it('다른 오브젝트가 스와퍼에 접촉하면 두 컨트롤 집합 전체를 교환한다', () => {
     const state = createInitialState({ boxCount: 0 });
     const prepared: GameState = {
       ...state,
@@ -348,12 +348,28 @@ describe('스와퍼', () => {
     const next = evolveAll(prepared, decision.events);
 
     expect(decision.events).toEqual([
-      { type: 'control/transferred', direction: 'right', fromEntityId: 'normal-1', toEntityId: 'swapper-1' },
-      { type: 'control/transferred', direction: 'up', fromEntityId: 'swapper-1', toEntityId: 'normal-1' },
+      { type: 'controls/swapped', firstEntityId: 'normal-1', secondEntityId: 'swapper-1' },
     ]);
     expect(next.entities['normal-1'].position).toEqual({ x: 1, y: 1 });
     expect(next.entities['normal-1'].controls).toEqual(['up']);
     expect(next.entities['swapper-1'].controls).toEqual(['right']);
+  });
+
+  it('스와퍼가 다른 오브젝트에 접촉해도 두 컨트롤 집합 전체를 교환한다', () => {
+    const state = createInitialState({ boxCount: 0 });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, controls: ['down', 'left'] },
+        'normal-1': normal('normal-1', { x: 3, y: 1 }),
+        'swapper-1': swapper('swapper-1', { x: 2, y: 1 }, ['right', 'up']),
+      },
+    };
+    const next = evolveAll(prepared, decide(prepared, { type: 'player/move', direction: 'right' }).events);
+
+    expect(next.entities['swapper-1'].controls).toEqual([]);
+    expect(next.entities['normal-1'].controls).toEqual(['right', 'up']);
   });
 });
 

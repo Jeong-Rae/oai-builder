@@ -164,21 +164,14 @@ export function decide(state: GameState, command: GameCommand): Decision {
     };
   }
 
-  if (owner.kind === 'normal' && targetEntity.kind === 'swapper') {
+  if (owner.kind === 'swapper' || targetEntity.kind === 'swapper') {
     return {
       events: [
-        ...owner.controls.map((direction) => ({
-          type: 'control/transferred' as const,
-          direction,
-          fromEntityId: owner.id,
-          toEntityId: targetEntity.id,
-        })),
-        ...targetEntity.controls.map((direction) => ({
-          type: 'control/transferred' as const,
-          direction,
-          fromEntityId: targetEntity.id,
-          toEntityId: owner.id,
-        })),
+        {
+          type: 'controls/swapped',
+          firstEntityId: owner.id,
+          secondEntityId: targetEntity.id,
+        },
       ],
     };
   }
@@ -236,6 +229,24 @@ export function evolve(state: GameState, event: GameEvent): GameState {
             ...to,
             controls: [...to.controls, event.direction],
           },
+        },
+      };
+    }
+
+    case 'controls/swapped': {
+      const first = state.entities[event.firstEntityId];
+      const second = state.entities[event.secondEntityId];
+
+      if (!first || !second) {
+        throw new Error('컨트롤을 교환할 오브젝트를 찾을 수 없습니다.');
+      }
+
+      return {
+        ...state,
+        entities: {
+          ...state.entities,
+          [first.id]: { ...first, controls: second.controls },
+          [second.id]: { ...second, controls: first.controls },
         },
       };
     }
