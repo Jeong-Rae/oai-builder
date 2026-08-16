@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { decide, evolveAll } from '../../src/game/domain/decider';
 import { createInitialState } from '../../src/game/domain/level';
-import type { GameState, Handoff, Normal, Position } from '../../src/game/domain/types';
+import type { GameState, Handoff, Normal, Position, Swapper } from '../../src/game/domain/types';
 
 function createStateWithPlayer(position: Position) {
   const state = createInitialState({ boxCount: 0 });
@@ -25,6 +25,10 @@ function normal(id: string, position: Position): Normal {
 
 function handoff(id: string, position: Position, controls: Handoff['controls'] = []): Handoff {
   return { id, kind: 'handoff', position, controls };
+}
+
+function swapper(id: string, position: Position, controls: Swapper['controls'] = []): Swapper {
+  return { id, kind: 'swapper', position, controls };
 }
 
 function createStateWithNormals(playerPosition: Position, normals: Normal[]) {
@@ -224,6 +228,31 @@ describe('핸드오프 앵커', () => {
       events: [],
       rejectedBy: 'fixed',
     });
+  });
+});
+
+describe('스와퍼', () => {
+  it('일반 오브젝트가 스와퍼에 접촉하면 두 컨트롤 집합 전체를 교환한다', () => {
+    const state = createInitialState({ boxCount: 0 });
+    const prepared: GameState = {
+      ...state,
+      entities: {
+        ...state.entities,
+        player: { ...state.entities.player, controls: ['down', 'left'] },
+        'normal-1': { ...normal('normal-1', { x: 1, y: 1 }), controls: ['right'] },
+        'swapper-1': swapper('swapper-1', { x: 2, y: 1 }, ['up']),
+      },
+    };
+    const decision = decide(prepared, { type: 'player/move', direction: 'right' });
+    const next = evolveAll(prepared, decision.events);
+
+    expect(decision.events).toEqual([
+      { type: 'control/transferred', direction: 'right', fromEntityId: 'normal-1', toEntityId: 'swapper-1' },
+      { type: 'control/transferred', direction: 'up', fromEntityId: 'swapper-1', toEntityId: 'normal-1' },
+    ]);
+    expect(next.entities['normal-1'].position).toEqual({ x: 1, y: 1 });
+    expect(next.entities['normal-1'].controls).toEqual(['up']);
+    expect(next.entities['swapper-1'].controls).toEqual(['right']);
   });
 });
 

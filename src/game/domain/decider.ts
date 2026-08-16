@@ -136,6 +136,25 @@ export function decide(state: GameState, command: GameCommand): Decision {
     };
   }
 
+  if (owner.kind === 'normal' && targetEntity.kind === 'swapper') {
+    return {
+      events: [
+        ...owner.controls.map((direction) => ({
+          type: 'control/transferred' as const,
+          direction,
+          fromEntityId: owner.id,
+          toEntityId: targetEntity.id,
+        })),
+        ...targetEntity.controls.map((direction) => ({
+          type: 'control/transferred' as const,
+          direction,
+          fromEntityId: targetEntity.id,
+          toEntityId: owner.id,
+        })),
+      ],
+    };
+  }
+
   return {
     events: [
       {
