@@ -1,10 +1,24 @@
 import { describe, expect, it } from 'vitest';
 
 import { createInitialState } from '../../src/game/domain/level';
-import { createGameStore } from '../../src/game/store/gameStore';
+import { createGameStore, createGameStoreFromMap } from '../../src/game/store/gameStore';
 import type { GameState } from '../../src/game/domain/types';
+import { createBlankMap } from '../../src/map/mapDocument';
 
 describe('게임 저장소', () => {
+  it('맵 문서로 생성한 저장소를 같은 맵의 최초 상태로 재시작한다', () => {
+    const map = createBlankMap(3, 2);
+    map.tiles[0][2] = 'exit';
+    map.objects.push({ id: 'player', kind: 'player', position: { x: 0, y: 1 } });
+    const store = createGameStoreFromMap(map);
+
+    store.getState().dispatch({ type: 'player/move', direction: 'right' });
+    expect(store.getState().game.entities.player.position).toEqual({ x: 1, y: 1 });
+
+    store.getState().reset();
+    expect(store.getState().game.entities.player.position).toEqual({ x: 0, y: 1 });
+  });
+
   it('이동 명령은 게임 상태를 한 번만 갱신한다', () => {
     const store = createGameStore({ boxCount: 0 });
     let notificationCount = 0;

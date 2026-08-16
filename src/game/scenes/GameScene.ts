@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 
-import { BOARD_COLUMNS, BOARD_ROWS, TILE_SIZE } from '../domain/level';
+import { TILE_SIZE } from '../domain/level';
 import { directionFromKey } from '../input';
-import { gameStore } from '../store/gameStore';
+import { gameStore, type GameStoreApi } from '../store/gameStore';
 import type { Direction, Entity, GameState, Position } from '../domain/types';
 
 const textureUrls = {
@@ -35,13 +35,16 @@ function toPixel(position: { x: number; y: number }) {
 }
 
 export class GameScene extends Phaser.Scene {
+  private readonly store: GameStoreApi;
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly controlSprites = new Map<string, Phaser.GameObjects.Image>();
+  private readonly tileSprites = new Map<string, Phaser.GameObjects.Image>();
   private goalSprite?: Phaser.GameObjects.Image;
   private unsubscribe?: () => void;
 
-  constructor() {
+  constructor(store: GameStoreApi = gameStore) {
     super('game');
+    this.store = store;
   }
 
   preload(): void {
@@ -59,16 +62,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    for (let y = 0; y < BOARD_ROWS; y += 1) {
-      for (let x = 0; x < BOARD_COLUMNS; x += 1) {
-        const position = toPixel({ x, y });
-        this.add.image(position.x, position.y, 'tile').setDisplaySize(TILE_SIZE, TILE_SIZE);
-      }
-    }
+    const game = this.store.getState().game;
+    this.syncTiles(game);
 
-    const game = gameStore.getState().game;
-
-    const goalPosition = toPixel({ x: BOARD_COLUMNS - 1, y: 0 });
+    const goalPosition = toPixel(this.findGoal(game));
     this.goalSprite = this.add
       .image(goalPosition.x, goalPosition.y, goalTextureKeys[game.goalOpened ? 3 : 0])
       .setDisplaySize(TILE_SIZE, TILE_SIZE);
@@ -76,7 +73,8 @@ export class GameScene extends Phaser.Scene {
     this.syncEntities(game);
 
     this.input.keyboard?.on('keydown', this.handleKeyDown, this);
-    this.unsubscribe = gameStore.subscribe((state, previous) => {
+    this.unsubscribe = this.store.subscribe((state, previous) => {
+      this.syncTiles(state.game);
       this.syncEntities(state.game);
       this.syncGoal(state.game, previous.game);
     });
@@ -92,7 +90,41 @@ export class GameScene extends Phaser.Scene {
     }
 
     event.preventDefault();
-    gameStore.getState().dispatch({ type: 'player/move', direction });
+    this.store.getState().dispatch({ type: 'player/move', direction });
+  }
+
+  private findGoal(game: GameState): Position {
+    for (let y = 0; y < game.rows; y += 1) {
+      const x = game.tiles[y].indexOf('exit');
+      if (x >= 0) {
+        return { x, y };
+      }
+    }
+
+    return { x: 0, y: 0 };
+  }
+
+  private syncTiles(game: GameState): void {
+    for (let y = 0; y < game.rows; y += 1) {
+      for (let x = 0; x < game.columns; x += 1) {
+        const key = `${x},${y}`;
+        const position = toPixel({ x, y });
+        let sprite = this.tileSprites.get(key);
+
+        if (!sprite) {
+          sprite = this.add.image(position.x, position.y, 'tile').setDisplaySize(TILE_SIZE, TILE_SIZE);
+          this.tileSprites.set(key, sprite);
+        }
+
+        const tile = game.tiles[y][x];
+        const tint = tile === 'wall'
+          ? 0x526477
+          : tile === 'plate'
+            ? game.plateStates[key] === 'active' ? 0x5ee6a8 : 0xd5a84c
+            : tile === 'exit' ? 0x87b7ff : 0xffffff;
+        sprite.setTint(tint);
+      }
+    }
   }
 
   private syncEntities(game: GameState): void {
