@@ -14,6 +14,8 @@ const introAssets = {
   characterUp: new URL('../../assets/playable/player_up.png', import.meta.url).href,
   characterLeft: new URL('../../assets/playable/player_left.png', import.meta.url).href,
   start: new URL('../../assets/intro_startbutton_image.png', import.meta.url).href,
+  starConcave: new URL('../../assets/star/star_concave.png', import.meta.url).href,
+  starConvex: new URL('../../assets/star/star_convex.png', import.meta.url).href,
 };
 
 export class GameApp {
@@ -83,23 +85,67 @@ export class GameApp {
     const glow = document.createElement('div');
     glow.className = 'game-intro__start-glow';
     glow.setAttribute('aria-hidden', 'true');
+    const stars = document.createElement('div');
+    stars.className = 'game-intro__stars';
+    stars.setAttribute('aria-hidden', 'true');
+    const starElements: HTMLImageElement[] = [];
+    const starPositions = [
+      ['8%', '14%'], ['33%', '-16%'], ['66%', '5%'], ['91%', '28%'],
+      ['4%', '74%'], ['29%', '110%'], ['70%', '105%'], ['95%', '75%'],
+    ];
+    starPositions.forEach(([x, y], index) => {
+      const star = document.createElement('img');
+      star.src = index % 2 ? introAssets.starConvex : introAssets.starConcave;
+      star.style.setProperty('--x', x);
+      star.style.setProperty('--y', y);
+      starElements.push(star);
+      stars.append(star);
+    });
     const start = this.button('', this.showGroups);
     start.className = 'game-intro__start';
     start.style.backgroundImage = `url(${introAssets.start})`;
     start.setAttribute('aria-label', '시작하기');
     let frame = 0;
     let spinTimer: number | undefined;
+    const starTimers = new Set<number>();
     const showCharacter = (index: number) => {
       characters.forEach((character, current) => character.classList.toggle('game-intro__character--active', current === index));
     };
     const stopSpin = () => {
       if (spinTimer !== undefined) window.clearInterval(spinTimer);
+      starTimers.forEach((timer) => window.clearTimeout(timer));
+      starTimers.clear();
       spinTimer = undefined;
       frame = 0;
+      starElements.forEach((star) => star.classList.remove('game-intro__star--lit'));
       showCharacter(0);
     };
     const startSpin = () => {
       if (spinTimer !== undefined || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const jitter = (base: number, range: number) => base + Math.random() * range;
+      const litCount = () => starElements.filter((star) => star.classList.contains('game-intro__star--lit')).length;
+      function scheduleStar(star: HTMLImageElement, delay: number): void {
+        const timer = window.setTimeout(() => {
+          starTimers.delete(timer);
+          twinkle(star);
+        }, delay);
+        starTimers.add(timer);
+      }
+      function twinkle(star: HTMLImageElement): void {
+        const lit = star.classList.contains('game-intro__star--lit');
+        if ((lit && litCount() <= 2) || (!lit && litCount() >= 4)) {
+          scheduleStar(star, jitter(180, 240));
+          return;
+        }
+        star.classList.toggle('game-intro__star--lit');
+        scheduleStar(star, lit ? jitter(950, 650) : jitter(800, 600));
+      }
+      const firstLit = Math.floor(Math.random() * starElements.length);
+      const secondLit = (firstLit + 1 + Math.floor(Math.random() * (starElements.length - 1))) % starElements.length;
+      starElements.forEach((star, index) => {
+        if (index === firstLit || index === secondLit) star.classList.add('game-intro__star--lit');
+        scheduleStar(star, index === firstLit || index === secondLit ? jitter(800, 600) : jitter(160, 740));
+      });
       showCharacter((frame++ % 4) + 1);
       spinTimer = window.setInterval(() => {
         showCharacter((frame++ % 4) + 1);
@@ -110,7 +156,7 @@ export class GameApp {
     start.addEventListener('focus', startSpin);
     start.addEventListener('blur', stopSpin);
     this.stopIntroSpin = stopSpin;
-    startArea.append(glow, start);
+    startArea.append(glow, stars, start);
     view.append(title, ...characters, startArea);
     this.root.append(view);
   };

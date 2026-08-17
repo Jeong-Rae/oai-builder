@@ -119,10 +119,32 @@ button:not(.game-intro__start):focus-visible { background: #81f0c5; outline: 3px
   transition: opacity 400ms ease, transform 400ms ease;
 }
 
+.game-intro__stars { inset: -30%; opacity: 0; pointer-events: none; position: absolute; }
+
+.game-intro__stars img {
+  height: clamp(1rem, 3vw, 1.65rem);
+  left: var(--x);
+  opacity: 0;
+  position: absolute;
+  top: var(--y);
+  transform: translate(-50%, -50%) scale(.25);
+  transition: filter 320ms ease, opacity 320ms ease-in-out, transform 420ms cubic-bezier(.2,.8,.3,1);
+  width: auto;
+}
+
 .game-intro__start-area:hover .game-intro__start-glow,
 .game-intro__start-area:focus-within .game-intro__start-glow {
   opacity: 1;
   transform: scale(1);
+}
+
+.game-intro__start-area:hover .game-intro__stars,
+.game-intro__start-area:focus-within .game-intro__stars { opacity: 1; }
+
+.game-intro__stars img.game-intro__star--lit {
+  filter: drop-shadow(0 0 .45rem #fff) drop-shadow(0 0 .8rem #b55bff);
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .stage-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
