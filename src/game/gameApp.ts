@@ -5,6 +5,13 @@ import { createPhaserGame } from './createGame';
 import { createGameStoreFromMap, type GameStoreApi } from './store/gameStore';
 import { nextStage, stageGroups, stagesPerGroup, type Stage } from './stages';
 
+const introAssets = {
+  background: new URL('../../assets/intro_background_image.png', import.meta.url).href,
+  title: new URL('../../assets/intro_title_image.png', import.meta.url).href,
+  character: new URL('../../assets/playable/player_default.png', import.meta.url).href,
+  start: new URL('../../assets/intro_startbutton_image.png', import.meta.url).href,
+};
+
 export class GameApp {
   private game?: Phaser.Game;
   private unsubscribe?: () => void;
@@ -40,8 +47,32 @@ export class GameApp {
 
   showHome = (): void => {
     this.clear();
-    const view = this.shell('손끝으로 길을 바꿔라');
-    view.append(this.button('시작하기', this.showGroups));
+    const view = document.createElement('main');
+    view.className = 'game-menu game-intro';
+    view.style.backgroundImage = `url(${introAssets.background})`;
+
+    const title = document.createElement('img');
+    title.className = 'game-intro__title';
+    title.src = introAssets.title;
+    title.alt = 'Cat Save the Universe';
+
+    const character = document.createElement('img');
+    character.className = 'game-intro__character';
+    character.src = introAssets.character;
+    character.alt = '우주복을 입은 고양이';
+
+    const startArea = document.createElement('div');
+    startArea.className = 'game-intro__start-area';
+    const glow = document.createElement('div');
+    glow.className = 'game-intro__start-glow';
+    glow.setAttribute('aria-hidden', 'true');
+    const start = this.button('', this.showGroups);
+    start.className = 'game-intro__start';
+    start.style.backgroundImage = `url(${introAssets.start})`;
+    start.setAttribute('aria-label', '시작하기');
+    startArea.append(glow, start);
+    view.append(title, character, startArea);
+    this.root.append(view);
   };
 
   showGroups = (): void => {
