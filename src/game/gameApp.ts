@@ -9,11 +9,16 @@ const introAssets = {
   background: new URL('../../assets/intro_background_image.png', import.meta.url).href,
   title: new URL('../../assets/intro_title_image.png', import.meta.url).href,
   character: new URL('../../assets/playable/player_default.png', import.meta.url).href,
+  characterDown: new URL('../../assets/playable/player_down.png', import.meta.url).href,
+  characterRight: new URL('../../assets/playable/player_right.png', import.meta.url).href,
+  characterUp: new URL('../../assets/playable/player_up.png', import.meta.url).href,
+  characterLeft: new URL('../../assets/playable/player_left.png', import.meta.url).href,
   start: new URL('../../assets/intro_startbutton_image.png', import.meta.url).href,
 };
 
 export class GameApp {
   private game?: Phaser.Game;
+  private stopIntroSpin?: () => void;
   private unsubscribe?: () => void;
   private selectedStage: Stage = { group: 0, index: 0 };
 
@@ -22,6 +27,8 @@ export class GameApp {
   }
 
   private clear(): void {
+    this.stopIntroSpin?.();
+    this.stopIntroSpin = undefined;
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     this.game?.destroy(true);
@@ -56,10 +63,20 @@ export class GameApp {
     title.src = introAssets.title;
     title.alt = 'Cat Save the Universe';
 
-    const character = document.createElement('img');
-    character.className = 'game-intro__character';
-    character.src = introAssets.character;
-    character.alt = '우주복을 입은 고양이';
+    const characterSources = [
+      introAssets.character,
+      introAssets.characterDown,
+      introAssets.characterRight,
+      introAssets.characterUp,
+      introAssets.characterLeft,
+    ];
+    const characters = characterSources.map((source, index) => {
+      const character = document.createElement('img');
+      character.className = `game-intro__character${index === 0 ? ' game-intro__character--active' : ''}`;
+      character.src = source;
+      character.alt = index === 0 ? '우주복을 입은 고양이' : '';
+      return character;
+    });
 
     const startArea = document.createElement('div');
     startArea.className = 'game-intro__start-area';
@@ -70,8 +87,31 @@ export class GameApp {
     start.className = 'game-intro__start';
     start.style.backgroundImage = `url(${introAssets.start})`;
     start.setAttribute('aria-label', '시작하기');
+    let frame = 0;
+    let spinTimer: number | undefined;
+    const showCharacter = (index: number) => {
+      characters.forEach((character, current) => character.classList.toggle('game-intro__character--active', current === index));
+    };
+    const stopSpin = () => {
+      if (spinTimer !== undefined) window.clearInterval(spinTimer);
+      spinTimer = undefined;
+      frame = 0;
+      showCharacter(0);
+    };
+    const startSpin = () => {
+      if (spinTimer !== undefined || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      showCharacter((frame++ % 4) + 1);
+      spinTimer = window.setInterval(() => {
+        showCharacter((frame++ % 4) + 1);
+      }, 140);
+    };
+    start.addEventListener('pointerenter', startSpin);
+    start.addEventListener('pointerleave', stopSpin);
+    start.addEventListener('focus', startSpin);
+    start.addEventListener('blur', stopSpin);
+    this.stopIntroSpin = stopSpin;
     startArea.append(glow, start);
-    view.append(title, character, startArea);
+    view.append(title, ...characters, startArea);
     this.root.append(view);
   };
 
