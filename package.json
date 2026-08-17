@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "asset:resize": "node scripts/resize-game-asset.mjs",
+    "asset:trim": "node scripts/crop-transparent.mjs",
     "dev": "npm run dev:live",
     "dev:live": "vite --config vite.game.config.ts",
     "dev:editor": "vite --config vite.editor.config.ts",

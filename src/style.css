@@ -88,14 +88,14 @@ button:not(.game-intro__start):focus-visible { background: #81f0c5; outline: 3px
 .game-intro__character--active { opacity: 1; }
 
 .game-intro__start-area {
+  aspect-ratio: 1364 / 387;
   bottom: 8%;
-  height: min(20vh, 145px);
-  width: min(76vw, 300px);
+  width: min(57vw, 225px);
   z-index: 2;
 }
 
 .game-intro__start {
-  aspect-ratio: 1468 / 710;
+  aspect-ratio: 1364 / 387;
   background-color: transparent;
   background-position: center;
   background-repeat: no-repeat;
