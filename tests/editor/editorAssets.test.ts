@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { assetForField, goalAsset } from '../../src/editor/editorApp';
+import { assetForField, goalAsset } from '../../src/game/features/presentation';
 import { createInitialState } from '../../src/game/domain/level';
 
 describe('에디터 에셋 슬롯', () => {

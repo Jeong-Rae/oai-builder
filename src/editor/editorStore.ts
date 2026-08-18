@@ -1,6 +1,7 @@
 import { createStore } from 'zustand/vanilla';
 
 import type { Position, TileKind } from '../game/domain/types';
+import { fieldRules, objectRules } from '../game/features/rules';
 import {
   cloneMap,
   createBlankMap,
@@ -125,23 +126,19 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
     setTile(position, kind) {
       const draft = cloneMap(get().draft);
       if (!isInside(position, draft.columns, draft.rows)) return false;
-      if (
-        kind === 'wormhole'
-        && draft.tiles[position.y][position.x] !== 'wormhole'
-        && draft.tiles.flat().filter((tile) => tile === 'wormhole').length >= 2
-      ) return false;
-      if (
-        kind === 'gate'
-        && draft.tiles[position.y][position.x] !== 'gate'
-        && draft.tiles.flat().includes('gate')
-      ) return false;
-
-      if (kind === 'exit') {
-        draft.tiles = draft.tiles.map((row) => row.map((tile) => tile === 'exit' ? 'floor' : tile));
+      const rule = fieldRules[kind];
+      const placement = rule.editorPlacement;
+      const placingNewKind = draft.tiles[position.y][position.x] !== kind;
+      if (placement && placingNewKind) {
+        const count = draft.tiles.flat().filter((tile) => tile === kind).length;
+        if (count >= placement.maxCount && placement.overflow === 'reject') return false;
+      }
+      if (placement?.overflow === 'replace') {
+        draft.tiles = draft.tiles.map((row) => row.map((tile) => tile === kind ? 'floor' : tile));
       }
 
       draft.tiles[position.y][position.x] = kind;
-      if (kind === 'wall' || kind === 'blank') {
+      if (!rule.acceptsObject) {
         draft.objects = draft.objects.filter((object) =>
           object.position.x !== position.x || object.position.y !== position.y,
         );
@@ -152,14 +149,15 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
 
     placeObject(position, kind) {
       const draft = cloneMap(get().draft);
-      if (!isInside(position, draft.columns, draft.rows) || ['wall', 'blank'].includes(draft.tiles[position.y][position.x])) return;
+      if (!isInside(position, draft.columns, draft.rows) || !fieldRules[draft.tiles[position.y][position.x]].acceptsObject) return;
 
+      const rule = objectRules[kind];
       draft.objects = draft.objects.filter((object) =>
         (object.position.x !== position.x || object.position.y !== position.y)
-        && (kind !== 'player' || object.kind !== 'player'),
+        && (rule.editorPlacement?.overflow !== 'replace' || object.kind !== kind),
       );
       draft.objects.push({
-        id: kind === 'player' ? 'player' : nextId(draft, kind),
+        id: rule.fixedId?.value ?? nextId(draft, kind as Exclude<MapObjectKind, 'player'>),
         kind,
         position: { ...position },
       });

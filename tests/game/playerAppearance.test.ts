@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createInitialState } from '../../src/game/domain/level';
 import { decide } from '../../src/game/domain/decider';
-import { playerTextureForMove, playerTextureKeys } from '../../src/game/playerAppearance';
+import { playerTextureForMove, playerTextureKeys } from '../../src/game/features/presentation';
 
 describe('플레이어 방향 스프라이트', () => {
   it('플레이어가 이동하면 입력 방향을 바라본다', () => {

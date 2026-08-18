@@ -1,68 +1,29 @@
 import type { Direction, GameState, Position, TileKind } from '../game/domain/types';
-import { isGateOpen } from '../game/domain/decider';
 import { findBalancedPath, findPath, type PathResult } from '../game/domain/pathfinder';
 import { createGameStateFromMap } from '../game/domain/level';
+import {
+  assetDefinitions,
+  assetForDirection,
+  assetForField,
+  assetForObject,
+  assetGroups,
+  assetUrls,
+  fieldPresentations,
+  objectPresentations,
+  overlayForField,
+  playerTextureForMove,
+  playerTextureKeys,
+  type AssetSlot,
+} from '../game/features/presentation';
+import { fieldRules } from '../game/features/rules';
 import { directionFromKey, isUndoShortcut } from '../game/input';
-import { playerTextureForMove, playerTextureKeys } from '../game/playerAppearance';
 import { createGameStoreFromMap, type GameStoreApi } from '../game/store/gameStore';
 import { serializeMap, type MapObjectKind } from '../map/mapDocument';
 import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type EditorTool } from './editorStore';
 import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFiles';
 
-const assetUrls = {
-  floor: new URL('../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
-  wall: new URL('../../assets/tile/tile.origin.png', import.meta.url).href,
-  plateInactive: new URL('../../assets/plate/plate.origin.png', import.meta.url).href,
-  plateActive: new URL('../../assets/plate/plate.origin.png', import.meta.url).href,
-  wormhole: new URL('../../assets/wormhole/wormhole.origin.png', import.meta.url).href,
-  gateClosed: new URL('../../assets/tile/tile.origin.png', import.meta.url).href,
-  gateOpen: new URL('../../assets/tile/tile.origin.png', import.meta.url).href,
-  normal: new URL('../../assets/box/box.origin.png', import.meta.url).href,
-  anchor: new URL('../../assets/box/box.origin.png', import.meta.url).href,
-  swapper: new URL('../../assets/swapper/swapper.origin.png', import.meta.url).href,
-  playerDefault: new URL('../../assets/playable/player_default.png', import.meta.url).href,
-  playerUp: new URL('../../assets/playable/player_up.png', import.meta.url).href,
-  playerDown: new URL('../../assets/playable/player_down.png', import.meta.url).href,
-  playerLeft: new URL('../../assets/playable/player_left.png', import.meta.url).href,
-  playerRight: new URL('../../assets/playable/player_right.png', import.meta.url).href,
-  goalFrame1: new URL('../../assets/goal/goal_1f.1254.png', import.meta.url).href,
-  goalFrame2: new URL('../../assets/goal/goal_2f.1254.png', import.meta.url).href,
-  goalFrame3: new URL('../../assets/goal/goal_3f.1254.png', import.meta.url).href,
-  goalFrame4: new URL('../../assets/goal/goal_4f.1254.png', import.meta.url).href,
-  up: new URL('../../assets/arrow/arrow_up.svg', import.meta.url).href,
-  down: new URL('../../assets/arrow/arrow_down.svg', import.meta.url).href,
-  left: new URL('../../assets/arrow/arrow_left.svg', import.meta.url).href,
-  right: new URL('../../assets/arrow/arrow_right.svg', import.meta.url).href,
-};
-
-export type EditorAssetKey = keyof typeof assetUrls;
-type AssetKey = EditorAssetKey;
-
-const assetLabels: Record<AssetKey, string> = {
-  floor: '바닥',
-  wall: '벽',
-  plateInactive: '플레이트·비활성',
-  plateActive: '플레이트·활성',
-  wormhole: '웜홀',
-  gateClosed: '게이트·닫힘',
-  gateOpen: '게이트·열림',
-  normal: '일반 오브젝트',
-  anchor: '앵커',
-  swapper: '스와퍼',
-  playerDefault: '플레이어·기본',
-  playerUp: '플레이어 위 방향',
-  playerDown: '플레이어 아래 방향',
-  playerLeft: '플레이어 왼쪽 방향',
-  playerRight: '플레이어 오른쪽 방향',
-  goalFrame1: '골·1프레임',
-  goalFrame2: '골·2프레임',
-  goalFrame3: '골·3프레임',
-  goalFrame4: '골·4프레임',
-  up: '위 방향 표시',
-  down: '아래 방향 표시',
-  left: '왼쪽 방향 표시',
-  right: '오른쪽 방향 표시',
-};
+export type EditorAssetKey = AssetSlot;
+type AssetKey = AssetSlot;
 
 interface ToolOption<T extends EditorTool> {
   tool: T;
@@ -71,66 +32,26 @@ interface ToolOption<T extends EditorTool> {
   badge?: string;
 }
 
-const fieldTools: Array<ToolOption<TileKind>> = [
-  { tool: 'blank', label: '맵 외부', badge: '∅' },
-  { tool: 'floor', label: '바닥', asset: 'floor' },
-  { tool: 'wall', label: '벽', asset: 'wall' },
-  { tool: 'plate', label: '플레이트', asset: 'plateInactive' },
-  { tool: 'wormhole', label: '웜홀', asset: 'wormhole' },
-  { tool: 'gate', label: '게이트', asset: 'gateClosed' },
-  { tool: 'exit', label: '골', asset: 'goalFrame1' },
-];
+const fieldTools: Array<ToolOption<TileKind>> = (
+  ['blank', 'floor', 'wall', 'plate', 'wormhole', 'gate', 'exit'] satisfies TileKind[]
+).map((tool) => ({
+  tool,
+  label: fieldPresentations[tool].label,
+  asset: fieldPresentations[tool].toolAsset,
+  badge: fieldPresentations[tool].badge,
+}));
 
-const objectTools: Array<ToolOption<MapObjectKind>> = [
-  { tool: 'player', label: '플레이어', asset: 'playerDefault' },
-  { tool: 'normal', label: '일반', asset: 'normal' },
-  { tool: 'anchor', label: '앵커', asset: 'anchor' },
-  { tool: 'swapper', label: '스와퍼', asset: 'swapper' },
-];
+const objectTools: Array<ToolOption<MapObjectKind>> = (
+  ['player', 'normal', 'anchor', 'swapper'] satisfies MapObjectKind[]
+).map((tool) => ({
+  tool,
+  label: objectPresentations[tool].label,
+  asset: objectPresentations[tool].toolAsset,
+}));
 
-const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
-  floor: 'floor',
-  wall: 'wall',
-  plate: 'plateInactive',
-  wormhole: 'wormhole',
-  gate: 'gateClosed',
-  exit: 'goalFrame1',
-  player: 'playerDefault',
-  normal: 'normal',
-  anchor: 'anchor',
-  swapper: 'swapper',
-};
-
-const playerAssetByTexture: Record<string, AssetKey> = {
-  [playerTextureKeys.default]: 'playerDefault',
-  [playerTextureKeys.up]: 'playerUp',
-  [playerTextureKeys.down]: 'playerDown',
-  [playerTextureKeys.left]: 'playerLeft',
-  [playerTextureKeys.right]: 'playerRight',
-};
-
-const assetGroups: Array<{ label: string; keys: AssetKey[] }> = [
-  { label: '필드', keys: ['floor', 'wall', 'plateInactive', 'plateActive', 'wormhole', 'gateClosed', 'gateOpen'] },
-  { label: '오브젝트', keys: ['playerDefault', 'playerUp', 'playerDown', 'playerLeft', 'playerRight', 'normal', 'anchor', 'swapper'] },
-  { label: '골 애니메이션', keys: ['goalFrame1', 'goalFrame2', 'goalFrame3', 'goalFrame4'] },
-  { label: '방향 표시', keys: ['up', 'down', 'left', 'right'] },
-];
-
-export function assetForField(field: TileKind, game: GameState | undefined, key: string): AssetKey | undefined {
-  switch (field) {
-    case 'blank': return undefined;
-    case 'floor': return 'floor';
-    case 'wall': return 'wall';
-    case 'plate': return game?.plateStates[key] === 'active' ? 'plateActive' : 'plateInactive';
-    case 'wormhole': return 'wormhole';
-    case 'gate': return game && isGateOpen(game) ? 'gateOpen' : 'gateClosed';
-    case 'exit': return undefined;
-  }
-}
-
-export function goalAsset(frame: number): AssetKey {
-  return `goalFrame${frame}` as AssetKey;
-}
+const assetsByTool: Partial<Record<EditorTool, AssetKey>> = Object.fromEntries(
+  [...fieldTools, ...objectTools].flatMap(({ tool, asset }) => asset ? [[tool, asset]] : []),
+);
 
 const rejectionMessages = {
   'out-of-bounds': '보드 밖으로 이동할 수 없습니다.',
@@ -184,7 +105,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   let localAssets: Partial<Record<AssetKey, string>> = {};
   let selectedAsset: AssetKey = assetsByTool.floor!;
   const resolveAsset = (key: AssetKey): string => localAssets[key] ?? assetUrls[key];
-  const playerAssetPreloads = Object.values(playerAssetByTexture).map((key) => {
+  const playerAssetPreloads = Object.values(playerTextureKeys).map((key) => {
     const image = new Image();
     image.src = resolveAsset(key);
     return image;
@@ -215,7 +136,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     keys.forEach((key) => {
       const option = document.createElement('option');
       option.value = key;
-      option.textContent = assetLabels[key];
+      option.textContent = assetDefinitions[key].label;
       group.append(option);
     });
     assetSelect.append(group);
@@ -303,14 +224,14 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       return;
     }
     if (fieldTools.some(({ tool }) => tool === state.tool)) {
-      if ((state.tool === 'wall' || state.tool === 'blank') && object && !window.confirm(`${object.id}이 제거됩니다. 필드를 변경할까요?`)) return;
+      if (!fieldRules[state.tool as TileKind].acceptsObject && object && !window.confirm(`${object.id}이 제거됩니다. 필드를 변경할까요?`)) return;
       if (!state.setTile(position, state.tool as TileKind)) {
         showNotice('웜홀은 두 개까지만 배치할 수 있습니다.');
       }
       return;
     }
 
-    if (['wall', 'blank'].includes(state.draft.tiles[position.y][position.x])) {
+    if (!fieldRules[state.draft.tiles[position.y][position.x]].acceptsObject) {
       showNotice('벽 또는 맵 외부 영역에는 오브젝트를 배치할 수 없습니다.');
       return;
     }
@@ -360,7 +281,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     root.querySelectorAll<HTMLImageElement>('[data-asset-key]').forEach((image) => {
       image.src = resolveAsset(image.dataset.assetKey as AssetKey);
     });
-    const appliedAssets = Object.keys(localAssets).map((key) => assetLabels[key as AssetKey]);
+    const appliedAssets = Object.keys(localAssets).map((key) => assetDefinitions[key as AssetKey].label);
     const assetTarget = root.querySelector<HTMLElement>('[data-asset-target]')!;
     assetSelect.value = selectedAsset;
     pathModeSelect.value = pathMode;
@@ -370,7 +291,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     preview.alt = '';
     const previewLabel = document.createElement('span');
     const previewTitle = document.createElement('b');
-    previewTitle.textContent = assetLabels[selectedAsset];
+    previewTitle.textContent = assetDefinitions[selectedAsset].label;
     const previewHint = document.createElement('small');
     previewHint.textContent = localAssets[selectedAsset] ? '로컬 교체 이미지 적용 중' : '기본 런타임 이미지';
     previewLabel.append(previewTitle, previewHint);
@@ -394,14 +315,13 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const selected = state.selected?.x === x && state.selected.y === y ? ' selected' : '';
         const field = draft.tiles[y][x];
         const label = object ? `${field}, ${object.kind}` : field;
-        const goal = field === 'exit'
-          ? `<img class="goal-asset" src="${resolveAsset(goalAsset(game?.goalOpened ? goalFrame : 1))}" alt="" />`
-          : '';
+        const overlayAsset = overlayForField(field, game, key, game?.goalOpened ? goalFrame : 1);
+        const goal = overlayAsset ? `<img class="goal-asset" src="${resolveAsset(overlayAsset)}" alt="" />` : '';
         const objectAsset = object && !(object.kind === 'player' && retainedPlayer)
-          ? `<span class="object-asset object-${object.kind}"><img src="${resolveAsset(object.kind === 'player' ? playerAsset : object.kind)}" alt="" /></span>`
+          ? `<span class="object-asset object-${object.kind}"><img src="${resolveAsset(object.kind === 'player' ? playerAsset : assetForObject(object.kind))}" alt="" /></span>`
           : '';
         const controls = object?.controls.map((direction) =>
-          `<img class="control-asset control-${direction}" src="${resolveAsset(direction)}" alt="${direction}" />`,
+          `<img class="control-asset control-${direction}" src="${resolveAsset(assetForDirection(direction))}" alt="${direction}" />`,
         ).join('') ?? '';
         const asset = assetForField(field, game, key);
         const tileAsset = asset ? `<img class="tile-asset" src="${resolveAsset(asset)}" alt="" />` : '';
@@ -457,7 +377,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     if (!testStore) return false;
     const game = testStore.getState().game;
     const decision = testStore.getState().dispatch({ type: 'player/move', direction });
-    playerAsset = playerAssetByTexture[playerTextureForMove(game, direction, decision)];
+    playerAsset = playerTextureForMove(game, direction, decision);
     render();
     if (decision.rejectedBy) showNotice(rejectionMessages[decision.rejectedBy]);
     return !decision.rejectedBy;
@@ -648,7 +568,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
       localAssets[key] = nextUrl;
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       render();
-      showNotice(`${assetLabels[key]}에 ${file.name}을 적용했습니다.`);
+      showNotice(`${assetDefinitions[key].label}에 ${file.name}을 적용했습니다.`);
     };
     image.onerror = () => {
       URL.revokeObjectURL(nextUrl);
@@ -666,11 +586,11 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
 
   root.querySelector('[data-action="reset-asset"]')!.addEventListener('click', () => {
     const previousUrl = localAssets[selectedAsset];
-    if (!previousUrl) return showNotice(`${assetLabels[selectedAsset]}은 이미 기본 이미지입니다.`);
+    if (!previousUrl) return showNotice(`${assetDefinitions[selectedAsset].label}은 이미 기본 이미지입니다.`);
     URL.revokeObjectURL(previousUrl);
     delete localAssets[selectedAsset];
     render();
-    showNotice(`${assetLabels[selectedAsset]}을 기본 이미지로 복원했습니다.`);
+    showNotice(`${assetDefinitions[selectedAsset].label}을 기본 이미지로 복원했습니다.`);
   });
 
   const unsubscribeEditor = store.subscribe((state, previous) => {

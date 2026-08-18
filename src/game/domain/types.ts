@@ -7,6 +7,7 @@ export interface Position {
 
 export type TileKind = 'blank' | 'floor' | 'wall' | 'exit' | 'plate' | 'wormhole' | 'gate';
 export type PlateState = 'inactive' | 'active';
+export type ObjectKind = 'player' | 'normal' | 'anchor' | 'swapper';
 
 export interface Player {
   id: 'player';

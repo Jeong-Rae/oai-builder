@@ -1,0 +1,17 @@
+import type { FieldPresentation } from '../../presentationTypes';
+
+export const wormholePresentation = {
+  kind: 'wormhole',
+  label: '웜홀',
+  assets: {
+    wormhole: {
+      label: '웜홀',
+      url: new URL('../../../../../assets/wormhole/wormhole.origin.png', import.meta.url).href,
+      group: 'field',
+    },
+  },
+  toolAsset: 'wormhole',
+  gameTextures: ['wormhole'],
+  editorAsset: () => 'wormhole',
+  gameTexture: () => 'wormhole',
+} satisfies FieldPresentation;

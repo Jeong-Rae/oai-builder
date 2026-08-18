@@ -1,8 +1,9 @@
-import type { Position, TileKind } from '../game/domain/types';
+import type { ObjectKind, Position, TileKind } from '../game/domain/types';
+import { fieldKinds, fieldRules, objectKinds, objectRules } from '../game/features/rules';
 
 export const MAP_VERSION = 1 as const;
 
-export type MapObjectKind = 'player' | 'normal' | 'anchor' | 'swapper';
+export type MapObjectKind = ObjectKind;
 
 export interface MapObject {
   id: string;
@@ -27,9 +28,6 @@ export interface MapError {
 export type MapResult =
   | { ok: true; map: MapDocument }
   | { ok: false; errors: MapError[] };
-
-const tileKinds: TileKind[] = ['blank', 'floor', 'wall', 'plate', 'exit', 'wormhole', 'gate'];
-const objectKinds: MapObjectKind[] = ['player', 'normal', 'anchor', 'swapper'];
 
 export function createBlankMap(columns = 9, rows = 9): MapDocument {
   return {
@@ -81,9 +79,7 @@ export function validateMap(value: unknown): MapResult {
 
   const validColumns = Number.isInteger(columns) && Number(columns) > 0 ? Number(columns) : 0;
   const validRows = Number.isInteger(rows) && Number(rows) > 0 ? Number(rows) : 0;
-  let exitCount = 0;
-  let wormholeCount = 0;
-  let gateCount = 0;
+  const fieldCounts = Object.fromEntries(fieldKinds.map((kind) => [kind, 0])) as Record<TileKind, number>;
 
   if (!Array.isArray(tiles) || tiles.length !== validRows) {
     errors.push({ code: 'tiles', message: '필드 행 수가 맵의 행 수와 일치해야 합니다.' });
@@ -95,32 +91,23 @@ export function validateMap(value: unknown): MapResult {
       }
 
       row.forEach((tile, x) => {
-        if (!tileKinds.includes(tile as TileKind)) {
+        if (!fieldKinds.includes(tile as TileKind)) {
           errors.push({ code: 'tile-kind', message: `지원하지 않는 필드입니다: ${String(tile)}`, position: { x, y } });
-        } else if (tile === 'exit') {
-          exitCount += 1;
-        } else if (tile === 'wormhole') {
-          wormholeCount += 1;
-        } else if (tile === 'gate') {
-          gateCount += 1;
+        } else {
+          fieldCounts[tile as TileKind] += 1;
         }
       });
     });
   }
 
-  if (exitCount !== 1) {
-    errors.push({ code: 'exit-count', message: '골은 정확히 하나여야 합니다.' });
+  for (const kind of fieldKinds) {
+    const countRule = fieldRules[kind].count;
+    if (countRule && !countRule.valid(fieldCounts[kind])) {
+      errors.push({ code: countRule.code, message: countRule.message });
+    }
   }
 
-  if (wormholeCount !== 0 && wormholeCount !== 2) {
-    errors.push({ code: 'wormhole-count', message: '웜홀은 사용하지 않거나 정확히 두 개여야 합니다.' });
-  }
-
-  if (gateCount > 1) {
-    errors.push({ code: 'gate-count', message: '게이트는 최대 하나만 배치할 수 있습니다.' });
-  }
-
-  let playerCount = 0;
+  const objectCounts = Object.fromEntries(objectKinds.map((kind) => [kind, 0])) as Record<ObjectKind, number>;
   const ids = new Set<string>();
   const occupied = new Set<string>();
 
@@ -145,12 +132,14 @@ export function validateMap(value: unknown): MapResult {
         ids.add(id);
       }
 
-      if (!objectKinds.includes(kind as MapObjectKind)) {
+      if (!objectKinds.includes(kind as ObjectKind)) {
         errors.push({ code: 'object-kind', message: `지원하지 않는 오브젝트입니다: ${String(kind)}` });
-      } else if (kind === 'player') {
-        playerCount += 1;
-        if (id !== 'player') {
-          errors.push({ code: 'player-id', message: '플레이어 식별자는 player여야 합니다.' });
+      } else {
+        const objectKind = kind as ObjectKind;
+        objectCounts[objectKind] += 1;
+        const fixedId = objectRules[objectKind].fixedId;
+        if (fixedId && id !== fixedId.value) {
+          errors.push({ code: fixedId.code, message: fixedId.message });
         }
       }
 
@@ -166,10 +155,11 @@ export function validateMap(value: unknown): MapResult {
         errors.push({ code: 'out-of-bounds', message: `${String(id)}이 맵 범위를 벗어났습니다.`, position: mapPosition });
       } else if (Array.isArray(tiles) && Array.isArray(tiles[mapPosition.y])) {
         const tile = tiles[mapPosition.y][mapPosition.x];
-        if (tile === 'wall') {
-          errors.push({ code: 'object-on-wall', message: `${String(id)}을 벽에 배치할 수 없습니다.`, position: mapPosition });
-        } else if (tile === 'blank') {
-          errors.push({ code: 'object-on-blank', message: `${String(id)}을 맵 외부 영역에 배치할 수 없습니다.`, position: mapPosition });
+        if (fieldKinds.includes(tile as TileKind)) {
+          const placementError = fieldRules[tile as TileKind].objectPlacementError;
+          if (placementError) {
+            errors.push({ code: placementError.code, message: placementError.message(String(id)), position: mapPosition });
+          }
         }
       }
 
@@ -181,8 +171,11 @@ export function validateMap(value: unknown): MapResult {
     });
   }
 
-  if (playerCount !== 1) {
-    errors.push({ code: 'player-count', message: '플레이어는 정확히 하나여야 합니다.' });
+  for (const kind of objectKinds) {
+    const countRule = objectRules[kind].count;
+    if (countRule && !countRule.valid(objectCounts[kind])) {
+      errors.push({ code: countRule.code, message: countRule.message });
+    }
   }
 
   return errors.length === 0

@@ -7,6 +7,12 @@ import type {
   GameState,
   Position,
 } from './types';
+import { exitEvents } from '../features/fields/exit/rules';
+import { plateEvents } from '../features/fields/plate/rules';
+import { wormholeDestination } from '../features/fields/wormhole/rules';
+import { anchorCollisionEvents } from '../features/objects/anchor/rules';
+import { swapperCollisionEvents } from '../features/objects/swapper/rules';
+import { fieldRules, objectRules } from '../features/rules';
 
 const directionOffsets: Record<Direction, Position> = {
   up: { x: 0, y: -1 },
@@ -35,54 +41,6 @@ function getEntityAt(state: GameState, position: Position): Entity | undefined {
   );
 }
 
-function isWall(state: GameState, position: Position): boolean {
-  return state.tiles[position.y][position.x] === 'wall';
-}
-
-function isBlank(state: GameState, position: Position): boolean {
-  return state.tiles[position.y][position.x] === 'blank';
-}
-
-export function isGateOpen(state: GameState): boolean {
-  const plates = Object.values(state.plateStates);
-  return plates.length > 0 && plates.every((plate) => plate === 'active');
-}
-
-function wormholeDestination(state: GameState, position: Position): Position | undefined {
-  const wormholes = state.tiles.flatMap((row, y) =>
-    row.flatMap((tile, x) => tile === 'wormhole' ? [{ x, y }] : []),
-  );
-  return wormholes.find((wormhole) =>
-    wormhole.x !== position.x || wormhole.y !== position.y
-  );
-}
-
-function isNearGoal(state: GameState, position: Position): boolean {
-  return state.tiles.some((row, y) =>
-    row.some((tile, x) => tile === 'exit' && Math.max(Math.abs(position.x - x), Math.abs(position.y - y)) <= 1),
-  );
-}
-
-function plateEvents(state: GameState, entity: Entity, target: Position): GameEvent[] {
-  if (entity.kind !== 'normal') {
-    return [];
-  }
-
-  const events: GameEvent[] = [];
-  const fromKey = `${entity.position.x},${entity.position.y}`;
-  const targetKey = `${target.x},${target.y}`;
-
-  if (state.tiles[entity.position.y][entity.position.x] === 'plate' && state.plateStates[fromKey] === 'active') {
-    events.push({ type: 'plate/deactivated', position: entity.position });
-  }
-
-  if (state.tiles[target.y][target.x] === 'plate' && state.plateStates[targetKey] === 'inactive') {
-    events.push({ type: 'plate/activated', position: target });
-  }
-
-  return events;
-}
-
 function moveEvents(state: GameState, entity: Entity, target: Position): GameEvent[] {
   const events: GameEvent[] = [
     {
@@ -93,18 +51,8 @@ function moveEvents(state: GameState, entity: Entity, target: Position): GameEve
     },
   ];
 
-  events.push(...plateEvents(state, entity, target));
-
-  if (entity.kind === 'player' && state.tiles[target.y][target.x] === 'exit') {
-    events.push({ type: 'game/completed' });
-  }
-
-  if (entity.kind === 'player') {
-    const goalOpened = isNearGoal(state, target);
-    if (goalOpened !== state.goalOpened) {
-      events.push({ type: goalOpened ? 'goal/opened' : 'goal/closed' });
-    }
-  }
+  events.push(...plateEvents(state, entity, target, objectRules[entity.kind].activatesPlate));
+  events.push(...exitEvents(state, entity, target));
 
   return events;
 }
@@ -118,28 +66,27 @@ export function decide(state: GameState, command: GameCommand): Decision {
     throw new Error(`${command.direction} 컨트롤의 소유자를 찾을 수 없습니다.`);
   }
 
-  if (owner.kind === 'anchor') {
+  if (!objectRules[owner.kind].movable) {
     return { events: [], rejectedBy: 'fixed' };
   }
 
   const target = nextPosition(owner.position, command.direction);
 
-  if (!isInside(state, target) || isBlank(state, target)) {
+  if (!isInside(state, target)) {
     return { events: [], rejectedBy: 'out-of-bounds' };
   }
 
-  if (isWall(state, target)) {
-    return { events: [], rejectedBy: 'wall' };
-  }
-
-  if (state.tiles[target.y][target.x] === 'gate' && !isGateOpen(state)) {
-    return { events: [], rejectedBy: 'wall' };
+  const targetField = state.tiles[target.y][target.x];
+  const entryRejection = fieldRules[targetField].entryRejection;
+  const rejectedBy = typeof entryRejection === 'function' ? entryRejection(state) : entryRejection;
+  if (rejectedBy) {
+    return { events: [], rejectedBy };
   }
 
   const targetEntity = getEntityAt(state, target);
 
   if (!targetEntity) {
-    if (state.tiles[target.y][target.x] === 'wormhole') {
+    if (targetField === 'wormhole') {
       const destination = wormholeDestination(state, target);
       if (!destination || getEntityAt(state, destination)) {
         return { events: [], rejectedBy: 'occupied' };
@@ -149,28 +96,11 @@ export function decide(state: GameState, command: GameCommand): Decision {
     return { events: moveEvents(state, owner, target) };
   }
 
-  if (targetEntity.kind === 'anchor' && targetEntity.controls.length > 0) {
-    return {
-      events: targetEntity.controls.map((direction) => ({
-        type: 'control/transferred' as const,
-        direction,
-        fromEntityId: targetEntity.id,
-        toEntityId: owner.id,
-      })),
-    };
-  }
+  const anchorEvents = anchorCollisionEvents(owner, targetEntity);
+  if (anchorEvents) return { events: anchorEvents };
 
-  if (owner.kind === 'swapper' || targetEntity.kind === 'swapper') {
-    return {
-      events: [
-        {
-          type: 'controls/swapped',
-          firstEntityId: owner.id,
-          secondEntityId: targetEntity.id,
-        },
-      ],
-    };
-  }
+  const swapperEvents = swapperCollisionEvents(owner, targetEntity);
+  if (swapperEvents) return { events: swapperEvents };
 
   return {
     events: [

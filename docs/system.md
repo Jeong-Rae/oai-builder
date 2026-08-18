@@ -20,6 +20,9 @@ Phaser: Scene lifecycle, input, assets, sprites, animation, rendering
 - A `GameScene` subscription is disposed when the scene shuts down.
 - The game app and editor app have independent HTML and TypeScript entry points.
 - The game app never imports editor-only modules. The editor reuses the game domain and Zustand command pipeline for inline live tests.
+- Object and field feature modules own their pure rules and presentation metadata. Runtime state remains serializable plain data and stores only each object's `kind`.
+- The central decider coordinates interactions that depend on multiple objects, fields, or the complete board state; entities never call each other directly.
+- `GameScene` and `editorApp` resolve labels, asset slots, and texture URLs through the shared feature presentation catalog.
 
 ## Applications and deployment
 
@@ -96,6 +99,11 @@ src/
    │  ├─ types.ts
    │  ├─ level.ts
    │  └─ decider.ts
+   ├─ features/
+   │  ├─ fields/<kind>/{rules,presentation}.ts
+   │  ├─ objects/<kind>/{rules,presentation}.ts
+   │  ├─ rules.ts
+   │  └─ presentation.ts
    ├─ store/
    │  └─ gameStore.ts
    └─ scenes/

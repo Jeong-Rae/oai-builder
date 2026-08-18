@@ -1,39 +1,21 @@
 import Phaser from 'phaser';
 
 import { TILE_SIZE } from '../domain/level';
+import { findExit } from '../features/fields/exit/rules';
+import {
+  assetForDirection,
+  assetUrls,
+  gameTextureSlots,
+  goalAssetSlots,
+  playerTextureForMove,
+  textureForEntity,
+  textureForField,
+} from '../features/presentation';
 import { directionFromKey, isUndoShortcut } from '../input';
-import { playerTextureForMove, playerTextureKeys } from '../playerAppearance';
 import { gameStore, type GameStoreApi } from '../store/gameStore';
-import type { Direction, Entity, GameState, Position } from '../domain/types';
+import type { Entity, GameState } from '../domain/types';
 
-const textureUrls = {
-  floor: new URL('../../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
-  plate: new URL('../../../assets/plate/plate.origin.png', import.meta.url).href,
-  wormhole: new URL('../../../assets/wormhole/wormhole.origin.png', import.meta.url).href,
-  box: new URL('../../../assets/box/box.origin.png', import.meta.url).href,
-  swapper: new URL('../../../assets/swapper/swapper.origin.png', import.meta.url).href,
-  playerDefault: new URL('../../../assets/playable/player_default.png', import.meta.url).href,
-  playerUp: new URL('../../../assets/playable/player_up.png', import.meta.url).href,
-  playerDown: new URL('../../../assets/playable/player_down.png', import.meta.url).href,
-  playerLeft: new URL('../../../assets/playable/player_left.png', import.meta.url).href,
-  playerRight: new URL('../../../assets/playable/player_right.png', import.meta.url).href,
-  goal1: new URL('../../../assets/goal/goal_1f.1254.png', import.meta.url).href,
-  goal2: new URL('../../../assets/goal/goal_2f.1254.png', import.meta.url).href,
-  goal3: new URL('../../../assets/goal/goal_3f.1254.png', import.meta.url).href,
-  goal4: new URL('../../../assets/goal/goal_4f.1254.png', import.meta.url).href,
-  arrowUp: new URL('../../../assets/arrow/arrow_up.svg', import.meta.url).href,
-  arrowDown: new URL('../../../assets/arrow/arrow_down.svg', import.meta.url).href,
-  arrowLeft: new URL('../../../assets/arrow/arrow_left.svg', import.meta.url).href,
-  arrowRight: new URL('../../../assets/arrow/arrow_right.svg', import.meta.url).href,
-};
-
-const goalTextureKeys = ['goal-1', 'goal-2', 'goal-3', 'goal-4'];
-const arrowTextureKeys: Record<Direction, string> = {
-  up: 'arrow-up',
-  down: 'arrow-down',
-  left: 'arrow-left',
-  right: 'arrow-right',
-};
+const goalTextureKeys = goalAssetSlots;
 
 function toPixel(position: { x: number; y: number }) {
   return {
@@ -57,31 +39,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('floor', textureUrls.floor);
-    this.load.image('plate', textureUrls.plate);
-    this.load.image('wormhole', textureUrls.wormhole);
-    this.load.image('box', textureUrls.box);
-    this.load.image('swapper', textureUrls.swapper);
-    this.load.image(playerTextureKeys.default, textureUrls.playerDefault);
-    this.load.image(playerTextureKeys.up, textureUrls.playerUp);
-    this.load.image(playerTextureKeys.down, textureUrls.playerDown);
-    this.load.image(playerTextureKeys.left, textureUrls.playerLeft);
-    this.load.image(playerTextureKeys.right, textureUrls.playerRight);
-    this.load.image(goalTextureKeys[0], textureUrls.goal1);
-    this.load.image(goalTextureKeys[1], textureUrls.goal2);
-    this.load.image(goalTextureKeys[2], textureUrls.goal3);
-    this.load.image(goalTextureKeys[3], textureUrls.goal4);
-    this.load.image(arrowTextureKeys.up, textureUrls.arrowUp);
-    this.load.image(arrowTextureKeys.down, textureUrls.arrowDown);
-    this.load.image(arrowTextureKeys.left, textureUrls.arrowLeft);
-    this.load.image(arrowTextureKeys.right, textureUrls.arrowRight);
+    gameTextureSlots.forEach((slot) => this.load.image(slot, assetUrls[slot]));
   }
 
   create(): void {
     const game = this.store.getState().game;
     this.syncTiles(game);
 
-    const goalPosition = toPixel(this.findGoal(game));
+    const goalPosition = toPixel(findExit(game));
     this.goalSprite = this.add
       .image(goalPosition.x, goalPosition.y, goalTextureKeys[game.goalOpened ? 3 : 0])
       .setDisplaySize(TILE_SIZE, TILE_SIZE);
@@ -119,23 +84,13 @@ export class GameScene extends Phaser.Scene {
     this.entitySprites.get(game.playerId)?.setTexture(playerTextureForMove(game, direction, decision));
   }
 
-  private findGoal(game: GameState): Position {
-    for (let y = 0; y < game.rows; y += 1) {
-      const x = game.tiles[y].indexOf('exit');
-      if (x >= 0) {
-        return { x, y };
-      }
-    }
-
-    return { x: 0, y: 0 };
-  }
-
   private syncTiles(game: GameState): void {
     for (let y = 0; y < game.rows; y += 1) {
       for (let x = 0; x < game.columns; x += 1) {
         const key = `${x},${y}`;
         const tile = game.tiles[y][x];
-        if (tile === 'blank') {
+        const texture = textureForField(tile, game, key);
+        if (!texture) {
           this.tileSprites.get(key)?.destroy();
           this.tileSprites.delete(key);
           continue;
@@ -144,7 +99,6 @@ export class GameScene extends Phaser.Scene {
         const position = toPixel({ x, y });
         let sprite = this.tileSprites.get(key);
 
-        const texture = tile === 'plate' ? 'plate' : tile === 'wormhole' ? 'wormhole' : 'floor';
         if (!sprite) {
           sprite = this.add.image(position.x, position.y, texture).setDisplaySize(TILE_SIZE, TILE_SIZE);
           this.tileSprites.set(key, sprite);
@@ -188,7 +142,7 @@ export class GameScene extends Phaser.Scene {
         let sprite = this.controlSprites.get(key);
 
         if (!sprite) {
-          sprite = this.add.image(position.x, position.y, arrowTextureKeys[direction]);
+          sprite = this.add.image(position.x, position.y, assetForDirection(direction));
           this.controlSprites.set(key, sprite);
         }
 
@@ -207,9 +161,7 @@ export class GameScene extends Phaser.Scene {
 
   private syncEntity(entity: Entity): void {
     const position = toPixel(entity.position);
-    const texture = entity.kind === 'player'
-      ? playerTextureKeys.default
-      : entity.kind === 'swapper' ? 'swapper' : 'box';
+    const texture = textureForEntity(entity);
     let sprite = this.entitySprites.get(entity.id);
 
     if (!sprite) {

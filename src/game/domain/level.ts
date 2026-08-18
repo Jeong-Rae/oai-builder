@@ -1,5 +1,7 @@
 import type { MapDocument } from '../../map/mapDocument';
 import type { Entity, GameState, Normal, Position, TileKind } from './types';
+import { createPlateStates } from '../features/fields/plate/rules';
+import { objectRules } from '../features/rules';
 
 export const BOARD_COLUMNS = 9;
 export const BOARD_ROWS = 9;
@@ -49,7 +51,7 @@ function createNormals(boxCount: number, random: () => number): Record<string, N
     [available[index], available[selected]] = [available[selected], available[index]];
 
     const id = `normal-${index + 1}`;
-    normals[id] = { id, kind: 'normal', position: available[index], controls: [] };
+    normals[id] = { id, kind: 'normal', position: available[index], controls: [...objectRules.normal.initialControls] };
   }
 
   return normals;
@@ -71,16 +73,12 @@ export function createInitialState({
         id: 'player',
         kind: 'player',
         position: { x: 0, y: BOARD_ROWS - 1 },
-        controls: ['up', 'down', 'left', 'right'],
+        controls: [...objectRules.player.initialControls],
       },
       ...createNormals(boxCount, random),
     },
     playerId: 'player',
-    plateStates: Object.fromEntries(
-      tiles.flatMap((row, y) =>
-        row.flatMap((tile, x) => (tile === 'plate' ? [[`${x},${y}`, 'inactive']] : [])),
-      ),
-    ),
+    plateStates: createPlateStates(tiles),
     goalOpened: false,
     status: 'playing',
   };
@@ -90,9 +88,9 @@ export function createGameStateFromMap(map: MapDocument): GameState {
   const entities: Record<string, Entity> = {};
 
   for (const object of map.objects) {
-    const controls = object.kind === 'player' ? (['up', 'down', 'left', 'right'] as const) : [];
+    const controls = objectRules[object.kind].initialControls;
     const entity = {
-      id: object.kind === 'player' ? 'player' : object.id,
+      id: objectRules[object.kind].fixedId?.value ?? object.id,
       kind: object.kind,
       position: { ...object.position },
       controls: [...controls],
@@ -107,11 +105,7 @@ export function createGameStateFromMap(map: MapDocument): GameState {
     tiles: map.tiles.map((row) => [...row]),
     entities,
     playerId: 'player',
-    plateStates: Object.fromEntries(
-      map.tiles.flatMap((row, y) =>
-        row.flatMap((tile, x) => (tile === 'plate' ? [[`${x},${y}`, 'inactive']] : [])),
-      ),
-    ),
+    plateStates: createPlateStates(map.tiles),
     goalOpened: false,
     status: 'playing',
   };
