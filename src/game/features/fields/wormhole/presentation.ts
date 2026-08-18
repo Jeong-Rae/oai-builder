@@ -1,4 +1,4 @@
-import type { FieldPresentation } from '../../presentationTypes';
+import type { FieldPresentation } from '@/src/game/features/presentationTypes';
 
 export const wormholePresentation = {
   kind: 'wormhole',
@@ -6,7 +6,7 @@ export const wormholePresentation = {
   assets: {
     wormhole: {
       label: '웜홀',
-      url: new URL('../../../../../assets/wormhole/wormhole.origin.png', import.meta.url).href,
+      url: new URL('@/assets/wormhole/wormhole.origin.png', import.meta.url).href,
       group: 'field',
     },
   },

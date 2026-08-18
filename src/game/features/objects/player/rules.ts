@@ -1,4 +1,4 @@
-import type { ObjectRule } from '../../ruleTypes';
+import type { ObjectRule } from '@/src/game/features/ruleTypes';
 
 export const playerRules = {
   kind: 'player',

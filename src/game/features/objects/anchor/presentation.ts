@@ -1,4 +1,4 @@
-import type { ObjectPresentation } from '../../presentationTypes';
+import type { ObjectPresentation } from '@/src/game/features/presentationTypes';
 
 export const anchorPresentation = {
   kind: 'anchor',
@@ -6,7 +6,7 @@ export const anchorPresentation = {
   assets: {
     anchor: {
       label: '앵커',
-      url: new URL('../../../../../assets/box/box.origin.png', import.meta.url).href,
+      url: new URL('@/assets/box/box.origin.png', import.meta.url).href,
       group: 'object',
     },
   },

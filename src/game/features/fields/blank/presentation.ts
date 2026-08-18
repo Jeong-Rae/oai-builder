@@ -1,4 +1,4 @@
-import type { FieldPresentation } from '../../presentationTypes';
+import type { FieldPresentation } from '@/src/game/features/presentationTypes';
 
 export const blankPresentation = {
   kind: 'blank',

@@ -1,5 +1,5 @@
-import type { Entity, GameEvent } from '../../../domain/types';
-import type { ObjectRule } from '../../ruleTypes';
+import type { Entity, GameEvent } from '@/src/game/domain/types';
+import type { ObjectRule } from '@/src/game/features/ruleTypes';
 
 export const swapperRules = {
   kind: 'swapper',

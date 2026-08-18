@@ -6,16 +6,16 @@ import { createGameStoreFromMap, type GameStoreApi } from './store/gameStore';
 import { nextStage, stageGroups, stagesPerGroup, type Stage } from './stages';
 
 const introAssets = {
-  background: new URL('../../assets/intro_background_image.png', import.meta.url).href,
-  title: new URL('../../assets/intro_title_image.png', import.meta.url).href,
-  character: new URL('../../assets/playable/player_default.png', import.meta.url).href,
-  characterDown: new URL('../../assets/playable/player_down.png', import.meta.url).href,
-  characterRight: new URL('../../assets/playable/player_right.png', import.meta.url).href,
-  characterUp: new URL('../../assets/playable/player_up.png', import.meta.url).href,
-  characterLeft: new URL('../../assets/playable/player_left.png', import.meta.url).href,
-  start: new URL('../../assets/intro_startbutton_image.png', import.meta.url).href,
-  starConcave: new URL('../../assets/star/star_concave.png', import.meta.url).href,
-  starConvex: new URL('../../assets/star/star_convex.png', import.meta.url).href,
+  background: new URL('@/assets/intro_background_image.png', import.meta.url).href,
+  title: new URL('@/assets/intro_title_image.png', import.meta.url).href,
+  character: new URL('@/assets/playable/player_default.png', import.meta.url).href,
+  characterDown: new URL('@/assets/playable/player_down.png', import.meta.url).href,
+  characterRight: new URL('@/assets/playable/player_right.png', import.meta.url).href,
+  characterUp: new URL('@/assets/playable/player_up.png', import.meta.url).href,
+  characterLeft: new URL('@/assets/playable/player_left.png', import.meta.url).href,
+  start: new URL('@/assets/intro_startbutton_image.png', import.meta.url).href,
+  starConcave: new URL('@/assets/star/star_concave.png', import.meta.url).href,
+  starConvex: new URL('@/assets/star/star_convex.png', import.meta.url).href,
 };
 
 export class GameApp {
@@ -188,7 +188,7 @@ export class GameApp {
     loading.append(document.createTextNode('맵을 불러오는 중…'));
 
     try {
-      const response = await fetch(new URL('../../maps/001.map', import.meta.url));
+      const response = await fetch(new URL('@/maps/001.map', import.meta.url));
       if (!response.ok) throw new Error('맵을 불러올 수 없습니다.');
       const result = parseMap(await response.text());
       if (!result.ok) throw new Error('맵을 불러올 수 없습니다.');

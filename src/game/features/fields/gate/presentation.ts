@@ -1,7 +1,7 @@
 import { isGateOpen } from './rules';
-import type { FieldPresentation } from '../../presentationTypes';
+import type { FieldPresentation } from '@/src/game/features/presentationTypes';
 
-const gateUrl = new URL('../../../../../assets/tile/tile.origin.png', import.meta.url).href;
+const gateUrl = new URL('@/assets/tile/tile.origin.png', import.meta.url).href;
 
 export const gatePresentation = {
   kind: 'gate',

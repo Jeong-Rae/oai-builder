@@ -1,4 +1,4 @@
-import type { ObjectPresentation } from '../../presentationTypes';
+import type { ObjectPresentation } from '@/src/game/features/presentationTypes';
 
 export const swapperPresentation = {
   kind: 'swapper',
@@ -6,7 +6,7 @@ export const swapperPresentation = {
   assets: {
     swapper: {
       label: '스와퍼',
-      url: new URL('../../../../../assets/swapper/swapper.origin.png', import.meta.url).href,
+      url: new URL('@/assets/swapper/swapper.origin.png', import.meta.url).href,
       group: 'object',
     },
   },

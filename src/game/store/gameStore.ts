@@ -3,7 +3,7 @@ import { createStore } from 'zustand/vanilla';
 import { decide, evolveAll } from '../domain/decider';
 import { createGameStateFromMap, createInitialState, type InitialStateOptions } from '../domain/level';
 import type { Decision, GameCommand, GameEvent, GameState } from '../domain/types';
-import type { MapDocument } from '../../map/mapDocument';
+import type { MapDocument } from '@/src/map/mapDocument';
 
 export interface GameStore {
   game: GameState;

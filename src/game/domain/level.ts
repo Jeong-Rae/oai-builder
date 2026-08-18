@@ -1,4 +1,4 @@
-import type { MapDocument } from '../../map/mapDocument';
+import type { MapDocument } from '@/src/map/mapDocument';
 import type { Entity, GameState, Normal, Position, TileKind } from './types';
 import { createPlateStates } from '../features/fields/plate/rules';
 import { objectRules } from '../features/rules';

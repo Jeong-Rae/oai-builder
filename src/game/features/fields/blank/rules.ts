@@ -1,4 +1,4 @@
-import type { FieldRule } from '../../ruleTypes';
+import type { FieldRule } from '@/src/game/features/ruleTypes';
 
 export const blankRules = {
   kind: 'blank',

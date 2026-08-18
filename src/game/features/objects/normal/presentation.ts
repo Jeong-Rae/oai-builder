@@ -1,4 +1,4 @@
-import type { ObjectPresentation } from '../../presentationTypes';
+import type { ObjectPresentation } from '@/src/game/features/presentationTypes';
 
 export const normalPresentation = {
   kind: 'normal',
@@ -6,7 +6,7 @@ export const normalPresentation = {
   assets: {
     normal: {
       label: '일반 오브젝트',
-      url: new URL('../../../../../assets/box/box.origin.png', import.meta.url).href,
+      url: new URL('@/assets/box/box.origin.png', import.meta.url).href,
       group: 'object',
     },
   },

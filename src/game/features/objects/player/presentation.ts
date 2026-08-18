@@ -1,5 +1,5 @@
-import type { Decision, Direction, GameState } from '../../../domain/types';
-import type { AssetSlot, ObjectPresentation } from '../../presentationTypes';
+import type { Decision, Direction, GameState } from '@/src/game/domain/types';
+import type { AssetSlot, ObjectPresentation } from '@/src/game/features/presentationTypes';
 
 export const playerTextureKeys: Record<'default' | Direction, AssetSlot> = {
   default: 'playerDefault',
@@ -24,11 +24,11 @@ export const playerPresentation = {
   kind: 'player',
   label: '플레이어',
   assets: {
-    playerDefault: { label: '플레이어·기본', url: new URL('../../../../../assets/playable/player_default.png', import.meta.url).href, group: 'object' },
-    playerUp: { label: '플레이어 위 방향', url: new URL('../../../../../assets/playable/player_up.png', import.meta.url).href, group: 'object' },
-    playerDown: { label: '플레이어 아래 방향', url: new URL('../../../../../assets/playable/player_down.png', import.meta.url).href, group: 'object' },
-    playerLeft: { label: '플레이어 왼쪽 방향', url: new URL('../../../../../assets/playable/player_left.png', import.meta.url).href, group: 'object' },
-    playerRight: { label: '플레이어 오른쪽 방향', url: new URL('../../../../../assets/playable/player_right.png', import.meta.url).href, group: 'object' },
+    playerDefault: { label: '플레이어·기본', url: new URL('@/assets/playable/player_default.png', import.meta.url).href, group: 'object' },
+    playerUp: { label: '플레이어 위 방향', url: new URL('@/assets/playable/player_up.png', import.meta.url).href, group: 'object' },
+    playerDown: { label: '플레이어 아래 방향', url: new URL('@/assets/playable/player_down.png', import.meta.url).href, group: 'object' },
+    playerLeft: { label: '플레이어 왼쪽 방향', url: new URL('@/assets/playable/player_left.png', import.meta.url).href, group: 'object' },
+    playerRight: { label: '플레이어 오른쪽 방향', url: new URL('@/assets/playable/player_right.png', import.meta.url).href, group: 'object' },
   },
   toolAsset: 'playerDefault',
   gameTextures: Object.values(playerTextureKeys),

@@ -8,7 +8,10 @@
     "noEmit": true,
     "skipLibCheck": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["apps", "src", "tests", "vite.*.config.ts"]
 }

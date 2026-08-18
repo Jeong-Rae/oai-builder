@@ -1,4 +1,4 @@
-import type { FieldPresentation } from '../../presentationTypes';
+import type { FieldPresentation } from '@/src/game/features/presentationTypes';
 
 export const floorPresentation = {
   kind: 'floor',
@@ -6,7 +6,7 @@ export const floorPresentation = {
   assets: {
     floor: {
       label: '바닥',
-      url: new URL('../../../../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
+      url: new URL('@/assets/tile/tile.origin.trimmed.png', import.meta.url).href,
       group: 'field',
     },
   },

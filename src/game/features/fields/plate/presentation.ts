@@ -1,6 +1,6 @@
-import type { FieldPresentation } from '../../presentationTypes';
+import type { FieldPresentation } from '@/src/game/features/presentationTypes';
 
-const plateUrl = new URL('../../../../../assets/plate/plate.origin.png', import.meta.url).href;
+const plateUrl = new URL('@/assets/plate/plate.origin.png', import.meta.url).href;
 
 export const platePresentation = {
   kind: 'plate',

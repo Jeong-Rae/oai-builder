@@ -1,5 +1,5 @@
-import type { Entity, GameEvent, GameState, PlateState, Position } from '../../../domain/types';
-import type { FieldRule } from '../../ruleTypes';
+import type { Entity, GameEvent, GameState, PlateState, Position } from '@/src/game/domain/types';
+import type { FieldRule } from '@/src/game/features/ruleTypes';
 
 export const plateRules = {
   kind: 'plate',
