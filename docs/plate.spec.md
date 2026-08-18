@@ -13,6 +13,7 @@
 | 키 | `field.plate` |
 | 블록 이미지 | <!-- 작성 --> |
 | 활성화 대상 | `OBJ-NORMAL` |
+| 연결 대상 | 맵의 `FIELD-GATE` 1개 |
 
 ## 상태
 
@@ -33,6 +34,12 @@
 | 대상 | 관계 | 결과 |
 |---|---|---|
 | `OBJ-NORMAL` | `activator` | 플레이트 상태 변경 |
+| `FIELD-GATE` | `activator` | 연결된 모든 플레이트가 `active`이면 게이트 열림 |
+
+## 규칙
+
+- 각 `FIELD-PLATE`는 맵에 존재하는 하나의 `FIELD-GATE`에 연결된다.
+- 플레이트의 `active` 상태는 연결된 게이트의 개방 조건에 사용된다.
 
 ## 사운드
 

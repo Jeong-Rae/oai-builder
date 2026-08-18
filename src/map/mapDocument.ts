@@ -83,6 +83,7 @@ export function validateMap(value: unknown): MapResult {
   const validRows = Number.isInteger(rows) && Number(rows) > 0 ? Number(rows) : 0;
   let exitCount = 0;
   let wormholeCount = 0;
+  let gateCount = 0;
 
   if (!Array.isArray(tiles) || tiles.length !== validRows) {
     errors.push({ code: 'tiles', message: '필드 행 수가 맵의 행 수와 일치해야 합니다.' });
@@ -100,6 +101,8 @@ export function validateMap(value: unknown): MapResult {
           exitCount += 1;
         } else if (tile === 'wormhole') {
           wormholeCount += 1;
+        } else if (tile === 'gate') {
+          gateCount += 1;
         }
       });
     });
@@ -111,6 +114,10 @@ export function validateMap(value: unknown): MapResult {
 
   if (wormholeCount !== 0 && wormholeCount !== 2) {
     errors.push({ code: 'wormhole-count', message: '웜홀은 사용하지 않거나 정확히 두 개여야 합니다.' });
+  }
+
+  if (gateCount > 1) {
+    errors.push({ code: 'gate-count', message: '게이트는 최대 하나만 배치할 수 있습니다.' });
   }
 
   let playerCount = 0;

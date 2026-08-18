@@ -44,7 +44,8 @@ function isBlank(state: GameState, position: Position): boolean {
 }
 
 export function isGateOpen(state: GameState): boolean {
-  return Object.values(state.plateStates).some((plate) => plate === 'active');
+  const plates = Object.values(state.plateStates);
+  return plates.length > 0 && plates.every((plate) => plate === 'active');
 }
 
 function wormholeDestination(state: GameState, position: Position): Position | undefined {

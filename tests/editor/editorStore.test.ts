@@ -16,6 +16,14 @@ describe('맵 에디터 저장소', () => {
     expect(store.getState().draft.tiles[0][2]).toBe('floor');
   });
 
+  it('게이트를 하나만 배치한다', () => {
+    const store = createEditorStore();
+
+    expect(store.getState().setTile({ x: 0, y: 0 }, 'gate')).toBe(true);
+    expect(store.getState().setTile({ x: 1, y: 0 }, 'gate')).toBe(false);
+    expect(store.getState().draft.tiles.flat().filter((tile) => tile === 'gate')).toHaveLength(1);
+  });
+
   it('필드, 오브젝트 및 맵을 각각 초기화한다', () => {
     const store = createEditorStore(createBlankMap(3, 2));
     store.getState().setTile({ x: 1, y: 0 }, 'plate');

@@ -130,6 +130,11 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
         && draft.tiles[position.y][position.x] !== 'wormhole'
         && draft.tiles.flat().filter((tile) => tile === 'wormhole').length >= 2
       ) return false;
+      if (
+        kind === 'gate'
+        && draft.tiles[position.y][position.x] !== 'gate'
+        && draft.tiles.flat().includes('gate')
+      ) return false;
 
       if (kind === 'exit') {
         draft.tiles = draft.tiles.map((row) => row.map((tile) => tile === 'exit' ? 'floor' : tile));

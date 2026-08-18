@@ -214,11 +214,12 @@ describe('웜홀', () => {
 });
 
 describe('게이트', () => {
-  it('활성 플레이트가 없으면 닫히고 하나라도 있으면 열린다', () => {
+  it('연결된 모든 플레이트가 활성화되어야 열린다', () => {
     const state = createInitialState({
       boxCount: 0,
       tileOverrides: [
         { position: { x: 0, y: 0 }, kind: 'plate' },
+        { position: { x: 1, y: 0 }, kind: 'plate' },
         { position: { x: 2, y: 1 }, kind: 'gate' },
       ],
     });
@@ -232,7 +233,10 @@ describe('게이트', () => {
 
     expect(decide(prepared, { type: 'player/move', direction: 'right' }).rejectedBy).toBe('wall');
 
-    const opened = { ...prepared, plateStates: { '0,0': 'active' as const } };
+    const partlyOpened = { ...prepared, plateStates: { '0,0': 'active' as const, '1,0': 'inactive' as const } };
+    expect(decide(partlyOpened, { type: 'player/move', direction: 'right' }).rejectedBy).toBe('wall');
+
+    const opened = { ...prepared, plateStates: { '0,0': 'active' as const, '1,0': 'active' as const } };
     const next = evolveAll(opened, decide(opened, { type: 'player/move', direction: 'right' }).events);
     expect(next.entities.player.position).toEqual({ x: 2, y: 1 });
   });

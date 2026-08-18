@@ -75,6 +75,17 @@ describe('맵 문서', () => {
     expect(validateMap(three).ok).toBe(false);
   });
 
+  it('게이트는 최대 하나만 허용한다', () => {
+    const map = validMap();
+    map.tiles[0][0] = 'gate';
+    map.tiles[1][2] = 'gate';
+
+    const result = validateMap(map);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.map((error) => error.code)).toContain('gate-count');
+  });
+
   it('잘못된 JSON과 지원하지 않는 버전을 구분한다', () => {
     const invalidJson = parseMap('{');
     const unsupported = parseMap(JSON.stringify({ ...validMap(), version: 2 }));
