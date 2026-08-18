@@ -34,7 +34,7 @@ describe('맵 기반 게임 상태', () => {
     game.tiles[0][0] = 'wall';
     game.entities.player.position.x = 1;
 
-    expect(map.tiles[0][0]).toBe('floor');
+    expect(map.tiles[0][0]).toBe('tile');
     expect(map.objects[0].position.x).toBe(0);
   });
 });

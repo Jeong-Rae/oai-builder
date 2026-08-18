@@ -1,6 +1,6 @@
-# 바닥
+# 타일
 
-`FIELD-FLOOR` · 필드
+`FIELD-TILE` · 필드
 
 오브젝트가 이동할 수 있는 기본 공간.
 
@@ -8,9 +8,9 @@
 
 | 항목 | 값 |
 |---|---|
-| 블록명 | 바닥 |
-| 식별자 | `FIELD-FLOOR` |
-| 키 | `field.floor` |
+| 블록명 | 타일 |
+| 식별자 | `FIELD-TILE` |
+| 키 | `field.tile` |
 | 블록 이미지 | <!-- 작성 --> |
 
 ## 동작
@@ -35,9 +35,9 @@
 
 | 프리뷰 | 참조 |
 |---|---|
-| `Default` | `FIELD-FLOOR` |
+| `Default` | `FIELD-TILE` |
 
 ## 규칙 근거
 
-- CORE RULEBOOK · Field Reference · `FLOOR`
+- CORE RULEBOOK · Field Reference · `TILE`
 - CORE RULEBOOK · Turn Resolution · `EMPTY FIELD`

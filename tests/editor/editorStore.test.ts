@@ -13,7 +13,7 @@ describe('맵 에디터 저장소', () => {
     expect(store.getState().setTile({ x: 2, y: 0 }, 'wormhole')).toBe(false);
 
     expect(store.getState().draft.tiles[0].filter((tile) => tile === 'wormhole')).toHaveLength(2);
-    expect(store.getState().draft.tiles[0][2]).toBe('floor');
+    expect(store.getState().draft.tiles[0][2]).toBe('tile');
   });
 
   it('게이트를 하나만 배치한다', () => {
@@ -32,7 +32,7 @@ describe('맵 에디터 저장소', () => {
     store.getState().placeObject({ x: 1, y: 1 }, 'normal');
 
     store.getState().clearFields();
-    expect(store.getState().draft.tiles.flat()).toEqual(Array(6).fill('floor'));
+    expect(store.getState().draft.tiles.flat()).toEqual(Array(6).fill('tile'));
     expect(store.getState().draft.objects).toHaveLength(2);
 
     store.getState().clearObjects();
@@ -50,7 +50,7 @@ describe('맵 에디터 저장소', () => {
     store.getState().resize(11, 10);
 
     expect(store.getState().draft.tiles[1][1]).toBe('plate');
-    expect(store.getState().draft.tiles[9][10]).toBe('floor');
+    expect(store.getState().draft.tiles[9][10]).toBe('tile');
   });
 
   it('맵 축소 시 범위 밖 필드와 오브젝트 제거 여부를 판정한다', () => {
@@ -90,7 +90,7 @@ describe('맵 에디터 저장소', () => {
     store.getState().erase({ x: 1, y: 0 });
 
     expect(store.getState().draft.objects).toEqual([]);
-    expect(store.getState().draft.tiles[0]).toEqual(['wall', 'floor']);
+    expect(store.getState().draft.tiles[0]).toEqual(['wall', 'tile']);
   });
 
   it('blank 필드는 오브젝트를 제거하고 새 배치를 허용하지 않는다', () => {

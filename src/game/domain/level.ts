@@ -15,7 +15,7 @@ export interface InitialStateOptions {
 function createTiles(tileOverrides: InitialStateOptions['tileOverrides'] = []): TileKind[][] {
   const tiles: TileKind[][] = Array.from({ length: BOARD_ROWS }, (_, y) =>
     Array.from({ length: BOARD_COLUMNS }, (_, x) =>
-      x === BOARD_COLUMNS - 1 && y === 0 ? 'exit' : 'floor',
+      x === BOARD_COLUMNS - 1 && y === 0 ? 'exit' : 'tile',
     ),
   );
 

@@ -7,7 +7,7 @@ import { gameStore, type GameStoreApi } from '../store/gameStore';
 import type { Direction, Entity, GameState, Position } from '../domain/types';
 
 const textureUrls = {
-  floor: new URL('../../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
+  tile: new URL('../../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
   plate: new URL('../../../assets/plate/plate.origin.png', import.meta.url).href,
   wormhole: new URL('../../../assets/wormhole/wormhole.origin.png', import.meta.url).href,
   box: new URL('../../../assets/box/box.origin.png', import.meta.url).href,
@@ -57,7 +57,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('floor', textureUrls.floor);
+    this.load.image('tile', textureUrls.tile);
     this.load.image('plate', textureUrls.plate);
     this.load.image('wormhole', textureUrls.wormhole);
     this.load.image('box', textureUrls.box);
@@ -144,7 +144,7 @@ export class GameScene extends Phaser.Scene {
         const position = toPixel({ x, y });
         let sprite = this.tileSprites.get(key);
 
-        const texture = tile === 'plate' ? 'plate' : tile === 'wormhole' ? 'wormhole' : 'floor';
+        const texture = tile === 'plate' ? 'plate' : tile === 'wormhole' ? 'wormhole' : 'tile';
         if (!sprite) {
           sprite = this.add.image(position.x, position.y, texture).setDisplaySize(TILE_SIZE, TILE_SIZE);
           this.tileSprites.set(key, sprite);

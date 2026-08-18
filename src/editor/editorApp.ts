@@ -73,7 +73,7 @@ interface ToolOption<T extends EditorTool> {
 
 const fieldTools: Array<ToolOption<TileKind>> = [
   { tool: 'blank', label: '맵 외부', badge: '∅' },
-  { tool: 'floor', label: '타일', asset: 'tile' },
+  { tool: 'tile', label: '타일', asset: 'tile' },
   { tool: 'wall', label: '벽', asset: 'wall' },
   { tool: 'plate', label: '플레이트', asset: 'plateInactive' },
   { tool: 'wormhole', label: '웜홀', asset: 'wormhole' },
@@ -89,7 +89,7 @@ const objectTools: Array<ToolOption<MapObjectKind>> = [
 ];
 
 const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
-  floor: 'tile',
+  tile: 'tile',
   wall: 'wall',
   plate: 'plateInactive',
   wormhole: 'wormhole',
@@ -119,7 +119,7 @@ const assetGroups: Array<{ label: string; keys: AssetKey[] }> = [
 export function assetForField(field: TileKind, game: GameState | undefined, key: string): AssetKey | undefined {
   switch (field) {
     case 'blank': return undefined;
-    case 'floor': return 'tile';
+    case 'tile': return 'tile';
     case 'wall': return 'wall';
     case 'plate': return game?.plateStates[key] === 'active' ? 'plateActive' : 'plateInactive';
     case 'wormhole': return 'wormhole';
@@ -182,7 +182,7 @@ function toolButton({ tool, label, asset, badge }: ToolOption<EditorTool>, resol
 
 export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEditorStore()): () => void {
   let localAssets: Partial<Record<AssetKey, string>> = {};
-  let selectedAsset: AssetKey = assetsByTool.floor!;
+  let selectedAsset: AssetKey = assetsByTool.tile!;
   const resolveAsset = (key: AssetKey): string => localAssets[key] ?? assetUrls[key];
   const playerAssetPreloads = Object.values(playerAssetByTexture).map((key) => {
     const image = new Image();

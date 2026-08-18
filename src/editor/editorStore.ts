@@ -58,7 +58,7 @@ export function resizeWouldDiscard(map: MapDocument, columns: number, rows: numb
 
   for (let y = 0; y < map.rows; y += 1) {
     for (let x = 0; x < map.columns; x += 1) {
-      if ((x >= columns || y >= rows) && map.tiles[y][x] !== 'floor') return true;
+      if ((x >= columns || y >= rows) && map.tiles[y][x] !== 'tile') return true;
     }
   }
 
@@ -72,7 +72,7 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
     draft: initial,
     errors: errorsFor(initial),
     dirty: false,
-    tool: 'floor',
+    tool: 'tile',
 
     newMap(columns, rows) {
       if (!Number.isInteger(columns) || columns < 1 || !Number.isInteger(rows) || rows < 1) return;
@@ -82,7 +82,7 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
 
     clearFields() {
       const draft = cloneMap(get().draft);
-      draft.tiles = Array.from({ length: draft.rows }, () => Array<TileKind>(draft.columns).fill('floor'));
+      draft.tiles = Array.from({ length: draft.rows }, () => Array<TileKind>(draft.columns).fill('tile'));
       set({ ...changed(draft), selected: undefined });
     },
 
@@ -137,7 +137,7 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
       ) return false;
 
       if (kind === 'exit') {
-        draft.tiles = draft.tiles.map((row) => row.map((tile) => tile === 'exit' ? 'floor' : tile));
+        draft.tiles = draft.tiles.map((row) => row.map((tile) => tile === 'exit' ? 'tile' : tile));
       }
 
       draft.tiles[position.y][position.x] = kind;
@@ -175,7 +175,7 @@ export function createEditorStore(initialMap: MapDocument = createBlankMap()) {
       if (objects.length !== draft.objects.length) {
         draft.objects = objects;
       } else if (draft.tiles[position.y]?.[position.x] === 'exit') {
-        draft.tiles[position.y][position.x] = 'floor';
+        draft.tiles[position.y][position.x] = 'tile';
       } else {
         return;
       }

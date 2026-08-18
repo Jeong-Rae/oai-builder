@@ -28,7 +28,7 @@ export type MapResult =
   | { ok: true; map: MapDocument }
   | { ok: false; errors: MapError[] };
 
-const tileKinds: TileKind[] = ['blank', 'floor', 'wall', 'plate', 'exit', 'wormhole', 'gate'];
+const tileKinds: TileKind[] = ['blank', 'tile', 'wall', 'plate', 'exit', 'wormhole', 'gate'];
 const objectKinds: MapObjectKind[] = ['player', 'normal', 'anchor', 'swapper'];
 
 export function createBlankMap(columns = 9, rows = 9): MapDocument {
@@ -36,7 +36,7 @@ export function createBlankMap(columns = 9, rows = 9): MapDocument {
     version: MAP_VERSION,
     columns,
     rows,
-    tiles: Array.from({ length: rows }, () => Array<TileKind>(columns).fill('floor')),
+    tiles: Array.from({ length: rows }, () => Array<TileKind>(columns).fill('tile')),
     objects: [],
   };
 }
