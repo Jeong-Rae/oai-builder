@@ -11,14 +11,15 @@
     "build:live": "vite build --config vite.game.config.ts",
     "build:editor": "vite build --config vite.editor.config.ts",
     "deploy": "npm run typecheck && npm run deploy:live && npm run deploy:editor",
-    "deploy:live": "npm run build:live && npx --yes vercel@59.1.3 deploy dist/game --prod --yes --project game-live --scope jeong-raes-projects",
-    "deploy:editor": "npm run build:editor && npx --yes vercel@59.1.3 deploy dist/editor --prod --yes --project game-editor --scope jeong-raes-projects",
+    "deploy:live": "npm run build:live && vercel deploy dist/game --prod --yes --project game-live --scope jeong-raes-projects",
+    "deploy:editor": "npm run build:editor && vercel deploy dist/editor --prod --yes --project game-editor --scope jeong-raes-projects",
     "test": "vitest",
     "test:run": "vitest run"
   },
   "devDependencies": {
     "sharp": "^0.35.3",
     "typescript": "^7.0.2",
+    "vercel": "^59.1.3",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
   },
