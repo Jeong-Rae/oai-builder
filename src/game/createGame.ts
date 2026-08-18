@@ -12,7 +12,7 @@ export function createPhaserGame(parent: string | HTMLElement, store: GameStoreA
     parent,
     width: game.columns * TILE_SIZE,
     height: game.rows * TILE_SIZE,
-    backgroundColor: '#080e14',
+    transparent: true,
     pixelArt: true,
     scale: {
       mode: Phaser.Scale.NONE,

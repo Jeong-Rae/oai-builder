@@ -5,23 +5,22 @@ import { directionFromKey, isUndoShortcut } from '../input';
 import { playerTextureForMove, playerTextureKeys } from '../playerAppearance';
 import { gameStore, type GameStoreApi } from '../store/gameStore';
 import type { Direction, Entity, GameState, Position } from '../domain/types';
-import { isGateOpen } from '../domain/decider';
 
 const textureUrls = {
-  floor: new URL('../../../assets/tile/tile.64.png', import.meta.url).href,
-  plate: new URL('../../../assets/plate/plate.64.png', import.meta.url).href,
-  wormhole: new URL('../../../assets/wormhole/wormhole.64.png', import.meta.url).href,
-  box: new URL('../../../assets/box/box.64.png', import.meta.url).href,
-  swapper: new URL('../../../assets/swapper/swapper.64.png', import.meta.url).href,
-  playerDefault: new URL('../../../assets/playable/player_default.96.png', import.meta.url).href,
-  playerUp: new URL('../../../assets/playable/player_up.96.png', import.meta.url).href,
-  playerDown: new URL('../../../assets/playable/player_down.96.png', import.meta.url).href,
-  playerLeft: new URL('../../../assets/playable/player_left.96.png', import.meta.url).href,
-  playerRight: new URL('../../../assets/playable/player_right.96.png', import.meta.url).href,
-  goal1: new URL('../../../assets/goal/goal_1f.96.png', import.meta.url).href,
-  goal2: new URL('../../../assets/goal/goal_2f.96.png', import.meta.url).href,
-  goal3: new URL('../../../assets/goal/goal_3f.96.png', import.meta.url).href,
-  goal4: new URL('../../../assets/goal/goal_4f.96.png', import.meta.url).href,
+  floor: new URL('../../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
+  plate: new URL('../../../assets/plate/plate.origin.png', import.meta.url).href,
+  wormhole: new URL('../../../assets/wormhole/wormhole.origin.png', import.meta.url).href,
+  box: new URL('../../../assets/box/box.origin.png', import.meta.url).href,
+  swapper: new URL('../../../assets/swapper/swapper.origin.png', import.meta.url).href,
+  playerDefault: new URL('../../../assets/playable/player_default.png', import.meta.url).href,
+  playerUp: new URL('../../../assets/playable/player_up.png', import.meta.url).href,
+  playerDown: new URL('../../../assets/playable/player_down.png', import.meta.url).href,
+  playerLeft: new URL('../../../assets/playable/player_left.png', import.meta.url).href,
+  playerRight: new URL('../../../assets/playable/player_right.png', import.meta.url).href,
+  goal1: new URL('../../../assets/goal/goal_1f.1254.png', import.meta.url).href,
+  goal2: new URL('../../../assets/goal/goal_2f.1254.png', import.meta.url).href,
+  goal3: new URL('../../../assets/goal/goal_3f.1254.png', import.meta.url).href,
+  goal4: new URL('../../../assets/goal/goal_4f.1254.png', import.meta.url).href,
   arrowUp: new URL('../../../assets/arrow/arrow_up.svg', import.meta.url).href,
   arrowDown: new URL('../../../assets/arrow/arrow_down.svg', import.meta.url).href,
   arrowLeft: new URL('../../../assets/arrow/arrow_left.svg', import.meta.url).href,
@@ -153,16 +152,6 @@ export class GameScene extends Phaser.Scene {
           sprite.setTexture(texture);
         }
 
-        const tint = tile === 'wall'
-          ? 0x526477
-          : tile === 'plate'
-            ? game.plateStates[key] === 'active' ? 0x5ee6a8 : 0xd5a84c
-            : tile === 'exit'
-              ? 0x87b7ff
-              : tile === 'wormhole'
-                ? 0x9b7cff
-                : tile === 'gate' ? isGateOpen(game) ? 0x5ee6a8 : 0x526477 : 0xffffff;
-        sprite.setTint(tint);
       }
     }
   }

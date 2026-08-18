@@ -4,12 +4,12 @@
   "rows": 3,
   "tiles": [
     [
-      "wall",
-      "wall",
+      "blank",
+      "blank",
       "wormhole",
-      "wall",
-      "wall",
-      "wall"
+      "blank",
+      "blank",
+      "blank"
     ],
     [
       "exit",
@@ -17,15 +17,15 @@
       "floor",
       "floor",
       "plate",
-      "wall"
+      "blank"
     ],
     [
-      "wall",
-      "wall",
+      "blank",
+      "blank",
       "wormhole",
       "floor",
-      "wall",
-      "wall"
+      "blank",
+      "blank"
     ]
   ],
   "objects": [
