@@ -38,7 +38,7 @@ apps/editor  -> dist/editor  -> editor subdomain
 - The exit is represented as a tile rather than an entity, so an entity may occupy it.
 - `Player`, `Normal`, `Anchor`, and `Swapper` are entities with an `EntityId`, tile position, and owned direction controls.
 - Each direction control has exactly one owner. The player owns all four controls at game start.
-- `blank`, `tile`, `wall`, `exit`, and `plate` are tile kinds. `blank` represents map-exterior space without a rendered tile and rejects entry as `out-of-bounds`. Plates are stored as `inactive` or `active` by tile coordinate.
+- `blank`, `floor`, `wall`, `exit`, and `plate` are tile kinds. `blank` represents map-exterior space without a rendered tile and rejects entry as `out-of-bounds`. Plates are stored as `inactive` or `active` by tile coordinate.
 - Entities are held in `Record<EntityId, Entity>`.
 - Entities do not call each other directly. Board interactions are decided centrally from the complete state.
 - A versioned `MapDocument` is the shared, editable level definition. It contains dimensions, tiles, and initial object positions but no mutable play state.

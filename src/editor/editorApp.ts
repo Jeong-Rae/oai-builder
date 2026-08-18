@@ -10,7 +10,7 @@ import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type Editor
 import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFiles';
 
 const assetUrls = {
-  tile: new URL('../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
+  floor: new URL('../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
   wall: new URL('../../assets/tile/tile.origin.png', import.meta.url).href,
   plateInactive: new URL('../../assets/plate/plate.origin.png', import.meta.url).href,
   plateActive: new URL('../../assets/plate/plate.origin.png', import.meta.url).href,
@@ -39,7 +39,7 @@ export type EditorAssetKey = keyof typeof assetUrls;
 type AssetKey = EditorAssetKey;
 
 const assetLabels: Record<AssetKey, string> = {
-  tile: '타일',
+  floor: '바닥',
   wall: '벽',
   plateInactive: '플레이트·비활성',
   plateActive: '플레이트·활성',
@@ -73,7 +73,7 @@ interface ToolOption<T extends EditorTool> {
 
 const fieldTools: Array<ToolOption<TileKind>> = [
   { tool: 'blank', label: '맵 외부', badge: '∅' },
-  { tool: 'tile', label: '타일', asset: 'tile' },
+  { tool: 'floor', label: '바닥', asset: 'floor' },
   { tool: 'wall', label: '벽', asset: 'wall' },
   { tool: 'plate', label: '플레이트', asset: 'plateInactive' },
   { tool: 'wormhole', label: '웜홀', asset: 'wormhole' },
@@ -89,7 +89,7 @@ const objectTools: Array<ToolOption<MapObjectKind>> = [
 ];
 
 const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
-  tile: 'tile',
+  floor: 'floor',
   wall: 'wall',
   plate: 'plateInactive',
   wormhole: 'wormhole',
@@ -110,7 +110,7 @@ const playerAssetByTexture: Record<string, AssetKey> = {
 };
 
 const assetGroups: Array<{ label: string; keys: AssetKey[] }> = [
-  { label: '필드', keys: ['tile', 'wall', 'plateInactive', 'plateActive', 'wormhole', 'gateClosed', 'gateOpen'] },
+  { label: '필드', keys: ['floor', 'wall', 'plateInactive', 'plateActive', 'wormhole', 'gateClosed', 'gateOpen'] },
   { label: '오브젝트', keys: ['playerDefault', 'playerUp', 'playerDown', 'playerLeft', 'playerRight', 'normal', 'anchor', 'swapper'] },
   { label: '골 애니메이션', keys: ['goalFrame1', 'goalFrame2', 'goalFrame3', 'goalFrame4'] },
   { label: '방향 표시', keys: ['up', 'down', 'left', 'right'] },
@@ -119,7 +119,7 @@ const assetGroups: Array<{ label: string; keys: AssetKey[] }> = [
 export function assetForField(field: TileKind, game: GameState | undefined, key: string): AssetKey | undefined {
   switch (field) {
     case 'blank': return undefined;
-    case 'tile': return 'tile';
+    case 'floor': return 'floor';
     case 'wall': return 'wall';
     case 'plate': return game?.plateStates[key] === 'active' ? 'plateActive' : 'plateInactive';
     case 'wormhole': return 'wormhole';
@@ -182,7 +182,7 @@ function toolButton({ tool, label, asset, badge }: ToolOption<EditorTool>, resol
 
 export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEditorStore()): () => void {
   let localAssets: Partial<Record<AssetKey, string>> = {};
-  let selectedAsset: AssetKey = assetsByTool.tile!;
+  let selectedAsset: AssetKey = assetsByTool.floor!;
   const resolveAsset = (key: AssetKey): string => localAssets[key] ?? assetUrls[key];
   const playerAssetPreloads = Object.values(playerAssetByTexture).map((key) => {
     const image = new Image();

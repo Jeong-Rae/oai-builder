@@ -8,8 +8,8 @@ const map: MapDocument = {
   version: 1, columns: 6, rows: 3,
   tiles: [
     ['wall', 'wall', 'wormhole', 'wall', 'wall', 'wall'],
-    ['exit', 'gate', 'tile', 'tile', 'plate', 'wall'],
-    ['wall', 'wall', 'wormhole', 'tile', 'wall', 'wall'],
+    ['exit', 'gate', 'floor', 'floor', 'plate', 'wall'],
+    ['wall', 'wall', 'wormhole', 'floor', 'wall', 'wall'],
   ],
   objects: [
     { id: 'player', kind: 'player', position: { x: 3, y: 2 } },

@@ -14,8 +14,8 @@
     [
       "exit",
       "gate",
-      "tile",
-      "tile",
+      "floor",
+      "floor",
       "plate",
       "blank"
     ],
@@ -23,7 +23,7 @@
       "blank",
       "blank",
       "wormhole",
-      "tile",
+      "floor",
       "blank",
       "blank"
     ]

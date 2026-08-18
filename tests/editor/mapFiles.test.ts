@@ -35,7 +35,7 @@ describe('맵 파일', () => {
       await readMapFile({ name: 'room.json', text: async () => '{}' }),
       await readMapFile({ name: 'room.map', text: async () => '{' }),
       parseMap(JSON.stringify({ version: 2 })),
-      parseMap(JSON.stringify({ version: 1, columns: 1, rows: 1, tiles: [['tile']], objects: [] })),
+      parseMap(JSON.stringify({ version: 1, columns: 1, rows: 1, tiles: [['floor']], objects: [] })),
     ];
 
     results.forEach((result) => expect(applyLoadedMap(store, result)).toBe(false));
