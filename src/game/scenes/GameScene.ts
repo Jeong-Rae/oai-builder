@@ -8,8 +8,11 @@ import type { Direction, Entity, GameState, Position } from '../domain/types';
 import { isGateOpen } from '../domain/decider';
 
 const textureUrls = {
-  tile: new URL('../../../assets/tail/tile.96.png', import.meta.url).href,
-  box: new URL('../../../assets/box/box.3d.96.png', import.meta.url).href,
+  floor: new URL('../../../assets/floor/floor.64.png', import.meta.url).href,
+  plate: new URL('../../../assets/plate/plate.64.png', import.meta.url).href,
+  wormhole: new URL('../../../assets/wormhole/wormhole.64.png', import.meta.url).href,
+  box: new URL('../../../assets/box/box.64.png', import.meta.url).href,
+  swapper: new URL('../../../assets/swapper/swapper.64.png', import.meta.url).href,
   playerDefault: new URL('../../../assets/playable/player_default.96.png', import.meta.url).href,
   playerUp: new URL('../../../assets/playable/player_up.96.png', import.meta.url).href,
   playerDown: new URL('../../../assets/playable/player_down.96.png', import.meta.url).href,
@@ -55,8 +58,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('tile', textureUrls.tile);
+    this.load.image('floor', textureUrls.floor);
+    this.load.image('plate', textureUrls.plate);
+    this.load.image('wormhole', textureUrls.wormhole);
     this.load.image('box', textureUrls.box);
+    this.load.image('swapper', textureUrls.swapper);
     this.load.image(playerTextureKeys.default, textureUrls.playerDefault);
     this.load.image(playerTextureKeys.up, textureUrls.playerUp);
     this.load.image(playerTextureKeys.down, textureUrls.playerDown);
@@ -139,9 +145,12 @@ export class GameScene extends Phaser.Scene {
         const position = toPixel({ x, y });
         let sprite = this.tileSprites.get(key);
 
+        const texture = tile === 'plate' ? 'plate' : tile === 'wormhole' ? 'wormhole' : 'floor';
         if (!sprite) {
-          sprite = this.add.image(position.x, position.y, 'tile').setDisplaySize(TILE_SIZE, TILE_SIZE);
+          sprite = this.add.image(position.x, position.y, texture).setDisplaySize(TILE_SIZE, TILE_SIZE);
           this.tileSprites.set(key, sprite);
+        } else {
+          sprite.setTexture(texture);
         }
 
         const tint = tile === 'wall'
@@ -209,7 +218,9 @@ export class GameScene extends Phaser.Scene {
 
   private syncEntity(entity: Entity): void {
     const position = toPixel(entity.position);
-    const texture = entity.kind === 'player' ? playerTextureKeys.default : 'box';
+    const texture = entity.kind === 'player'
+      ? playerTextureKeys.default
+      : entity.kind === 'swapper' ? 'swapper' : 'box';
     let sprite = this.entitySprites.get(entity.id);
 
     if (!sprite) {
@@ -218,7 +229,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    sprite.setPosition(position.x, position.y);
+    sprite.setTexture(texture).setPosition(position.x, position.y);
   }
 
   private syncGoal(game: GameState, previous: GameState): void {
