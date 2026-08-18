@@ -8,7 +8,7 @@ import type { Direction, Entity, GameState, Position } from '../domain/types';
 import { isGateOpen } from '../domain/decider';
 
 const textureUrls = {
-  floor: new URL('../../../assets/floor/floor.64.png', import.meta.url).href,
+  floor: new URL('../../../assets/tile/tile.64.png', import.meta.url).href,
   plate: new URL('../../../assets/plate/plate.64.png', import.meta.url).href,
   wormhole: new URL('../../../assets/wormhole/wormhole.64.png', import.meta.url).href,
   box: new URL('../../../assets/box/box.64.png', import.meta.url).href,

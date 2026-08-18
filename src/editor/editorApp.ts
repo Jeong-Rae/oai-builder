@@ -10,13 +10,13 @@ import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type Editor
 import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFiles';
 
 const assetUrls = {
-  floor: new URL('../../assets/floor/floor.64.png', import.meta.url).href,
-  wall: new URL('../../assets/floor/floor.64.png', import.meta.url).href,
+  floor: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
+  wall: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
   plateInactive: new URL('../../assets/plate/plate.64.png', import.meta.url).href,
   plateActive: new URL('../../assets/plate/plate.64.png', import.meta.url).href,
   wormhole: new URL('../../assets/wormhole/wormhole.64.png', import.meta.url).href,
-  gateClosed: new URL('../../assets/floor/floor.64.png', import.meta.url).href,
-  gateOpen: new URL('../../assets/floor/floor.64.png', import.meta.url).href,
+  gateClosed: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
+  gateOpen: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
   normal: new URL('../../assets/box/box.64.png', import.meta.url).href,
   anchor: new URL('../../assets/box/box.64.png', import.meta.url).href,
   swapper: new URL('../../assets/swapper/swapper.64.png', import.meta.url).href,
