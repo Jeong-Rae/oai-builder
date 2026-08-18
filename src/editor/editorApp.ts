@@ -10,25 +10,25 @@ import { createEditorStore, resizeWouldDiscard, type EditorStoreApi, type Editor
 import { applyLoadedMap, downloadMap, mapFilename, readMapFile } from './mapFiles';
 
 const assetUrls = {
-  floor: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
-  wall: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
-  plateInactive: new URL('../../assets/plate/plate.64.png', import.meta.url).href,
-  plateActive: new URL('../../assets/plate/plate.64.png', import.meta.url).href,
-  wormhole: new URL('../../assets/wormhole/wormhole.64.png', import.meta.url).href,
-  gateClosed: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
-  gateOpen: new URL('../../assets/tile/tile.64.png', import.meta.url).href,
-  normal: new URL('../../assets/box/box.64.png', import.meta.url).href,
-  anchor: new URL('../../assets/box/box.64.png', import.meta.url).href,
-  swapper: new URL('../../assets/swapper/swapper.64.png', import.meta.url).href,
-  playerDefault: new URL('../../assets/playable/player_default.96.png', import.meta.url).href,
-  playerUp: new URL('../../assets/playable/player_up.96.png', import.meta.url).href,
-  playerDown: new URL('../../assets/playable/player_down.96.png', import.meta.url).href,
-  playerLeft: new URL('../../assets/playable/player_left.96.png', import.meta.url).href,
-  playerRight: new URL('../../assets/playable/player_right.96.png', import.meta.url).href,
-  goalFrame1: new URL('../../assets/goal/goal_1f.96.png', import.meta.url).href,
-  goalFrame2: new URL('../../assets/goal/goal_2f.96.png', import.meta.url).href,
-  goalFrame3: new URL('../../assets/goal/goal_3f.96.png', import.meta.url).href,
-  goalFrame4: new URL('../../assets/goal/goal_4f.96.png', import.meta.url).href,
+  tile: new URL('../../assets/tile/tile.origin.trimmed.png', import.meta.url).href,
+  wall: new URL('../../assets/tile/tile.origin.png', import.meta.url).href,
+  plateInactive: new URL('../../assets/plate/plate.origin.png', import.meta.url).href,
+  plateActive: new URL('../../assets/plate/plate.origin.png', import.meta.url).href,
+  wormhole: new URL('../../assets/wormhole/wormhole.origin.png', import.meta.url).href,
+  gateClosed: new URL('../../assets/tile/tile.origin.png', import.meta.url).href,
+  gateOpen: new URL('../../assets/tile/tile.origin.png', import.meta.url).href,
+  normal: new URL('../../assets/box/box.origin.png', import.meta.url).href,
+  anchor: new URL('../../assets/box/box.origin.png', import.meta.url).href,
+  swapper: new URL('../../assets/swapper/swapper.origin.png', import.meta.url).href,
+  playerDefault: new URL('../../assets/playable/player_default.png', import.meta.url).href,
+  playerUp: new URL('../../assets/playable/player_up.png', import.meta.url).href,
+  playerDown: new URL('../../assets/playable/player_down.png', import.meta.url).href,
+  playerLeft: new URL('../../assets/playable/player_left.png', import.meta.url).href,
+  playerRight: new URL('../../assets/playable/player_right.png', import.meta.url).href,
+  goalFrame1: new URL('../../assets/goal/goal_1f.1254.png', import.meta.url).href,
+  goalFrame2: new URL('../../assets/goal/goal_2f.1254.png', import.meta.url).href,
+  goalFrame3: new URL('../../assets/goal/goal_3f.1254.png', import.meta.url).href,
+  goalFrame4: new URL('../../assets/goal/goal_4f.1254.png', import.meta.url).href,
   up: new URL('../../assets/arrow/arrow_up.svg', import.meta.url).href,
   down: new URL('../../assets/arrow/arrow_down.svg', import.meta.url).href,
   left: new URL('../../assets/arrow/arrow_left.svg', import.meta.url).href,
@@ -39,25 +39,25 @@ export type EditorAssetKey = keyof typeof assetUrls;
 type AssetKey = EditorAssetKey;
 
 const assetLabels: Record<AssetKey, string> = {
-  floor: '바닥',
+  tile: '타일',
   wall: '벽',
-  plateInactive: '플레이트 · 비활성',
-  plateActive: '플레이트 · 활성',
+  plateInactive: '플레이트·비활성',
+  plateActive: '플레이트·활성',
   wormhole: '웜홀',
-  gateClosed: '게이트 · 닫힘',
-  gateOpen: '게이트 · 열림',
+  gateClosed: '게이트·닫힘',
+  gateOpen: '게이트·열림',
   normal: '일반 오브젝트',
   anchor: '앵커',
   swapper: '스와퍼',
-  playerDefault: '플레이어 · 기본',
+  playerDefault: '플레이어·기본',
   playerUp: '플레이어 위 방향',
   playerDown: '플레이어 아래 방향',
   playerLeft: '플레이어 왼쪽 방향',
   playerRight: '플레이어 오른쪽 방향',
-  goalFrame1: '골 · 1프레임',
-  goalFrame2: '골 · 2프레임',
-  goalFrame3: '골 · 3프레임',
-  goalFrame4: '골 · 4프레임',
+  goalFrame1: '골·1프레임',
+  goalFrame2: '골·2프레임',
+  goalFrame3: '골·3프레임',
+  goalFrame4: '골·4프레임',
   up: '위 방향 표시',
   down: '아래 방향 표시',
   left: '왼쪽 방향 표시',
@@ -73,7 +73,7 @@ interface ToolOption<T extends EditorTool> {
 
 const fieldTools: Array<ToolOption<TileKind>> = [
   { tool: 'blank', label: '맵 외부', badge: '∅' },
-  { tool: 'floor', label: '바닥', asset: 'floor' },
+  { tool: 'floor', label: '타일', asset: 'tile' },
   { tool: 'wall', label: '벽', asset: 'wall' },
   { tool: 'plate', label: '플레이트', asset: 'plateInactive' },
   { tool: 'wormhole', label: '웜홀', asset: 'wormhole' },
@@ -89,7 +89,7 @@ const objectTools: Array<ToolOption<MapObjectKind>> = [
 ];
 
 const assetsByTool: Partial<Record<EditorTool, AssetKey>> = {
-  floor: 'floor',
+  floor: 'tile',
   wall: 'wall',
   plate: 'plateInactive',
   wormhole: 'wormhole',
@@ -110,7 +110,7 @@ const playerAssetByTexture: Record<string, AssetKey> = {
 };
 
 const assetGroups: Array<{ label: string; keys: AssetKey[] }> = [
-  { label: '필드', keys: ['floor', 'wall', 'plateInactive', 'plateActive', 'wormhole', 'gateClosed', 'gateOpen'] },
+  { label: '필드', keys: ['tile', 'wall', 'plateInactive', 'plateActive', 'wormhole', 'gateClosed', 'gateOpen'] },
   { label: '오브젝트', keys: ['playerDefault', 'playerUp', 'playerDown', 'playerLeft', 'playerRight', 'normal', 'anchor', 'swapper'] },
   { label: '골 애니메이션', keys: ['goalFrame1', 'goalFrame2', 'goalFrame3', 'goalFrame4'] },
   { label: '방향 표시', keys: ['up', 'down', 'left', 'right'] },
@@ -119,7 +119,7 @@ const assetGroups: Array<{ label: string; keys: AssetKey[] }> = [
 export function assetForField(field: TileKind, game: GameState | undefined, key: string): AssetKey | undefined {
   switch (field) {
     case 'blank': return undefined;
-    case 'floor': return 'floor';
+    case 'floor': return 'tile';
     case 'wall': return 'wall';
     case 'plate': return game?.plateStates[key] === 'active' ? 'plateActive' : 'plateInactive';
     case 'wormhole': return 'wormhole';
@@ -351,8 +351,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     liveState.textContent = !game
       ? '플레이어와 골을 배치하세요'
       : game.status === 'completed'
-        ? '● 완료 · 배치 상태로 되돌릴 수 있습니다'
-        : testMoved ? '● 테스트 중 · 편집하면 즉시 재시작됩니다' : '● 방향키 즉시 테스트';
+        ? '● 완료·배치 상태로 되돌릴 수 있습니다'
+        : testMoved ? '● 테스트 중·편집하면 즉시 재시작됩니다' : '● 방향키 즉시 테스트';
 
     root.querySelectorAll<HTMLElement>('[data-tool]').forEach((button) => {
       button.classList.toggle('active', button.dataset.tool === state.tool);
@@ -380,7 +380,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     root.querySelector<HTMLElement>('[data-asset-input-label]')!.classList.remove('disabled');
     root.querySelector<HTMLElement>('[data-asset-status]')!.textContent = appliedAssets.length === 0
       ? '브라우저에서만 적용되며 새로고침하면 사라집니다.'
-      : `${appliedAssets.join(', ')} 적용 중 · 서버와 .map에는 저장되지 않습니다.`;
+      : `${appliedAssets.join(', ')} 적용 중·서버와 .map에는 저장되지 않습니다.`;
 
     grid.style.gridTemplateColumns = `2rem repeat(${draft.columns}, var(--cell-size))`;
     const cells = ['<span class="axis corner"></span>'];
@@ -428,7 +428,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     const validation = root.querySelector<HTMLElement>('[data-validation]')!;
     validation.replaceChildren();
     if (state.errors.length === 0) {
-      validation.innerHTML = '<p class="valid">● 준비됨 · 이 화면에서 방향키를 누르세요.</p>';
+      validation.innerHTML = '<p class="valid">● 준비됨·이 화면에서 방향키를 누르세요.</p>';
     } else {
       const list = document.createElement('ul');
       list.className = 'error-list';
@@ -448,7 +448,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     const pathOutput = root.querySelector<HTMLElement>('[data-path-result]')!;
     const balanced = pathResult && 'cost' in pathResult ? pathResult : undefined;
     pathOutput.textContent = pathResult
-      ? `${pathResult.steps.length}회 · ${pathResult.steps.map((step) => directionSymbols[step.direction]).join(' ')}${balanced ? ` · 비용 ${balanced.cost}` : ''}${playbackActive ? ' · 재생 중' : ''}`
+      ? `${pathResult.steps.length}회·${pathResult.steps.map((step) => directionSymbols[step.direction]).join(' ')}${balanced ? `·비용 ${balanced.cost}` : ''}${playbackActive ? '·재생 중' : ''}`
       : '';
   }
 
