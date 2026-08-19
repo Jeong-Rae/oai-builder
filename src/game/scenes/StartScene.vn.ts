@@ -24,9 +24,6 @@ export function createStartScene(onComplete: () => void): { view: HTMLElement; d
 
 class StartScene {
   private readonly view = this.renderView();
-  private readonly starElements: HTMLImageElement[] = [];
-  private readonly starTimers = new Set<number>();
-  private spinning = false;
 
   constructor(private readonly onComplete: () => void) {}
 
@@ -35,7 +32,7 @@ class StartScene {
     return this.view;
   }
 
-  dispose = (): void => this.stopSpin();
+  dispose = (): void => {};
 
   private renderView(): HTMLElement {
     const view = document.createElement('main');
@@ -102,7 +99,6 @@ class StartScene {
     const star = document.createElement('img');
     star.src = index % 2 ? assets.starConvex : assets.starConcave;
     this.positionStar(star, position);
-    this.starElements.push(star);
     return star;
   }
 
@@ -114,58 +110,6 @@ class StartScene {
   private renderStartButton(): HTMLButtonElement {
     const start = createPlateButton('START', this.onComplete);
     start.classList.add('game-intro__start');
-    start.addEventListener('pointerenter', this.startSpin);
-    start.addEventListener('pointerleave', this.stopSpin);
-    start.addEventListener('focus', this.startSpin);
-    start.addEventListener('blur', this.stopSpin);
     return start;
-  }
-
-  private readonly stopSpin = (): void => {
-    this.starTimers.forEach((timer) => window.clearTimeout(timer));
-    this.starTimers.clear();
-    this.spinning = false;
-    this.starElements.forEach((star) => star.classList.remove('game-intro__star--lit'));
-  };
-
-  private readonly startSpin = (): void => {
-    if (this.spinning || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    this.spinning = true;
-    const initialLitStars = this.initialLitStars();
-    this.starElements.forEach((star, index) => {
-      const startsLit = initialLitStars.has(index);
-      if (startsLit) star.classList.add('game-intro__star--lit');
-      this.scheduleStar(star, startsLit ? this.jitter(800, 600) : this.jitter(160, 740));
-    });
-  };
-
-  private initialLitStars(): Set<number> {
-    const first = Math.floor(Math.random() * this.starElements.length);
-    const second = (first + 1 + Math.floor(Math.random() * (this.starElements.length - 1))) % this.starElements.length;
-    return new Set([first, second]);
-  }
-
-  private scheduleStar(star: HTMLImageElement, delay: number): void {
-    const timer = window.setTimeout(() => {
-      this.starTimers.delete(timer);
-      this.twinkleStar(star);
-    }, delay);
-    this.starTimers.add(timer);
-  }
-
-  private twinkleStar(star: HTMLImageElement): void {
-    const lit = star.classList.contains('game-intro__star--lit');
-    if (this.reachedLitStarLimit(lit)) return this.scheduleStar(star, this.jitter(180, 240));
-    star.classList.toggle('game-intro__star--lit');
-    this.scheduleStar(star, lit ? this.jitter(950, 650) : this.jitter(800, 600));
-  }
-
-  private reachedLitStarLimit(isLit: boolean): boolean {
-    const litCount = this.starElements.filter((star) => star.classList.contains('game-intro__star--lit')).length;
-    return (isLit && litCount <= 2) || (!isLit && litCount >= 4);
-  }
-
-  private jitter(base: number, range: number): number {
-    return base + Math.random() * range;
   }
 }
