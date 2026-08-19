@@ -4,6 +4,17 @@
   font-family: monospace;
 }
 
+@font-face {
+  font-family: 'Pixelify Sans';
+  src: url('../assets/fonts/PixelifySans/PixelifySans-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Pixeloid Sans';
+  src: url('../assets/fonts/PixeloidSans/PixeloidSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+}
+
 html,
 body,
 #app {
@@ -128,56 +139,69 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   width: 100%;
 }
 
-.game-intro__title,
-.game-intro__start-area {
+.game-intro__lunar {
+  bottom: calc(-1 * min(66vw, 42rem));
   image-rendering: auto;
   left: 50%;
-  position: absolute;
-  transform: translateX(-50%);
-}
-
-.game-intro__title {
-  max-height: 28vh;
-  max-width: min(82vw, 720px);
-  object-fit: contain;
-  top: 10%;
-  z-index: 2;
-}
-
-.game-intro__character {
-  bottom: 13%;
-  height: 480px;
-  image-rendering: auto;
-  left: 50%;
-  object-fit: contain;
-  opacity: 0;
+  max-width: none;
   pointer-events: none;
   position: absolute;
   transform: translateX(-50%);
+  width: min(92vw, 64rem);
 }
 
-.game-intro__character--active { opacity: 1; }
+.game-intro__background-stars { inset: 0; pointer-events: none; position: absolute; }
+
+.game-intro__background-star {
+  left: var(--x);
+  position: absolute;
+  top: var(--y);
+  transform: translate(-50%, -50%);
+}
+
+.game-intro__background-star--small { width: clamp(32px, 4vw, 48px); }
+.game-intro__background-star--medium { width: clamp(40px, 5vw, 56px); }
+.game-intro__background-star--large { width: clamp(48px, 6vw, 64px); }
 
 .game-intro__start-area {
-  aspect-ratio: 1364 / 387;
+  image-rendering: auto;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.game-intro__start-area {
   bottom: 8%;
-  width: min(57vw, 225px);
+  width: min(68vw, 27rem);
   z-index: 2;
 }
 
 .game-intro__start {
-  aspect-ratio: 1364 / 387;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.plate-button {
+  aspect-ratio: 1960 / 600;
   background-color: transparent;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
   border: 0;
-  padding: 0;
-  height: 100%;
-  position: relative;
-  width: 100%;
-  z-index: 1;
+  color: #15171d;
+  font-family: 'Pixeloid Sans', monospace;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 8px;
+  padding: 0 14%;
+  text-shadow: 0 1px rgb(255 255 255 / 60%);
 }
+
+.plate-button:hover,
+.plate-button:focus-visible { filter: brightness(1.08) drop-shadow(0 0 0.7rem rgb(255 255 255 / 34%)); outline: none; }
+
+.plate-button:focus-visible { filter: brightness(1.08) drop-shadow(0 0 0.7rem #fff); }
 
 .game-intro__start-glow {
   background: radial-gradient(ellipse, rgb(181 91 255 / 54%) 0%, rgb(125 59 255 / 28%) 43%, transparent 72%);
