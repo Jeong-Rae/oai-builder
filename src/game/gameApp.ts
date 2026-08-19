@@ -2,10 +2,11 @@ import type Phaser from 'phaser';
 
 import { parseMap } from '../map/mapDocument';
 import { createPhaserGame } from './createGame';
+import { createIntroScene } from './scenes/IntroScene.vn';
 import { createGameStoreFromMap, type GameStoreApi } from './store/gameStore';
 import { nextStage, stageGroups, stagesPerGroup, type Stage } from './stages';
 
-const introAssets = {
+const gameStartAssets = {
   background: new URL('@/assets/intro_background_image.png', import.meta.url).href,
   title: new URL('@/assets/intro_title_image.png', import.meta.url).href,
   character: new URL('@/assets/playable/player_default.png', import.meta.url).href,
@@ -25,8 +26,24 @@ export class GameApp {
   private selectedStage: Stage = { group: 0, index: 0 };
 
   constructor(private readonly root: HTMLElement) {
-    this.showHome();
+    if (import.meta.env.DEV) document.addEventListener('keydown', this.handleDevShortcut);
+    this.showIntro();
   }
+
+  private handleDevShortcut = (event: KeyboardEvent): void => {
+    if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.repeat) return;
+
+    const screens: Record<string, () => void> = {
+      Digit0: this.showIntro,
+      Digit1: this.showGameStart,
+      Digit2: this.showGroups,
+    };
+    const showScreen = screens[event.code];
+    if (!showScreen) return;
+
+    event.preventDefault();
+    showScreen();
+  };
 
   private clear(): void {
     this.stopIntroSpin?.();
@@ -54,23 +71,28 @@ export class GameApp {
     return view;
   }
 
-  showHome = (): void => {
+  private showIntro = (): void => {
+    this.clear();
+    this.root.append(createIntroScene(this.showGameStart));
+  };
+
+  showGameStart = (): void => {
     this.clear();
     const view = document.createElement('main');
     view.className = 'game-menu game-intro';
-    view.style.backgroundImage = `url(${introAssets.background})`;
+    view.style.backgroundImage = `url(${gameStartAssets.background})`;
 
     const title = document.createElement('img');
     title.className = 'game-intro__title';
-    title.src = introAssets.title;
-    title.alt = 'Cat Save the Universe';
+    title.src = gameStartAssets.title;
+    title.alt = 'meow beyond!';
 
     const characterSources = [
-      introAssets.character,
-      introAssets.characterDown,
-      introAssets.characterRight,
-      introAssets.characterUp,
-      introAssets.characterLeft,
+      gameStartAssets.character,
+      gameStartAssets.characterDown,
+      gameStartAssets.characterRight,
+      gameStartAssets.characterUp,
+      gameStartAssets.characterLeft,
     ];
     const characters = characterSources.map((source, index) => {
       const character = document.createElement('img');
@@ -95,7 +117,7 @@ export class GameApp {
     ];
     starPositions.forEach(([x, y], index) => {
       const star = document.createElement('img');
-      star.src = index % 2 ? introAssets.starConvex : introAssets.starConcave;
+      star.src = index % 2 ? gameStartAssets.starConvex : gameStartAssets.starConcave;
       star.style.setProperty('--x', x);
       star.style.setProperty('--y', y);
       starElements.push(star);
@@ -103,7 +125,7 @@ export class GameApp {
     });
     const start = this.button('', this.showGroups);
     start.className = 'game-intro__start';
-    start.style.backgroundImage = `url(${introAssets.start})`;
+    start.style.backgroundImage = `url(${gameStartAssets.start})`;
     start.setAttribute('aria-label', '시작하기');
     let frame = 0;
     let spinTimer: number | undefined;
@@ -206,7 +228,7 @@ export class GameApp {
     const play = document.createElement('main');
     play.className = 'game-play';
     play.innerHTML = `<p class="game-play__label">${stageGroups[this.selectedStage.group]} · ${this.selectedStage.index + 1}</p><nav class="game-nav"></nav><div class="game-canvas" data-game-canvas></div>`;
-    play.querySelector<HTMLElement>('.game-nav')!.append(this.button('홈으로', this.showHome));
+    play.querySelector<HTMLElement>('.game-nav')!.append(this.button('홈으로', this.showGameStart));
     this.root.append(play);
     this.game = createPhaserGame(play.querySelector<HTMLElement>('[data-game-canvas]')!, store);
     this.unsubscribe = store.subscribe((state, previous) => {
@@ -230,7 +252,7 @@ export class GameApp {
     actions.append(
       this.button('다음 단계', () => void this.play(nextStage(this.selectedStage))),
       this.button('다시해보기', () => void this.play(this.selectedStage)),
-      this.button('홈으로', this.showHome),
+      this.button('홈으로', this.showGameStart),
     );
     view.append(burst, actions);
   }
