@@ -15,6 +15,11 @@
   font-weight: 700;
 }
 
+@font-face {
+  font-family: 'Blrr Pixs';
+  src: url('../assets/fonts/blrrpixs016.ttf') format('truetype');
+}
+
 html,
 body,
 #app {
@@ -159,9 +164,28 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   transform: translate(-50%, -50%);
 }
 
-.game-intro__background-star--small { width: clamp(32px, 4vw, 48px); }
-.game-intro__background-star--medium { width: clamp(40px, 5vw, 56px); }
-.game-intro__background-star--large { width: clamp(48px, 6vw, 64px); }
+.game-intro__background-star--small { width: clamp(6.4px, .8vw, 9.6px); }
+.game-intro__background-star--medium { width: clamp(8px, 1vw, 11.2px); }
+.game-intro__background-star--large { width: clamp(9.6px, 1.2vw, 12.8px); }
+
+.game-chapter__title {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-family: 'Blrr Pixs', monospace;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  gap: .55em;
+  left: 50%;
+  letter-spacing: .08em;
+  margin: 0;
+  position: absolute;
+  top: clamp(2rem, 8vh, 5rem);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.game-chapter__title-star { display: block; height: .5em; width: auto; }
 
 .game-intro__start-area {
   image-rendering: auto;
@@ -203,17 +227,6 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 
 .plate-button:focus-visible { filter: brightness(1.08) drop-shadow(0 0 0.7rem #fff); }
 
-.game-intro__start-glow {
-  background: radial-gradient(ellipse, rgb(181 91 255 / 54%) 0%, rgb(125 59 255 / 28%) 43%, transparent 72%);
-  inset: -42%;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transform: scale(0);
-  transform-origin: center;
-  transition: opacity 400ms ease, transform 400ms ease;
-}
-
 .game-intro__stars { inset: -30%; opacity: 0; pointer-events: none; position: absolute; }
 
 .game-intro__stars img {
@@ -225,12 +238,6 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   transform: translate(-50%, -50%) scale(.25);
   transition: filter 320ms ease, opacity 320ms ease-in-out, transform 420ms cubic-bezier(.2,.8,.3,1);
   width: auto;
-}
-
-.game-intro__start-area:hover .game-intro__start-glow,
-.game-intro__start-area:focus-within .game-intro__start-glow {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .game-intro__start-area:hover .game-intro__stars,
@@ -275,7 +282,6 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 
 @media (prefers-reduced-motion: reduce) {
   .celebration i { animation: none; transform: rotate(var(--angle)) translateY(-4rem); }
-  .game-intro__start-glow { transition: none; }
   .game-opening__title--color { animation: none; --intro-title-reveal: 360deg; }
   .game-opening__message { transition: none; }
 }

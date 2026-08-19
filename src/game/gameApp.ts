@@ -3,6 +3,7 @@ import type Phaser from 'phaser';
 import { parseMap } from '../map/mapDocument';
 import { createPhaserGame } from './createGame';
 import { createIntroScene } from './scenes/IntroScene.vn';
+import { createChapterScene } from './scenes/ChapterScene.vn';
 import { createStartScene } from './scenes/StartScene.vn';
 import { createGameStoreFromMap, type GameStoreApi } from './store/gameStore';
 import { nextStage, stageGroups, stagesPerGroup, type Stage } from './stages';
@@ -73,11 +74,7 @@ export class GameApp {
 
   showGroups = (): void => {
     this.clear();
-    const view = this.shell('난이도를 고르세요');
-    const list = document.createElement('div');
-    list.className = 'stage-grid';
-    stageGroups.forEach((group, index) => list.append(this.button(group, () => this.showStages(index))));
-    view.append(list);
+    this.root.append(createChapterScene());
   };
 
   showStages(group: number): void {

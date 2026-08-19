@@ -64,13 +64,9 @@ class StartScene {
     star.className = `game-intro__background-star game-intro__background-star--${size}`;
     star.src = source;
     star.alt = '';
-    this.positionBackgroundStar(star);
-    return star;
-  }
-
-  private positionBackgroundStar(star: HTMLImageElement): void {
     star.style.setProperty('--x', `${this.randomPercent()}%`);
     star.style.setProperty('--y', `${this.randomPercent()}%`);
+    return star;
   }
 
   private randomPercent(): number {
@@ -80,10 +76,7 @@ class StartScene {
   private renderStartArea(): HTMLElement {
     const area = document.createElement('div');
     area.className = 'game-intro__start-area';
-    const glow = document.createElement('div');
-    glow.className = 'game-intro__start-glow';
-    glow.setAttribute('aria-hidden', 'true');
-    area.append(glow, this.renderStars(), this.renderStartButton());
+    area.append(this.renderStars(), this.renderStartButton());
     return area;
   }
 
