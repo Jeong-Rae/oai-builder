@@ -9,6 +9,10 @@ const CARD_OFFSET = 425.75;
 const EXIT_OFFSET = 760;
 const GOLD = 0xffd866;
 const MOVE_DURATION = 420;
+const BACKGROUND_STARS_DEPTH = -2;
+const SIGN_SIDE_DEPTH = 1;
+const SIGN_CURRENT_DEPTH = 2;
+const CHAPTER_DEPTH = 3;
 
 const assets = {
   background: new URL('@/assets/background/background_space.png', import.meta.url).href,
@@ -24,6 +28,7 @@ const assets = {
 
 interface CarouselCard {
   index: number;
+  valid: boolean;
   view: Phaser.GameObjects.Container;
 }
 
@@ -89,7 +94,7 @@ export class ChapterScene extends Phaser.Scene {
           .image(random.between(77, WIDTH - 77), random.between(43, HEIGHT - 43), key)
           .setDisplaySize(width, width)
           .setAlpha(random.realInRange(0.58, 0.9))
-          .setDepth(-2);
+          .setDepth(BACKGROUND_STARS_DEPTH);
 
         if (!this.reducedMotion) {
           this.tweens.add({
@@ -114,13 +119,15 @@ export class ChapterScene extends Phaser.Scene {
       fontFamily: 'Blrr Pixs',
       fontSize: '72px',
       letterSpacing: 6,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(CHAPTER_DEPTH);
     const starGap = 40;
     const starSize = 36;
     this.add.image(title.getLeftCenter().x - starGap - starSize / 2, title.getCenter().y, 'chapter-title-star')
-      .setDisplaySize(starSize, starSize);
+      .setDisplaySize(starSize, starSize)
+      .setDepth(CHAPTER_DEPTH);
     this.add.image(title.getRightCenter().x + starGap + starSize / 2, title.getCenter().y, 'chapter-title-star')
-      .setDisplaySize(starSize, starSize);
+      .setDisplaySize(starSize, starSize)
+      .setDepth(CHAPTER_DEPTH);
   }
 
   private renderArrow(texture: string, x: number, onPress: () => void): void {
@@ -133,13 +140,14 @@ export class ChapterScene extends Phaser.Scene {
   }
 
   private createCard(index: number, x: number, scale: number, alpha: number): CarouselCard {
-    const wrappedIndex = Phaser.Math.Wrap(index, 0, chapters.length);
-    const view = this.renderChapter(chapters[wrappedIndex]!)
+    const isOutside = index < 0 || index >= chapters.length;
+    const chapterIndex = Phaser.Math.Clamp(index, 0, chapters.length - 1);
+    const view = this.renderChapter(chapters[chapterIndex]!)
       .setPosition(x, CARD_Y)
       .setScale(scale)
-      .setAlpha(alpha)
-      .setDepth(scale === 1 ? 2 : 1);
-    return { index: wrappedIndex, view };
+      .setAlpha(isOutside ? 0 : alpha)
+      .setDepth(scale === 1 ? SIGN_CURRENT_DEPTH : SIGN_SIDE_DEPTH);
+    return { index: chapterIndex, valid: !isOutside, view };
   }
 
   private renderChapter(chapter: ChapterDefinition): Phaser.GameObjects.Container {
@@ -206,6 +214,9 @@ export class ChapterScene extends Phaser.Scene {
 
   private move(offset: -1 | 1): void {
     if (this.moving) return;
+    const nextIndex = this.activeIndex + offset;
+    if (nextIndex < 0 || nextIndex >= chapters.length) return;
+
     this.moving = true;
     const forwards = offset > 0;
     const [previous, current, next] = this.cards;
@@ -221,23 +232,23 @@ export class ChapterScene extends Phaser.Scene {
           [previous!, WIDTH / 2 - EXIT_OFFSET, 0.55, 0],
           [current!, WIDTH / 2 - CARD_OFFSET, 0.75, 0.8],
           [next!, WIDTH / 2, 1, 1],
-          [incoming, WIDTH / 2 + CARD_OFFSET, 0.75, 0.8],
+          [incoming, WIDTH / 2 + CARD_OFFSET, 0.75, incoming.valid ? 0.8 : 0],
         ] as const
       : [
           [next!, WIDTH / 2 + EXIT_OFFSET, 0.55, 0],
           [current!, WIDTH / 2 + CARD_OFFSET, 0.75, 0.8],
           [previous!, WIDTH / 2, 1, 1],
-          [incoming, WIDTH / 2 - CARD_OFFSET, 0.75, 0.8],
+          [incoming, WIDTH / 2 - CARD_OFFSET, 0.75, incoming.valid ? 0.8 : 0],
         ] as const;
 
     const finish = () => {
       outgoing.view.destroy(true);
       this.cards = forwards ? [current!, next!, incoming] : [incoming, previous!, current!];
-      this.activeIndex = Phaser.Math.Wrap(this.activeIndex + offset, 0, chapters.length);
+      this.activeIndex = nextIndex;
       this.moving = false;
     };
 
-    targets.forEach(([card, , scale]) => card.view.setDepth(scale === 1 ? 2 : scale === 0.55 ? 0 : 1));
+    targets.forEach(([card, , scale]) => card.view.setDepth(scale === 1 ? SIGN_CURRENT_DEPTH : scale === 0.55 ? 0 : SIGN_SIDE_DEPTH));
 
     if (this.reducedMotion) {
       targets.forEach(([card, x, scale, alpha]) => card.view.setPosition(x, CARD_Y).setScale(scale).setAlpha(alpha));
