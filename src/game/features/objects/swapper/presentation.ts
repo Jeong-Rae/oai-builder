@@ -6,7 +6,7 @@ export const swapperPresentation = {
   assets: {
     swapper: {
       label: '스와퍼',
-      url: new URL('@/assets/swapper/swapper.origin.png', import.meta.url).href,
+      url: new URL('@/assets/swapper/swapper.origin.webp', import.meta.url).href,
       group: 'object',
     },
   },

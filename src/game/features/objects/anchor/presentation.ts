@@ -6,12 +6,12 @@ export const anchorPresentation = {
   assets: {
     anchor: {
       label: '앵커',
-      url: new URL('@/assets/box/box.origin.png', import.meta.url).href,
+      url: new URL('@/assets/anchor/anchor.origin.webp', import.meta.url).href,
       group: 'object',
     },
   },
   toolAsset: 'anchor',
-  gameTextures: [],
+  gameTextures: ['anchor'],
   editorAsset: 'anchor',
-  gameTexture: 'normal',
+  gameTexture: 'anchor',
 } satisfies ObjectPresentation;

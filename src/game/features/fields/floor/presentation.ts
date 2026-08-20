@@ -6,7 +6,7 @@ export const floorPresentation = {
   assets: {
     floor: {
       label: '바닥',
-      url: new URL('@/assets/tile/tile.origin.trimmed.png', import.meta.url).href,
+      url: new URL('@/assets/tile/tile.webp', import.meta.url).href,
       group: 'field',
     },
   },

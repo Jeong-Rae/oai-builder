@@ -6,7 +6,7 @@ export const wormholePresentation = {
   assets: {
     wormhole: {
       label: '웜홀',
-      url: new URL('@/assets/wormhole/wormhole.origin.png', import.meta.url).href,
+      url: new URL('@/assets/wormhole/wormhole.origin.webp', import.meta.url).href,
       group: 'field',
     },
   },
@@ -15,4 +15,5 @@ export const wormholePresentation = {
   editorAsset: () => 'wormhole',
   gameTexture: () => 'floor',
   overlayAsset: () => 'wormhole',
+  overlayFit: 'height',
 } satisfies FieldPresentation;

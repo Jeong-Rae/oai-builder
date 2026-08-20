@@ -1,10 +1,10 @@
 import type { GameState, ObjectKind, TileKind } from '../domain/types';
 
 export type AssetSlot =
-  | 'floor' | 'wall' | 'plateInactive' | 'plateActive' | 'wormhole' | 'gateClosed' | 'gateOpen'
+  | 'floor' | 'wall' | 'platePawHigh' | 'platePawMid' | 'platePawLow' | 'wormhole' | 'gateClosed' | 'gateOpen'
   | 'normal' | 'anchor' | 'swapper'
   | 'playerDefault' | 'playerUp' | 'playerDown' | 'playerLeft' | 'playerRight'
-  | 'goalFrame1' | 'goalFrame2' | 'goalFrame3' | 'goalFrame4'
+  | 'goalStar'
   | 'up' | 'down' | 'left' | 'right';
 
 export type AssetGroup = 'field' | 'object' | 'goal' | 'control';
@@ -24,7 +24,8 @@ export interface FieldPresentation {
   gameTextures: readonly AssetSlot[];
   editorAsset(game: GameState | undefined, positionKey: string): AssetSlot | undefined;
   gameTexture(game: GameState, positionKey: string): AssetSlot | undefined;
-  overlayAsset?(game: GameState | undefined, positionKey: string, frame: number): AssetSlot | undefined;
+  overlayAsset?(game: GameState | undefined, positionKey: string): AssetSlot | undefined;
+  overlayFit?: 'square' | 'height';
 }
 
 export interface ObjectPresentation {

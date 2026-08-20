@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { assetForField, goalAsset } from '../../src/game/features/presentation';
+import { assetForField, overlayForField } from '../../src/game/features/presentation';
 import { createInitialState } from '../../src/game/domain/level';
 
 describe('에디터 에셋 슬롯', () => {
@@ -10,16 +10,14 @@ describe('에디터 에셋 슬롯', () => {
 
     expect(assetForField('floor', inactive, '0,0')).toBe('floor');
     expect(assetForField('wall', inactive, '0,0')).toBe('wall');
-    expect(assetForField('plate', inactive, '1,1')).toBe('plateInactive');
-    expect(assetForField('plate', active, '1,1')).toBe('plateActive');
+    expect(assetForField('plate', inactive, '1,1')).toBe('platePawHigh');
+    expect(assetForField('plate', active, '1,1')).toBe('platePawLow');
     expect(assetForField('gate', inactive, '0,0')).toBe('gateClosed');
     expect(assetForField('gate', { ...inactive, plateStates: { '1,1': 'active' as const } }, '0,0')).toBe('gateOpen');
     expect(assetForField('blank', inactive, '0,0')).toBeUndefined();
   });
 
-  it('골의 네 프레임을 각각 독립 슬롯으로 선택한다', () => {
-    expect([1, 2, 3, 4].map(goalAsset)).toEqual([
-      'goalFrame1', 'goalFrame2', 'goalFrame3', 'goalFrame4',
-    ]);
+  it('골은 단일 별 에셋을 표시한다', () => {
+    expect(overlayForField('exit', undefined, '0,0')).toBe('goalStar');
   });
 });

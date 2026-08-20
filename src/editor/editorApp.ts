@@ -147,8 +147,6 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
   let unsubscribeTest: (() => void) | undefined;
   let testMoved = false;
   let playerAsset: AssetKey = 'playerDefault';
-  let goalFrame = 1;
-  let goalAnimationTimer: number | undefined;
   let pathResult: PathResult | undefined;
   const pathCache = new Map<string, PathResult | null>();
   let pathMode: PathMode = 'shortest';
@@ -167,26 +165,6 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     testStore = undefined;
     testMoved = false;
     playerAsset = 'playerDefault';
-    goalFrame = 1;
-    if (goalAnimationTimer !== undefined) window.clearTimeout(goalAnimationTimer);
-    goalAnimationTimer = undefined;
-  }
-
-  function playGoalAnimation(): void {
-    if (goalAnimationTimer !== undefined) window.clearTimeout(goalAnimationTimer);
-    goalFrame = 1;
-    const nextFrame = (): void => {
-      if (goalFrame >= 4) {
-        goalAnimationTimer = undefined;
-        return;
-      }
-      goalAnimationTimer = window.setTimeout(() => {
-        goalFrame += 1;
-        render();
-        nextFrame();
-      }, 180);
-    };
-    nextFrame();
   }
 
   function createTestState(clearPath = true): void {
@@ -195,9 +173,8 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
     const state = store.getState();
     if (state.errors.length > 0) return;
     testStore = createGameStoreFromMap(state.draft);
-    unsubscribeTest = testStore.subscribe((state, previous) => {
+    unsubscribeTest = testStore.subscribe((state) => {
       testMoved = state.eventStream.length > 0;
-      if (!previous.game.goalOpened && state.game.goalOpened) playGoalAnimation();
     });
   }
 
@@ -316,7 +293,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const selected = state.selected?.x === x && state.selected.y === y ? ' selected' : '';
         const field = draft.tiles[y][x];
         const label = object ? `${field}, ${object.kind}` : field;
-        const overlayAsset = overlayForField(field, game, key, game?.goalOpened ? goalFrame : 1);
+        const overlayAsset = overlayForField(field, game, key);
         const goal = overlayAsset ? `<img class="goal-asset" src="${resolveAsset(overlayAsset)}" alt="" />` : '';
         const objectAsset = object && !(object.kind === 'player' && retainedPlayer)
           ? `<span class="object-asset object-${object.kind}"><img src="${resolveAsset(object.kind === 'player' ? playerAsset : assetForObject(object.kind))}" alt="" /></span>`
@@ -327,7 +304,7 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const baseAsset = baseAssetForField(field);
         const asset = assetForField(field, game, key);
         const tileAsset = baseAsset ? `<img class="tile-asset" src="${resolveAsset(baseAsset)}" alt="" />` : '';
-        const fieldAsset = field !== 'wall' && asset ? `<img class="field-asset" src="${resolveAsset(asset)}" alt="" />` : '';
+        const fieldAsset = field !== 'wall' && asset ? `<img class="field-asset field-asset-${field}" src="${resolveAsset(asset)}" alt="" />` : '';
         const overlay = pathOverlay.get(key)?.join('') ?? '';
         cells.push(`<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${fieldAsset}${goal}${objectAsset}<span class="path-overlay">${overlay}</span><span class="control-assets">${controls}</span></button>`);
       }

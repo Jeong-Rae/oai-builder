@@ -1,7 +1,7 @@
 import type { Direction, Entity, GameState, ObjectKind, TileKind } from '../domain/types';
 import { controlAssets, controlAssetSlots } from './controls/presentation';
 import { blankPresentation } from './fields/blank/presentation';
-import { exitPresentation, goalAsset, goalAssetSlots } from './fields/exit/presentation';
+import { exitPresentation } from './fields/exit/presentation';
 import { floorPresentation } from './fields/floor/presentation';
 import { gatePresentation } from './fields/gate/presentation';
 import { platePresentation } from './fields/plate/presentation';
@@ -19,7 +19,6 @@ import type {
   ObjectPresentation,
 } from './presentationTypes';
 
-export { goalAsset, goalAssetSlots };
 export { playerTextureForMove, playerTextureKeys } from './objects/player/presentation';
 export type { AssetSlot } from './presentationTypes';
 
@@ -59,7 +58,7 @@ export const assetUrls = Object.fromEntries(
 ) as Record<AssetSlot, string>;
 
 const groupLabels: Record<AssetGroup, string> = {
-  field: '필드', object: '오브젝트', goal: '골 애니메이션', control: '방향 표시',
+  field: '필드', object: '오브젝트', goal: '골', control: '방향 표시',
 };
 
 export const assetGroups = (Object.keys(groupLabels) as AssetGroup[]).map((group) => ({
@@ -85,8 +84,8 @@ export function textureForField(field: TileKind, game: GameState, positionKey: s
   return fieldPresentations[field].gameTexture(game, positionKey);
 }
 
-export function overlayForField(field: TileKind, game: GameState | undefined, positionKey: string, frame: number): AssetSlot | undefined {
-  return fieldPresentations[field].overlayAsset?.(game, positionKey, frame);
+export function overlayForField(field: TileKind, game: GameState | undefined, positionKey: string): AssetSlot | undefined {
+  return fieldPresentations[field].overlayAsset?.(game, positionKey);
 }
 
 export function assetForObject(kind: ObjectKind): AssetSlot {

@@ -6,7 +6,7 @@ export const wallPresentation = {
   assets: {
     wall: {
       label: '벽',
-      url: new URL('@/assets/tile/tile.origin.png', import.meta.url).href,
+      url: new URL('@/assets/wall/wall.origin.webp', import.meta.url).href,
       group: 'field',
     },
   },

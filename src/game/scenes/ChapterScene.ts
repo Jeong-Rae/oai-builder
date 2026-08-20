@@ -154,7 +154,14 @@ export class ChapterScene extends Phaser.Scene {
       .setScale(scale)
       .setAlpha(isOutside ? 0 : alpha)
       .setDepth(scale === 1 ? SIGN_CURRENT_DEPTH : SIGN_SIDE_DEPTH);
+    view.setInteractive(new Phaser.Geom.Rectangle(-225, -300, 450, 600), Phaser.Geom.Rectangle.Contains);
+    view.on('pointerdown', () => this.startChapter(chapterIndex, !isOutside));
     return { index: chapterIndex, valid: !isOutside, view };
+  }
+
+  private startChapter(chapterIndex: number, valid: boolean): void {
+    if (!valid || this.moving || chapterIndex !== this.activeIndex) return;
+    this.scene.start('game', { selection: { chapterIndex, stageIndex: 0 } });
   }
 
   private renderChapter(chapter: ChapterDefinition): Phaser.GameObjects.Container {

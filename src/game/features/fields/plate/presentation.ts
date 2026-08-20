@@ -1,17 +1,18 @@
 import type { FieldPresentation } from '@/src/game/features/presentationTypes';
 
-const plateUrl = new URL('@/assets/plate/plate.overlay.png', import.meta.url).href;
+export const platePressFrames = ['platePawHigh', 'platePawMid', 'platePawLow'] as const;
 
 export const platePresentation = {
   kind: 'plate',
   label: '플레이트',
   assets: {
-    plateInactive: { label: '플레이트·비활성', url: plateUrl, group: 'field' },
-    plateActive: { label: '플레이트·활성', url: plateUrl, group: 'field' },
+    platePawHigh: { label: '플레이트·높음', url: new URL('@/assets/plate/plate.paw.high.png', import.meta.url).href, group: 'field' },
+    platePawMid: { label: '플레이트·중간', url: new URL('@/assets/plate/plate.paw.mid.png', import.meta.url).href, group: 'field' },
+    platePawLow: { label: '플레이트·눌림', url: new URL('@/assets/plate/plate.paw.low.png', import.meta.url).href, group: 'field' },
   },
-  toolAsset: 'plateInactive',
-  gameTextures: ['plateInactive', 'plateActive'],
-  editorAsset: (game, positionKey) => game?.plateStates[positionKey] === 'active' ? 'plateActive' : 'plateInactive',
+  toolAsset: 'platePawHigh',
+  gameTextures: platePressFrames,
+  editorAsset: (game, positionKey) => game?.plateStates[positionKey] === 'active' ? 'platePawLow' : 'platePawHigh',
   gameTexture: () => 'floor',
-  overlayAsset: (game, positionKey) => game?.plateStates[positionKey] === 'active' ? 'plateActive' : 'plateInactive',
+  overlayAsset: (game, positionKey) => game?.plateStates[positionKey] === 'active' ? 'platePawLow' : 'platePawHigh',
 } satisfies FieldPresentation;
