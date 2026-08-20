@@ -1,18 +1,35 @@
-import { isGateOpen } from './rules';
-import type { FieldPresentation } from '@/src/game/features/presentationTypes';
+import type { GameState } from "@/src/game/domain/types";
+import { isGateOpen } from "./rules";
+import type { FieldPresentation } from "@/src/game/features/presentationTypes";
 
-const gateUrl = new URL('@/assets/tile/tile.origin.png', import.meta.url).href;
+export function gateVisualFor(game: GameState | undefined) {
+  return game && isGateOpen(game)
+    ? { device: "gateDeviceSafe" as const, laser: undefined }
+    : { device: "gateDeviceWarn" as const, laser: "gateLaserWarn" as const };
+}
 
 export const gatePresentation = {
-  kind: 'gate',
-  label: '게이트',
+  kind: "gate",
+  label: "게이트",
   assets: {
-    gateClosed: { label: '게이트·닫힘', url: gateUrl, group: 'field' },
-    gateOpen: { label: '게이트·열림', url: gateUrl, group: 'field' },
+    gateDeviceWarn: {
+      label: "게이트·경고 장치",
+      url: new URL("@/assets/gate/gate.device.warn.webp", import.meta.url).href,
+      group: "field",
+    },
+    gateLaserWarn: {
+      label: "게이트·경고 레이저",
+      url: new URL("@/assets/gate/gate.razer.warn.webp", import.meta.url).href,
+      group: "field",
+    },
+    gateDeviceSafe: {
+      label: "게이트·안전 장치",
+      url: new URL("@/assets/gate/gate.device.safe.webp", import.meta.url).href,
+      group: "field",
+    },
   },
-  toolAsset: 'gateClosed',
-  gameTextures: ['gateClosed', 'gateOpen'],
-  editorAsset: (game) => game && isGateOpen(game) ? 'gateOpen' : 'gateClosed',
-  gameTexture: () => 'floor',
-  overlayAsset: (game) => game && isGateOpen(game) ? 'gateOpen' : 'gateClosed',
+  toolAsset: "gateDeviceWarn",
+  gameTextures: ["gateDeviceWarn", "gateLaserWarn", "gateDeviceSafe"],
+  editorAsset: (game) => gateVisualFor(game).device,
+  gameTexture: () => "floor",
 } satisfies FieldPresentation;
