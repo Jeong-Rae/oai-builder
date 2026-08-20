@@ -12,9 +12,21 @@ const assets = {
 
 const starPositions = [['8%', '14%'], ['33%', '-16%'], ['66%', '5%'], ['91%', '28%'], ['4%', '74%'], ['29%', '110%'], ['70%', '105%'], ['95%', '75%']] as const;
 const backgroundStarGroups = [
-  { source: assets.starCrossSmall, count: 11, size: 'small' },
-  { source: assets.starCrossMedium, count: 7, size: 'medium' },
-  { source: assets.starCrossLarge, count: 5, size: 'large' },
+  {
+    source: assets.starCrossSmall,
+    size: 'small',
+    positions: [[85.5, 60.5], [41.6, 42.0], [93.6, 48.2], [47.5, 21.8], [87.5, 11.1], [37.2, 86.0], [53.8, 29.6], [20.1, 38.4], [87.3, 59.2], [15.1, 19.1], [34.1, 19.6]],
+  },
+  {
+    source: assets.starCrossMedium,
+    size: 'medium',
+    positions: [[16.5, 87.4], [4.3, 67.8], [90.2, 90.6], [69.3, 34.2], [61.0, 31.0], [34.5, 40.1], [72.8, 30.2]],
+  },
+  {
+    source: assets.starCrossLarge,
+    size: 'large',
+    positions: [[90.5, 17.1], [5.6, 75.7], [42.7, 88.3], [13.9, 34.3], [68.1, 25.5]],
+  },
 ] as const;
 
 export function createStartScene(onComplete: () => void): { view: HTMLElement; dispose: () => void } {
@@ -53,24 +65,24 @@ class StartScene {
     const stars = document.createElement('div');
     stars.className = 'game-intro__background-stars';
     stars.setAttribute('aria-hidden', 'true');
-    backgroundStarGroups.forEach(({ source, count, size }) => {
-      for (let index = 0; index < count; index += 1) stars.append(this.renderBackgroundStar(source, size));
+    backgroundStarGroups.forEach(({ source, positions, size }) => {
+      positions.forEach((position) => stars.append(this.renderBackgroundStar(source, size, position)));
     });
     return stars;
   }
 
-  private renderBackgroundStar(source: string, size: 'small' | 'medium' | 'large'): HTMLImageElement {
+  private renderBackgroundStar(
+    source: string,
+    size: 'small' | 'medium' | 'large',
+    [x, y]: readonly [number, number],
+  ): HTMLImageElement {
     const star = document.createElement('img');
     star.className = `game-intro__background-star game-intro__background-star--${size}`;
     star.src = source;
     star.alt = '';
-    star.style.setProperty('--x', `${this.randomPercent()}%`);
-    star.style.setProperty('--y', `${this.randomPercent()}%`);
+    star.style.setProperty('--x', `${x}%`);
+    star.style.setProperty('--y', `${y}%`);
     return star;
-  }
-
-  private randomPercent(): number {
-    return 4 + Math.random() * 92;
   }
 
   private renderStartArea(): HTMLElement {

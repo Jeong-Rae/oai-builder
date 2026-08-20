@@ -14,6 +14,21 @@ const SIGN_SIDE_DEPTH = 1;
 const SIGN_CURRENT_DEPTH = 2;
 const CHAPTER_DEPTH = 3;
 
+const backgroundStarGroups = [
+  {
+    key: 'chapter-star-small', width: 9.6, height: 9.25,
+    positions: [[41.7, 12.5], [42.3, 30.1], [61.7, 51.6], [45.3, 5.1], [5.5, 38.4], [90.7, 62.9], [34.3, 5.8], [44.6, 45.5], [83.5, 73.1], [58.9, 70.7], [19.7, 83.0], [77.9, 76.3], [93.9, 47.7], [72.1, 35.1]],
+  },
+  {
+    key: 'chapter-star-medium', width: 11.2, height: 12.02,
+    positions: [[6.3, 62.0], [83.6, 24.2], [23.7, 7.0], [41.3, 30.2], [67.1, 36.0], [24.7, 37.1]],
+  },
+  {
+    key: 'chapter-star-large', width: 12.8, height: 13.64,
+    positions: [[5.3, 47.6], [64.5, 95.6], [55.2, 82.8], [84.1, 92.5]],
+  },
+] as const;
+
 const assets = {
   background: new URL('@/assets/background/background_space.png', import.meta.url).href,
   font: new URL('@/assets/fonts/blrrpixs016.ttf', import.meta.url).href,
@@ -81,35 +96,26 @@ export class ChapterScene extends Phaser.Scene {
   }
 
   private renderBackgroundStars(): void {
-    const random = new Phaser.Math.RandomDataGenerator(['chapter-stars']);
-    const groups = [
-      { key: 'chapter-star-small', count: 14, width: 9.6 },
-      { key: 'chapter-star-medium', count: 6, width: 11.2 },
-      { key: 'chapter-star-large', count: 4, width: 12.8 },
-    ];
-
-    groups.forEach(({ key, count, width }) => {
-      for (let index = 0; index < count; index += 1) {
+    backgroundStarGroups.forEach(({ key, width, height, positions }) => {
+      positions.forEach(([x, y], index) => {
         const star = this.add
-          .image(random.between(77, WIDTH - 77), random.between(43, HEIGHT - 43), key)
-          .setDisplaySize(width, width)
-          .setAlpha(random.realInRange(0.58, 0.9))
+          .image(WIDTH * x / 100, HEIGHT * y / 100, key)
+          .setDisplaySize(width, height)
+          .setAlpha(0.58 + (index % 5) * 0.08)
           .setDepth(BACKGROUND_STARS_DEPTH);
 
         if (!this.reducedMotion) {
           this.tweens.add({
             targets: star,
-            alpha: random.realInRange(0.82, 1),
-            scaleX: star.scaleX * 1.08,
-            scaleY: star.scaleY * 1.08,
-            duration: random.between(1600, 3200),
-            delay: random.between(0, 1200),
+            alpha: 0.82 + (index % 3) * 0.08,
+            duration: 1600 + (index % 6) * 280,
+            delay: (index % 5) * 240,
             ease: 'Sine.easeInOut',
             yoyo: true,
             repeat: -1,
           });
         }
-      }
+      });
     });
   }
 
@@ -117,16 +123,17 @@ export class ChapterScene extends Phaser.Scene {
     const title = this.add.text(WIDTH / 2, 80, 'CHAPTER SELECT', {
       color: '#ffffff',
       fontFamily: 'Blrr Pixs',
-      fontSize: '72px',
-      letterSpacing: 6,
+      fontSize: '32px',
+      letterSpacing: 2.56,
     }).setOrigin(0.5, 0).setDepth(CHAPTER_DEPTH);
-    const starGap = 40;
-    const starSize = 36;
-    this.add.image(title.getLeftCenter().x - starGap - starSize / 2, title.getCenter().y, 'chapter-title-star')
-      .setDisplaySize(starSize, starSize)
+    const starGap = 17.6;
+    const starWidth = 16.3;
+    const starHeight = 16;
+    this.add.image(title.getLeftCenter().x - starGap - starWidth / 2, title.getCenter().y, 'chapter-title-star')
+      .setDisplaySize(starWidth, starHeight)
       .setDepth(CHAPTER_DEPTH);
-    this.add.image(title.getRightCenter().x + starGap + starSize / 2, title.getCenter().y, 'chapter-title-star')
-      .setDisplaySize(starSize, starSize)
+    this.add.image(title.getRightCenter().x + starGap + starWidth / 2, title.getCenter().y, 'chapter-title-star')
+      .setDisplaySize(starWidth, starHeight)
       .setDepth(CHAPTER_DEPTH);
   }
 
