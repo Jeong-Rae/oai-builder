@@ -4,6 +4,7 @@ export function createPlateButton(label: string, onClick: () => void): HTMLButto
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'plate-button';
+  button.style.fontFamily = "'Blrr Pixs', monospace";
   button.style.backgroundImage = `url(${plateImage})`;
   button.textContent = label;
   button.addEventListener('click', onClick);

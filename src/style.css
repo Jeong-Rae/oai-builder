@@ -1,7 +1,7 @@
 :root {
   background: #080e14;
   color: #d7f9ff;
-  font-family: monospace;
+  font-family: 'Blrr Pixs', monospace;
 }
 
 @font-face {
@@ -130,7 +130,7 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 
 .game-menu { display: grid; gap: 1.25rem; text-align: center; }
 
-.game-menu h1 { color: #fff; font-size: clamp(2rem, 8vw, 4.5rem); margin: 0; }
+.game-menu h1 { color: #fff; font-size: 2rem; margin: 0; }
 
 .game-menu__eyebrow,
 .game-play__label { color: #81f0c5; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.16em; margin: 0; }
@@ -187,6 +187,101 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 
 .game-chapter__title-star { display: block; height: .5em; width: auto; }
 
+.game-chapter__carousel {
+  --chapter-card-width: min(450px, 41.666667vh, 23.4375vw);
+  --chapter-card-height: min(600px, 55.555556vh, 31.25vw);
+  --chapter-card-offset: min(425.75px, 39.421296vh, 22.174479vw);
+  --chapter-exit-offset: min(760px, 70.37037vh, 39.583333vw);
+  --chapter-carousel-top: min(240px, 22.222222vh, 12.5vw);
+  height: var(--chapter-card-height);
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: var(--chapter-carousel-top);
+  z-index: 1;
+}
+
+.game-chapter__card {
+  aspect-ratio: 450 / 600;
+  box-sizing: border-box;
+  left: 50%;
+  opacity: .8;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(.75);
+  transition: left 420ms cubic-bezier(.22, .7, .2, 1), opacity 420ms ease, transform 420ms cubic-bezier(.22, .7, .2, 1);
+  width: var(--chapter-card-width);
+}
+
+.game-chapter__card--previous { left: calc(50% - var(--chapter-card-offset)); }
+.game-chapter__card--next { left: calc(50% + var(--chapter-card-offset)); }
+
+.game-chapter__card--current {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  z-index: 1;
+}
+
+.game-chapter__card--enter-previous,
+.game-chapter__card--exit-previous { left: calc(50% - var(--chapter-exit-offset)); }
+
+.game-chapter__card--enter-next,
+.game-chapter__card--exit-next { left: calc(50% + var(--chapter-exit-offset)); }
+
+.game-chapter__card--enter-previous,
+.game-chapter__card--enter-next,
+.game-chapter__card--exit-previous,
+.game-chapter__card--exit-next { opacity: 0; transform: translate(-50%, -50%) scale(.55); }
+
+.game-chapter__arrow {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(3.5rem, 5vw, 5rem);
+  z-index: 2;
+}
+
+.game-chapter__arrow--previous { left: clamp(.5rem, 2vw, 2rem); }
+.game-chapter__arrow--next { right: clamp(.5rem, 2vw, 2rem); }
+
+.game-chapter__arrow img { display: block; image-rendering: pixelated; width: 100%; }
+
+.game-chapter button.game-chapter__arrow:hover,
+.game-chapter button.game-chapter__arrow:focus-visible { background: transparent; filter: brightness(1.18); outline: none; }
+
+.game-chapter button.game-chapter__arrow:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+
+.game-chapter__constellation { display: block; height: 100%; width: 100%; }
+
+.game-chapter__constellation-line {
+  fill: none;
+  filter: drop-shadow(0 0 3px rgb(255 216 102 / 45%));
+  stroke: #ffd866;
+  stroke-dasharray: 5 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.game-chapter__constellation-star {
+  filter: drop-shadow(0 0 4px rgb(255 216 102 / 32%));
+  image-rendering: pixelated;
+}
+
+.game-chapter__zodiac { image-rendering: pixelated; }
+
+.game-chapter__zodiac-name {
+  fill: #ffd866;
+  font-family: 'Blrr Pixs', monospace;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-anchor: middle;
+}
+
 .game-intro__start-area {
   image-rendering: auto;
   left: 50%;
@@ -214,7 +309,7 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   background-size: contain;
   border: 0;
   color: #15171d;
-  font-family: 'Pixeloid Sans', monospace;
+  font-family: 'Blrr Pixs', monospace;
   font-size: clamp(1.2rem, 4vw, 2rem);
   font-weight: 700;
   letter-spacing: 8px;
@@ -282,6 +377,7 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 
 @media (prefers-reduced-motion: reduce) {
   .celebration i { animation: none; transform: rotate(var(--angle)) translateY(-4rem); }
+  .game-chapter__card { transition: none; }
   .game-opening__title--color { animation: none; --intro-title-reveal: 360deg; }
   .game-opening__message { transition: none; }
 }
