@@ -4,27 +4,38 @@
     "asset:resize": "node scripts/resize-game-asset.mjs",
     "asset:trim": "node scripts/crop-transparent.mjs",
     "dev": "npm run dev:live",
-    "dev:live": "vite --config vite.game.config.ts",
-    "dev:editor": "vite --config vite.editor.config.ts",
+    "dev:live": "vp dev --config vite.game.config.ts",
+    "dev:editor": "vp dev --config vite.editor.config.ts",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && npm run build:live && npm run build:editor",
-    "build:live": "vite build --config vite.game.config.ts",
-    "build:editor": "vite build --config vite.editor.config.ts",
+    "build:live": "vp build --config vite.game.config.ts",
+    "build:editor": "vp build --config vite.editor.config.ts",
     "deploy": "npm run typecheck && npm run deploy:live && npm run deploy:editor",
     "deploy:live": "npm run build:live && vercel deploy dist/game --prod --yes --project game-live --scope jeong-raes-projects",
     "deploy:editor": "npm run build:editor && vercel deploy dist/editor --prod --yes --project game-editor --scope jeong-raes-projects",
-    "test": "vitest",
-    "test:run": "vitest run"
+    "test": "vp test",
+    "test:run": "vp test run",
+    "prepare": "vp config"
+  },
+  "dependencies": {
+    "phaser": "^4.2.1",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "sharp": "^0.35.3",
     "typescript": "^7.0.2",
     "vercel": "^59.1.4",
-    "vite": "^8.2.1",
-    "vitest": "^4.1.10"
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.9",
+    "vite-plus": "0.2.9"
   },
-  "dependencies": {
-    "phaser": "^4.2.1",
-    "zustand": "^5.0.15"
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.9"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "12.0.2",
+      "onFail": "download"
+    }
   }
 }
