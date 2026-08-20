@@ -77,6 +77,10 @@ export function assetForField(field: TileKind, game: GameState | undefined, posi
   return fieldPresentations[field].editorAsset(game, positionKey);
 }
 
+export function baseAssetForField(field: TileKind): AssetSlot | undefined {
+  return field === 'blank' ? undefined : field === 'wall' ? 'wall' : 'floor';
+}
+
 export function textureForField(field: TileKind, game: GameState, positionKey: string): AssetSlot | undefined {
   return fieldPresentations[field].gameTexture(game, positionKey);
 }

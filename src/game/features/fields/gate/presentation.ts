@@ -11,7 +11,8 @@ export const gatePresentation = {
     gateOpen: { label: '게이트·열림', url: gateUrl, group: 'field' },
   },
   toolAsset: 'gateClosed',
-  gameTextures: [],
+  gameTextures: ['gateClosed', 'gateOpen'],
   editorAsset: (game) => game && isGateOpen(game) ? 'gateOpen' : 'gateClosed',
   gameTexture: () => 'floor',
+  overlayAsset: (game) => game && isGateOpen(game) ? 'gateOpen' : 'gateClosed',
 } satisfies FieldPresentation;

@@ -4,6 +4,7 @@ import { createGameStateFromMap } from '../game/domain/level';
 import {
   assetDefinitions,
   assetForDirection,
+  baseAssetForField,
   assetForField,
   assetForObject,
   assetGroups,
@@ -323,10 +324,12 @@ export function mountEditor(root: HTMLElement, store: EditorStoreApi = createEdi
         const controls = object?.controls.map((direction) =>
           `<img class="control-asset control-${direction}" src="${resolveAsset(assetForDirection(direction))}" alt="${direction}" />`,
         ).join('') ?? '';
+        const baseAsset = baseAssetForField(field);
         const asset = assetForField(field, game, key);
-        const tileAsset = asset ? `<img class="tile-asset" src="${resolveAsset(asset)}" alt="" />` : '';
+        const tileAsset = baseAsset ? `<img class="tile-asset" src="${resolveAsset(baseAsset)}" alt="" />` : '';
+        const fieldAsset = field !== 'wall' && asset ? `<img class="field-asset" src="${resolveAsset(asset)}" alt="" />` : '';
         const overlay = pathOverlay.get(key)?.join('') ?? '';
-        cells.push(`<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${goal}${objectAsset}<span class="path-overlay">${overlay}</span><span class="control-assets">${controls}</span></button>`);
+        cells.push(`<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${fieldAsset}${goal}${objectAsset}<span class="path-overlay">${overlay}</span><span class="control-assets">${controls}</span></button>`);
       }
     }
     retainedPlayer?.remove();

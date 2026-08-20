@@ -105,9 +105,9 @@ h1 { margin: 0; font-family: Impact, Haettenschweiler, sans-serif; font-size: cl
 .map-cell.selected { z-index: 2; outline: 2px solid var(--amber); outline-offset: -3px; }
 .field-blank { border-color: #162a31; background: repeating-linear-gradient(135deg, #061015 0 7px, #09161c 7px 14px); }
 .field-blank::after { content: ""; position: absolute; width: 0.32rem; height: 0.32rem; border-radius: 50%; background: #29414a; }
-.tile-asset, .goal-asset, .object-asset { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+.tile-asset, .field-asset, .goal-asset, .object-asset { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
 .tile-asset { z-index: -2; object-fit: cover; }
-.goal-asset { z-index: -1; object-fit: contain; }
+.field-asset, .goal-asset { z-index: -1; object-fit: contain; }
 .object-asset { z-index: 1; display: grid; place-items: center; inset: 9%; width: 82%; height: 82%; }
 .object-asset img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 .control-assets { position: absolute; z-index: 3; right: 2px; top: 2px; display: flex; flex-wrap: wrap; justify-content: end; gap: 1px; max-width: 70%; pointer-events: none; }

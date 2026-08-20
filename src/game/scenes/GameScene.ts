@@ -11,6 +11,7 @@ import {
   playerTextureForMove,
   textureForEntity,
   textureForField,
+  overlayForField,
 } from '../features/presentation';
 import { directionFromKey, isUndoShortcut } from '../input';
 import { createGameStoreFromMap, type GameStoreApi } from '../store/gameStore';
@@ -36,6 +37,7 @@ export class GameScene extends Phaser.Scene {
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly controlSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileSprites = new Map<string, Phaser.GameObjects.Image>();
+  private readonly fieldOverlaySprites = new Map<string, Phaser.GameObjects.Image>();
   private goalAnimationTimers: Phaser.Time.TimerEvent[] = [];
   private goalSprite?: Phaser.GameObjects.Image;
   private unsubscribe?: () => void;
@@ -185,6 +187,8 @@ export class GameScene extends Phaser.Scene {
         if (!texture) {
           this.tileSprites.get(key)?.destroy();
           this.tileSprites.delete(key);
+          this.fieldOverlaySprites.get(key)?.destroy();
+          this.fieldOverlaySprites.delete(key);
           continue;
         }
 
@@ -198,6 +202,18 @@ export class GameScene extends Phaser.Scene {
           sprite.setTexture(texture);
         }
 
+        // The goal has its own animated sprite, so it must not also be drawn as a static field overlay.
+        const overlayTexture = tile === 'exit' ? undefined : overlayForField(tile, game, key, 1);
+        let overlay = this.fieldOverlaySprites.get(key);
+        if (!overlayTexture) {
+          overlay?.destroy();
+          this.fieldOverlaySprites.delete(key);
+        } else if (!overlay) {
+          overlay = this.add.image(position.x, position.y, overlayTexture).setDisplaySize(TILE_SIZE, TILE_SIZE);
+          this.fieldOverlaySprites.set(key, overlay);
+        } else {
+          overlay.setTexture(overlayTexture);
+        }
       }
     }
   }
@@ -313,6 +329,7 @@ export class GameScene extends Phaser.Scene {
     this.entitySprites.clear();
     this.controlSprites.clear();
     this.tileSprites.clear();
+    this.fieldOverlaySprites.clear();
     this.goalSprite = undefined;
     this.store = undefined;
     this.completing = false;

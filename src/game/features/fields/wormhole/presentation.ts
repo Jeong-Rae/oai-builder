@@ -13,5 +13,6 @@ export const wormholePresentation = {
   toolAsset: 'wormhole',
   gameTextures: ['wormhole'],
   editorAsset: () => 'wormhole',
-  gameTexture: () => 'wormhole',
+  gameTexture: () => 'floor',
+  overlayAsset: () => 'wormhole',
 } satisfies FieldPresentation;

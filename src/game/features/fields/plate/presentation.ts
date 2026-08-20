@@ -1,6 +1,6 @@
 import type { FieldPresentation } from '@/src/game/features/presentationTypes';
 
-const plateUrl = new URL('@/assets/plate/plate.origin.png', import.meta.url).href;
+const plateUrl = new URL('@/assets/plate/plate.overlay.png', import.meta.url).href;
 
 export const platePresentation = {
   kind: 'plate',
@@ -10,7 +10,8 @@ export const platePresentation = {
     plateActive: { label: '플레이트·활성', url: plateUrl, group: 'field' },
   },
   toolAsset: 'plateInactive',
-  gameTextures: ['plateInactive'],
+  gameTextures: ['plateInactive', 'plateActive'],
   editorAsset: (game, positionKey) => game?.plateStates[positionKey] === 'active' ? 'plateActive' : 'plateInactive',
-  gameTexture: () => 'plateInactive',
+  gameTexture: () => 'floor',
+  overlayAsset: (game, positionKey) => game?.plateStates[positionKey] === 'active' ? 'plateActive' : 'plateInactive',
 } satisfies FieldPresentation;

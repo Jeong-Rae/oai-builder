@@ -11,7 +11,7 @@ export const wallPresentation = {
     },
   },
   toolAsset: 'wall',
-  gameTextures: [],
+  gameTextures: ['wall'],
   editorAsset: () => 'wall',
-  gameTexture: () => 'floor',
+  gameTexture: () => 'wall',
 } satisfies FieldPresentation;
