@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 
+import { parseMap } from '../../map/mapDocument';
 import { TILE_SIZE } from '../domain/level';
 import { findExit } from '../features/fields/exit/rules';
 import {
@@ -12,41 +13,87 @@ import {
   textureForField,
 } from '../features/presentation';
 import { directionFromKey, isUndoShortcut } from '../input';
-import { gameStore, type GameStoreApi } from '../store/gameStore';
+import { createGameStoreFromMap, type GameStoreApi } from '../store/gameStore';
+import { chapters, stageFor, type PlaySelection } from '../stages';
 import type { Entity, GameState } from '../domain/types';
 
 const goalTextureKeys = goalAssetSlots;
+const WIDTH = 1920;
+const HEIGHT = 1080;
+const fontUrl = new URL('@/assets/fonts/blrrpixs016.ttf', import.meta.url).href;
 
-function toPixel(position: { x: number; y: number }) {
+function toPixel(position: { x: number; y: number }, origin: { x: number; y: number }) {
   return {
-    x: position.x * TILE_SIZE + TILE_SIZE / 2,
-    y: position.y * TILE_SIZE + TILE_SIZE / 2,
+    x: origin.x + position.x * TILE_SIZE + TILE_SIZE / 2,
+    y: origin.y + position.y * TILE_SIZE + TILE_SIZE / 2,
   };
 }
 
 export class GameScene extends Phaser.Scene {
-  private readonly store: GameStoreApi;
+  private store?: GameStoreApi;
+  private selection: PlaySelection = { chapterIndex: 0, stageIndex: 0 };
+  private origin = { x: 0, y: 0 };
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly controlSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileSprites = new Map<string, Phaser.GameObjects.Image>();
   private goalAnimationTimers: Phaser.Time.TimerEvent[] = [];
   private goalSprite?: Phaser.GameObjects.Image;
   private unsubscribe?: () => void;
+  private completing = false;
 
-  constructor(store: GameStoreApi = gameStore) {
+  constructor(
+    private readonly onExitHome: () => void = () => {},
+    private readonly initialSelection?: PlaySelection,
+  ) {
     super('game');
-    this.store = store;
+  }
+
+  init(data: { selection?: PlaySelection } = {}): void {
+    this.selection = data.selection ?? this.initialSelection ?? { chapterIndex: 0, stageIndex: 0 };
   }
 
   preload(): void {
     gameTextureSlots.forEach((slot) => this.load.image(slot, assetUrls[slot]));
+    this.load.font('Blrr Pixs', fontUrl, 'truetype');
+    this.load.text(this.mapCacheKey(), stageFor(this.selection).mapUrl);
   }
 
   create(): void {
+    this.cameras.main.setBackgroundColor('#080e14');
+    this.renderHeader();
+
+    const source = this.cache.text.get(this.mapCacheKey());
+    const result = typeof source === 'string' ? parseMap(source) : undefined;
+    if (!result?.ok) {
+      this.renderLoadError();
+      return;
+    }
+
+    this.store = createGameStoreFromMap(result.map);
     const game = this.store.getState().game;
+    this.origin = {
+      x: (WIDTH - game.columns * TILE_SIZE) / 2,
+      y: (HEIGHT - game.rows * TILE_SIZE) / 2,
+    };
+    this.add.rectangle(
+      WIDTH / 2,
+      HEIGHT / 2,
+      game.columns * TILE_SIZE + 12,
+      game.rows * TILE_SIZE + 12,
+      0x000000,
+      0,
+    ).setStrokeStyle(6, 0xd7f9ff).setDepth(-1);
+    this.add.rectangle(
+      WIDTH / 2,
+      HEIGHT / 2,
+      game.columns * TILE_SIZE + 20,
+      game.rows * TILE_SIZE + 20,
+      0x000000,
+      0,
+    ).setStrokeStyle(4, 0x263947).setDepth(-2);
     this.syncTiles(game);
 
-    const goalPosition = toPixel(findExit(game));
+    const goalPosition = toPixel(findExit(game), this.origin);
     this.goalSprite = this.add
       .image(goalPosition.x, goalPosition.y, goalTextureKeys[game.goalOpened ? 3 : 0])
       .setDisplaySize(TILE_SIZE, TILE_SIZE);
@@ -58,13 +105,58 @@ export class GameScene extends Phaser.Scene {
       this.syncTiles(state.game);
       this.syncEntities(state.game);
       this.syncGoal(state.game, previous.game);
+      if (state.game.status === 'completed' && previous.game.status !== 'completed') this.completeStage();
     });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.cameras.main.fadeIn(this.reducedMotion() ? 0 : 180, 8, 14, 20);
+  }
+
+  private mapCacheKey(): string {
+    return `map-${this.selection.chapterIndex}-${this.selection.stageIndex}`;
+  }
+
+  private renderHeader(): void {
+    const chapter = chapters[this.selection.chapterIndex]!;
+    const stage = stageFor(this.selection);
+    this.add.text(48, 42, `${chapter.sign} · ${stage.label}`, {
+      color: '#81f0c5',
+      fontFamily: 'Blrr Pixs',
+      fontSize: '24px',
+      fontStyle: 'bold',
+      letterSpacing: 4,
+    });
+    this.createTextButton(WIDTH - 48, 36, 'HOME', this.onExitHome).setOrigin(1, 0);
+  }
+
+  private renderLoadError(): void {
+    this.add.text(WIDTH / 2, HEIGHT / 2 - 48, '맵을 불러올 수 없습니다.', {
+      color: '#ffffff', fontFamily: 'Blrr Pixs', fontSize: '36px',
+    }).setOrigin(0.5);
+    this.createTextButton(WIDTH / 2, HEIGHT / 2 + 40, 'RETRY', () => {
+      this.cache.text.remove(this.mapCacheKey());
+      this.scene.restart({ selection: this.selection });
+    }).setOrigin(0.5);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+  }
+
+  private createTextButton(x: number, y: number, label: string, onPress: () => void): Phaser.GameObjects.Text {
+    const button = this.add.text(x, y, label, {
+      backgroundColor: '#d7f9ff',
+      color: '#080e14',
+      fontFamily: 'Blrr Pixs',
+      fontSize: '22px',
+      fontStyle: 'bold',
+      padding: { x: 18, y: 12 },
+    }).setInteractive({ useHandCursor: true });
+    button.on('pointerdown', onPress);
+    button.on('pointerover', () => button.setBackgroundColor('#81f0c5'));
+    button.on('pointerout', () => button.setBackgroundColor('#d7f9ff'));
+    return button;
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
-    if (this.store.getState().game.status === 'completed') return;
+    if (!this.store || this.store.getState().game.status === 'completed') return;
 
     if (isUndoShortcut(event)) {
       event.preventDefault();
@@ -96,7 +188,7 @@ export class GameScene extends Phaser.Scene {
           continue;
         }
 
-        const position = toPixel({ x, y });
+        const position = toPixel({ x, y }, this.origin);
         let sprite = this.tileSprites.get(key);
 
         if (!sprite) {
@@ -133,7 +225,7 @@ export class GameScene extends Phaser.Scene {
     const active = new Set<string>();
 
     for (const entity of entities) {
-      const position = toPixel(entity.position);
+      const position = toPixel(entity.position, this.origin);
       const count = entity.controls.length;
 
       entity.controls.forEach((direction, index) => {
@@ -160,7 +252,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private syncEntity(entity: Entity): void {
-    const position = toPixel(entity.position);
+    const position = toPixel(entity.position, this.origin);
     const texture = textureForEntity(entity);
     let sprite = this.entitySprites.get(entity.id);
 
@@ -198,10 +290,31 @@ export class GameScene extends Phaser.Scene {
     this.goalAnimationTimers = [];
   }
 
+  private completeStage(): void {
+    if (this.completing) return;
+    this.completing = true;
+    this.time.delayedCall(this.reducedMotion() ? 0 : 700, () => {
+      this.cameras.main.fadeOut(this.reducedMotion() ? 0 : 180, 8, 14, 20);
+      this.time.delayedCall(this.reducedMotion() ? 0 : 180, () => {
+        this.scene.start('clear', { selection: this.selection });
+      });
+    });
+  }
+
+  private reducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   private shutdown(): void {
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     this.stopGoalAnimation();
     this.input.keyboard?.off('keydown', this.handleKeyDown, this);
+    this.entitySprites.clear();
+    this.controlSprites.clear();
+    this.tileSprites.clear();
+    this.goalSprite = undefined;
+    this.store = undefined;
+    this.completing = false;
   }
 }

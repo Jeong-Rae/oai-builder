@@ -38,7 +38,15 @@ body {
 }
 
 canvas {
+  display: block;
   image-rendering: pixelated;
+}
+
+.phaser-play {
+  background: #080e14;
+  height: 100vh;
+  overflow: hidden;
+  width: 100%;
 }
 
 button {
