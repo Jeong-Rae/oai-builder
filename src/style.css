@@ -206,6 +206,36 @@ button:not(.game-intro__start):not(.game-opening):focus-visible {
   width: min(128.8vw, 89.6rem);
 }
 
+.game-intro__mascot {
+  animation: mascot-floating 2.8s ease-in-out infinite;
+  height: auto;
+  left: 50%;
+  max-width: min(27.6vw, 20.4rem);
+  pointer-events: none;
+  position: absolute;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  width: 27.6vw;
+  z-index: 1;
+}
+
+@keyframes mascot-floating {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 8px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-intro__mascot {
+    animation: none;
+  }
+}
+
 .game-intro__background-stars {
   inset: 0;
   pointer-events: none;

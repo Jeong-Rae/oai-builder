@@ -3,6 +3,10 @@ import { createPlateButton } from "../components/PlateButton";
 const assets = {
   background: new URL("@/assets/background/background_space.png", import.meta.url).href,
   lunar: new URL("@/assets/moon/moon.eclepse.trimmed.png", import.meta.url).href,
+  mascots: [
+    new URL("@/assets/mascot/mascot.happy.1.png", import.meta.url).href,
+    new URL("@/assets/mascot/mascot.happy.2.png", import.meta.url).href,
+  ],
   starConcave: new URL("@/assets/star/star_concave.png", import.meta.url).href,
   starConvex: new URL("@/assets/star/star_convex.png", import.meta.url).href,
   starCrossSmall: new URL("@/assets/star/star_cross_s.png", import.meta.url).href,
@@ -78,7 +82,12 @@ class StartScene {
   constructor(private readonly onComplete: () => void) {}
 
   render(): HTMLElement {
-    this.view.append(this.renderBackgroundStars(), this.renderLunar(), this.renderStartArea());
+    this.view.append(
+      this.renderBackgroundStars(),
+      this.renderLunar(),
+      this.renderMascot(),
+      this.renderStartArea(),
+    );
     return this.view;
   }
 
@@ -97,6 +106,15 @@ class StartScene {
     lunar.src = assets.lunar;
     lunar.alt = "";
     return lunar;
+  }
+
+  private renderMascot(): HTMLImageElement {
+    const mascot = document.createElement("img");
+    mascot.className = "game-intro__mascot";
+    mascot.src = assets.mascots[Math.floor(Math.random() * assets.mascots.length)]!;
+    mascot.alt = "";
+    mascot.setAttribute("aria-hidden", "true");
+    return mascot;
   }
 
   private renderBackgroundStars(): HTMLElement {
