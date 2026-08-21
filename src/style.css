@@ -1,23 +1,23 @@
 :root {
   background: #080e14;
   color: #d7f9ff;
-  font-family: 'Blrr Pixs', monospace;
+  font-family: "Blrr Pixs", monospace;
 }
 
 @font-face {
-  font-family: 'Pixelify Sans';
-  src: url('../assets/fonts/PixelifySans/PixelifySans-VariableFont_wght.ttf') format('truetype');
+  font-family: "Pixelify Sans";
+  src: url("../assets/fonts/PixelifySans/PixelifySans-VariableFont_wght.ttf") format("truetype");
 }
 
 @font-face {
-  font-family: 'Pixeloid Sans';
-  src: url('../assets/fonts/PixeloidSans/PixeloidSans-Bold.ttf') format('truetype');
+  font-family: "Pixeloid Sans";
+  src: url("../assets/fonts/PixeloidSans/PixeloidSans-Bold.ttf") format("truetype");
   font-weight: 700;
 }
 
 @font-face {
-  font-family: 'Blrr Pixs';
-  src: url('../assets/fonts/blrrpixs016.ttf') format('truetype');
+  font-family: "Blrr Pixs";
+  src: url("../assets/fonts/blrrpixs016.ttf") format("truetype");
 }
 
 html,
@@ -60,7 +60,11 @@ button {
 }
 
 button:not(.game-intro__start):not(.game-opening):hover,
-button:not(.game-intro__start):not(.game-opening):focus-visible { background: #81f0c5; outline: 3px solid #fff; outline-offset: 3px; }
+button:not(.game-intro__start):not(.game-opening):focus-visible {
+  background: #81f0c5;
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
 
 .game-opening {
   align-items: center;
@@ -77,7 +81,10 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   width: 100%;
 }
 
-.game-opening:focus-visible { outline: 4px solid #fff; outline-offset: -8px; }
+.game-opening:focus-visible {
+  outline: 4px solid #fff;
+  outline-offset: -8px;
+}
 
 .game-opening__title {
   filter: none;
@@ -93,29 +100,42 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 }
 
 .game-opening__title--mono {
-  filter: grayscale(1) brightness(1.45) contrast(1.35) drop-shadow(0 0 0.5rem rgb(255 255 255 / 20%));
+  filter: grayscale(1) brightness(1.45) contrast(1.35)
+    drop-shadow(0 0 0.5rem rgb(255 255 255 / 20%));
 }
 
 .game-opening__title--color {
-  animation: intro-title-color 1.5s cubic-bezier(.42, 0, .58, 1) both;
-  mask-image: conic-gradient(from -90deg at 50% 50%, #000 0deg var(--intro-title-reveal), transparent var(--intro-title-reveal) 360deg);
-  -webkit-mask-image: conic-gradient(from -90deg at 50% 50%, #000 0deg var(--intro-title-reveal), transparent var(--intro-title-reveal) 360deg);
+  animation: intro-title-color 1.5s cubic-bezier(0.42, 0, 0.58, 1) both;
+  mask-image: conic-gradient(
+    from -90deg at 50% 50%,
+    #000 0deg var(--intro-title-reveal),
+    transparent var(--intro-title-reveal) 360deg
+  );
+  -webkit-mask-image: conic-gradient(
+    from -90deg at 50% 50%,
+    #000 0deg var(--intro-title-reveal),
+    transparent var(--intro-title-reveal) 360deg
+  );
 }
 
 @property --intro-title-reveal {
   inherits: false;
   initial-value: 0deg;
-  syntax: '<angle>';
+  syntax: "<angle>";
 }
 
 @keyframes intro-title-color {
-  from { --intro-title-reveal: 0deg; }
-  to { --intro-title-reveal: 360deg; }
+  from {
+    --intro-title-reveal: 0deg;
+  }
+  to {
+    --intro-title-reveal: 360deg;
+  }
 }
 
 .game-opening__message {
   bottom: clamp(6rem, 21vh, 15rem);
-  font-family: 'Pixeloid Sans', monospace;
+  font-family: "Pixeloid Sans", monospace;
   font-size: clamp(0.82rem, 2.4vw, 1.15rem);
   font-weight: 700;
   left: 50%;
@@ -127,21 +147,42 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   position: absolute;
   text-shadow: 0 2px 10px #000;
   transform: translate(-50%, 0.5rem);
-  transition: opacity 240ms ease, transform 240ms ease;
+  transition:
+    opacity 240ms ease,
+    transform 240ms ease;
   width: max-content;
 }
 
-.game-opening__message--visible { opacity: 1; transform: translate(-50%, 0); }
+.game-opening__message--visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
 
 .game-menu,
-.game-play { width: min(92vw, 760px); }
+.game-play {
+  width: min(92vw, 760px);
+}
 
-.game-menu { display: grid; gap: 1.25rem; text-align: center; }
+.game-menu {
+  display: grid;
+  gap: 1.25rem;
+  text-align: center;
+}
 
-.game-menu h1 { color: #fff; font-size: 2rem; margin: 0; }
+.game-menu h1 {
+  color: #fff;
+  font-size: 2rem;
+  margin: 0;
+}
 
 .game-menu__eyebrow,
-.game-play__label { color: #81f0c5; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.16em; margin: 0; }
+.game-play__label {
+  color: #81f0c5;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
 
 .game-intro {
   background: #080e14 center / cover no-repeat;
@@ -153,17 +194,23 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 }
 
 .game-intro__lunar {
-  bottom: calc(-1 * min(66vw, 42rem));
+  aspect-ratio: 1520 / 911;
+  bottom: calc(-1 * min(51.7vw, 36rem));
+  height: auto;
   image-rendering: auto;
   left: 50%;
   max-width: none;
   pointer-events: none;
   position: absolute;
   transform: translateX(-50%);
-  width: min(92vw, 64rem);
+  width: min(128.8vw, 89.6rem);
 }
 
-.game-intro__background-stars { inset: 0; pointer-events: none; position: absolute; }
+.game-intro__background-stars {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
 
 .game-intro__background-star {
   left: var(--x);
@@ -172,19 +219,25 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   transform: translate(-50%, -50%);
 }
 
-.game-intro__background-star--small { width: clamp(6.4px, .8vw, 9.6px); }
-.game-intro__background-star--medium { width: clamp(8px, 1vw, 11.2px); }
-.game-intro__background-star--large { width: clamp(9.6px, 1.2vw, 12.8px); }
+.game-intro__background-star--small {
+  width: clamp(6.4px, 0.8vw, 9.6px);
+}
+.game-intro__background-star--medium {
+  width: clamp(8px, 1vw, 11.2px);
+}
+.game-intro__background-star--large {
+  width: clamp(9.6px, 1.2vw, 12.8px);
+}
 
 .game-chapter__title {
   align-items: center;
   color: #fff;
   display: flex;
-  font-family: 'Blrr Pixs', monospace;
+  font-family: "Blrr Pixs", monospace;
   font-size: clamp(2rem, 6vw, 4.5rem);
-  gap: .55em;
+  gap: 0.55em;
   left: 50%;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   margin: 0;
   position: absolute;
   top: clamp(2rem, 8vh, 5rem);
@@ -193,7 +246,11 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   z-index: 1;
 }
 
-.game-chapter__title-star { display: block; height: .5em; width: auto; }
+.game-chapter__title-star {
+  display: block;
+  height: 0.5em;
+  width: auto;
+}
 
 .game-chapter__carousel {
   --chapter-card-width: min(450px, 41.666667vh, 23.4375vw);
@@ -213,16 +270,23 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   aspect-ratio: 450 / 600;
   box-sizing: border-box;
   left: 50%;
-  opacity: .8;
+  opacity: 0.8;
   position: absolute;
   top: 50%;
-  transform: translate(-50%, -50%) scale(.75);
-  transition: left 420ms cubic-bezier(.22, .7, .2, 1), opacity 420ms ease, transform 420ms cubic-bezier(.22, .7, .2, 1);
+  transform: translate(-50%, -50%) scale(0.75);
+  transition:
+    left 420ms cubic-bezier(0.22, 0.7, 0.2, 1),
+    opacity 420ms ease,
+    transform 420ms cubic-bezier(0.22, 0.7, 0.2, 1);
   width: var(--chapter-card-width);
 }
 
-.game-chapter__card--previous { left: calc(50% - var(--chapter-card-offset)); }
-.game-chapter__card--next { left: calc(50% + var(--chapter-card-offset)); }
+.game-chapter__card--previous {
+  left: calc(50% - var(--chapter-card-offset));
+}
+.game-chapter__card--next {
+  left: calc(50% + var(--chapter-card-offset));
+}
 
 .game-chapter__card--current {
   opacity: 1;
@@ -231,15 +295,22 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 }
 
 .game-chapter__card--enter-previous,
-.game-chapter__card--exit-previous { left: calc(50% - var(--chapter-exit-offset)); }
+.game-chapter__card--exit-previous {
+  left: calc(50% - var(--chapter-exit-offset));
+}
 
 .game-chapter__card--enter-next,
-.game-chapter__card--exit-next { left: calc(50% + var(--chapter-exit-offset)); }
+.game-chapter__card--exit-next {
+  left: calc(50% + var(--chapter-exit-offset));
+}
 
 .game-chapter__card--enter-previous,
 .game-chapter__card--enter-next,
 .game-chapter__card--exit-previous,
-.game-chapter__card--exit-next { opacity: 0; transform: translate(-50%, -50%) scale(.55); }
+.game-chapter__card--exit-next {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.55);
+}
 
 .game-chapter__arrow {
   background: transparent;
@@ -252,17 +323,36 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   z-index: 2;
 }
 
-.game-chapter__arrow--previous { left: clamp(.5rem, 2vw, 2rem); }
-.game-chapter__arrow--next { right: clamp(.5rem, 2vw, 2rem); }
+.game-chapter__arrow--previous {
+  left: clamp(0.5rem, 2vw, 2rem);
+}
+.game-chapter__arrow--next {
+  right: clamp(0.5rem, 2vw, 2rem);
+}
 
-.game-chapter__arrow img { display: block; image-rendering: pixelated; width: 100%; }
+.game-chapter__arrow img {
+  display: block;
+  image-rendering: pixelated;
+  width: 100%;
+}
 
 .game-chapter button.game-chapter__arrow:hover,
-.game-chapter button.game-chapter__arrow:focus-visible { background: transparent; filter: brightness(1.18); outline: none; }
+.game-chapter button.game-chapter__arrow:focus-visible {
+  background: transparent;
+  filter: brightness(1.18);
+  outline: none;
+}
 
-.game-chapter button.game-chapter__arrow:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.game-chapter button.game-chapter__arrow:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
 
-.game-chapter__constellation { display: block; height: 100%; width: 100%; }
+.game-chapter__constellation {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
 
 .game-chapter__constellation-line {
   fill: none;
@@ -279,14 +369,16 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   image-rendering: pixelated;
 }
 
-.game-chapter__zodiac { image-rendering: pixelated; }
+.game-chapter__zodiac {
+  image-rendering: pixelated;
+}
 
 .game-chapter__zodiac-name {
   fill: #ffd866;
-  font-family: 'Blrr Pixs', monospace;
+  font-family: "Blrr Pixs", monospace;
   font-size: 36px;
   font-weight: 700;
-  letter-spacing: .15em;
+  letter-spacing: 0.15em;
   text-anchor: middle;
 }
 
@@ -317,7 +409,7 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   background-size: contain;
   border: 0;
   color: #15171d;
-  font-family: 'Blrr Pixs', monospace;
+  font-family: "Blrr Pixs", monospace;
   font-size: clamp(1.2rem, 4vw, 2rem);
   font-weight: 700;
   letter-spacing: 8px;
@@ -326,11 +418,21 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 }
 
 .plate-button:hover,
-.plate-button:focus-visible { filter: brightness(1.08) drop-shadow(0 0 0.7rem rgb(255 255 255 / 34%)); outline: none; }
+.plate-button:focus-visible {
+  filter: brightness(1.08) drop-shadow(0 0 0.7rem rgb(255 255 255 / 34%));
+  outline: none;
+}
 
-.plate-button:focus-visible { filter: brightness(1.08) drop-shadow(0 0 0.7rem #fff); }
+.plate-button:focus-visible {
+  filter: brightness(1.08) drop-shadow(0 0 0.7rem #fff);
+}
 
-.game-intro__stars { inset: -30%; opacity: 0; pointer-events: none; position: absolute; }
+.game-intro__stars {
+  inset: -30%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
 
 .game-intro__stars img {
   height: clamp(1rem, 3vw, 1.65rem);
@@ -338,34 +440,65 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
   opacity: 0;
   position: absolute;
   top: var(--y);
-  transform: translate(-50%, -50%) scale(.25);
-  transition: filter 320ms ease, opacity 320ms ease-in-out, transform 420ms cubic-bezier(.2,.8,.3,1);
+  transform: translate(-50%, -50%) scale(0.25);
+  transition:
+    filter 320ms ease,
+    opacity 320ms ease-in-out,
+    transform 420ms cubic-bezier(0.2, 0.8, 0.3, 1);
   width: auto;
 }
 
 .game-intro__start-area:hover .game-intro__stars,
-.game-intro__start-area:focus-within .game-intro__stars { opacity: 1; }
+.game-intro__start-area:focus-within .game-intro__stars {
+  opacity: 1;
+}
 
 .game-intro__stars img.game-intro__star--lit {
-  filter: drop-shadow(0 0 .45rem #fff) drop-shadow(0 0 .8rem #b55bff);
+  filter: drop-shadow(0 0 0.45rem #fff) drop-shadow(0 0 0.8rem #b55bff);
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
 
-.stage-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+.stage-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+}
 
-.game-play { display: grid; gap: 0.75rem; justify-items: center; position: relative; }
+.game-play {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+  position: relative;
+}
 
-.game-canvas { box-shadow: 0 0 0 6px #d7f9ff, 0 0 0 10px #263947; }
+.game-canvas {
+  box-shadow:
+    0 0 0 6px #d7f9ff,
+    0 0 0 10px #263947;
+}
 
-.game-nav { position: absolute; right: 0; top: 0; z-index: 2; }
+.game-nav {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 2;
+}
 
-.game-nav button { font-size: 0.75rem; padding: 0.55rem 0.75rem; }
+.game-nav button {
+  font-size: 0.75rem;
+  padding: 0.55rem 0.75rem;
+}
 
-.celebration { height: 9rem; overflow: hidden; position: relative; width: 100%; }
+.celebration {
+  height: 9rem;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
 
 .celebration i {
-  animation: burst 900ms cubic-bezier(.1,.7,.2,1) infinite both;
+  animation: burst 900ms cubic-bezier(0.1, 0.7, 0.2, 1) infinite both;
   animation-delay: var(--delay);
   background: #81f0c5;
   border-radius: 50%;
@@ -378,14 +511,32 @@ button:not(.game-intro__start):not(.game-opening):focus-visible { background: #8
 }
 
 @keyframes burst {
-  0% { opacity: 0; transform: rotate(var(--angle)) translateY(-0.25rem) scale(0); }
-  20% { opacity: 1; }
-  100% { opacity: 0; transform: rotate(var(--angle)) translateY(-5rem) scale(1.5); }
+  0% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(-0.25rem) scale(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(-5rem) scale(1.5);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .celebration i { animation: none; transform: rotate(var(--angle)) translateY(-4rem); }
-  .game-chapter__card { transition: none; }
-  .game-opening__title--color { animation: none; --intro-title-reveal: 360deg; }
-  .game-opening__message { transition: none; }
+  .celebration i {
+    animation: none;
+    transform: rotate(var(--angle)) translateY(-4rem);
+  }
+  .game-chapter__card {
+    transition: none;
+  }
+  .game-opening__title--color {
+    animation: none;
+    --intro-title-reveal: 360deg;
+  }
+  .game-opening__message {
+    transition: none;
+  }
 }
