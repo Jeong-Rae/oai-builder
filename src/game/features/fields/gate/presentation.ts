@@ -1,4 +1,4 @@
-import type { GameState } from "@/src/game/domain/types";
+import type { GameState, Position, TileKind } from "@/src/game/domain/types";
 import { isGateOpen } from "./rules";
 import type { FieldPresentation } from "@/src/game/features/presentationTypes";
 
@@ -6,6 +6,24 @@ export function gateVisualFor(game: GameState | undefined) {
   return game && isGateOpen(game)
     ? { device: "gateDeviceSafe" as const, laser: undefined }
     : { device: "gateDeviceWarn" as const, laser: "gateLaserWarn" as const };
+}
+
+export type GateOrientation = "horizontal" | "vertical";
+
+function blocksGate(tile: TileKind | undefined): boolean {
+  return tile === undefined || tile === "blank" || tile === "wall";
+}
+
+export function gateOrientationFor(
+  game: GameState | undefined,
+  position: Position | undefined,
+): GateOrientation {
+  if (!game || !position) return "horizontal";
+
+  const { x, y } = position;
+  const aboveAndBelowBlocked =
+    blocksGate(game.tiles[y - 1]?.[x]) && blocksGate(game.tiles[y + 1]?.[x]);
+  return aboveAndBelowBlocked ? "vertical" : "horizontal";
 }
 
 export const gatePresentation = {

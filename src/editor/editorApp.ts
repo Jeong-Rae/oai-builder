@@ -17,7 +17,7 @@ import {
   type AssetSlot,
 } from "../game/features/presentation";
 import { fieldRules } from "../game/features/rules";
-import { gateVisualFor } from "../game/features/fields/gate/presentation";
+import { gateOrientationFor, gateVisualFor } from "../game/features/fields/gate/presentation";
 import { directionFromKey, isUndoShortcut } from "../game/input";
 import { createGameStoreFromMap, type GameStoreApi } from "../game/store/gameStore";
 import { serializeMap, type MapObjectKind } from "../map/mapDocument";
@@ -345,8 +345,9 @@ export function mountEditor(
           ? `<img class="goal-asset" src="${resolveAsset(overlayAsset)}" alt="" />`
           : "";
         const gateVisual = field === "gate" ? gateVisualFor(game) : undefined;
+        const gateOrientation = field === "gate" ? gateOrientationFor(game, { x, y }) : undefined;
         const gate = gateVisual
-          ? `<span class="gate-assets">${gateVisual.laser ? `<img class="gate-laser" src="${resolveAsset(gateVisual.laser)}" alt="" />` : ""}<img class="gate-device gate-device-left" src="${resolveAsset(gateVisual.device)}" alt="" /><img class="gate-device gate-device-right" src="${resolveAsset(gateVisual.device)}" alt="" /></span>`
+          ? `<span class="gate-assets gate-assets--${gateOrientation}">${gateVisual.laser ? `<img class="gate-laser" src="${resolveAsset(gateVisual.laser)}" alt="" />` : ""}<img class="gate-device gate-device-left" src="${resolveAsset(gateVisual.device)}" alt="" /><img class="gate-device gate-device-right" src="${resolveAsset(gateVisual.device)}" alt="" /></span>`
           : "";
         const objectAsset =
           object && !(object.kind === "player" && retainedPlayer)

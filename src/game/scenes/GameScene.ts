@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import { parseMap } from "../../map/mapDocument";
 import { TILE_SIZE } from "../domain/level";
 import { findExit } from "../features/fields/exit/rules";
-import { gateVisualFor } from "../features/fields/gate/presentation";
+import { gateOrientationFor, gateVisualFor } from "../features/fields/gate/presentation";
 import { platePressFrames } from "../features/fields/plate/presentation";
 import {
   assetForDirection,
@@ -18,7 +18,7 @@ import {
 import { directionFromKey, isUndoShortcut } from "../input";
 import { createGameStoreFromMap, type GameStoreApi } from "../store/gameStore";
 import { chapters, stageFor, type PlaySelection } from "../stages";
-import type { Entity, GameState } from "../domain/types";
+import type { Entity, GameState, Position } from "../domain/types";
 
 const WIDTH = 1920;
 const HEIGHT = 1080;
@@ -229,7 +229,7 @@ export class GameScene extends Phaser.Scene {
           sprite.setTexture(texture);
         }
 
-        if (tile === "gate") this.syncGate(key, position, game);
+        if (tile === "gate") this.syncGate(key, position, game, { x, y });
         else {
           this.gateSprites.get(key)?.destroy();
           this.gateSprites.delete(key);
@@ -299,28 +299,54 @@ export class GameScene extends Phaser.Scene {
     overlay.setDisplaySize((TILE_SIZE * source.width) / source.height, TILE_SIZE);
   }
 
-  private syncGate(key: string, position: { x: number; y: number }, game: GameState): void {
+  private syncGate(
+    key: string,
+    position: { x: number; y: number },
+    game: GameState,
+    tilePosition: Position,
+  ): void {
     const visual = gateVisualFor(game);
+    const orientation = gateOrientationFor(game, tilePosition);
     const current = this.gateSprites.get(key);
-    if (current?.getData("safe") === !visual.laser) return;
+    if (
+      current?.getData("safe") === !visual.laser &&
+      current.getData("orientation") === orientation
+    )
+      return;
 
     current?.destroy();
     const gate = this.add
       .container(position.x, position.y)
       .setDepth(1)
-      .setData("safe", !visual.laser);
+      .setData("safe", !visual.laser)
+      .setData("orientation", orientation);
     if (visual.laser) {
-      gate.add(this.add.image(0, 0, visual.laser).setDisplaySize(TILE_SIZE, TILE_SIZE * 0.38));
+      const laser = this.add.image(0, 0, visual.laser).setDisplaySize(TILE_SIZE, TILE_SIZE * 0.38);
+      if (orientation === "vertical") laser.setRotation(Math.PI / 2);
+      gate.add(laser);
     }
-    gate.add([
-      this.add
-        .image(-TILE_SIZE * 0.28, 0, visual.device)
-        .setDisplaySize(TILE_SIZE * 0.64, TILE_SIZE * 0.64),
-      this.add
-        .image(TILE_SIZE * 0.28, 0, visual.device)
-        .setDisplaySize(TILE_SIZE * 0.64, TILE_SIZE * 0.64)
-        .setFlipX(true),
-    ]);
+    const deviceOffset = TILE_SIZE * 0.28;
+    const first = this.add
+      .image(
+        orientation === "vertical" ? 0 : -deviceOffset,
+        orientation === "vertical" ? -deviceOffset : 0,
+        visual.device,
+      )
+      .setDisplaySize(TILE_SIZE * 0.64, TILE_SIZE * 0.64);
+    const second = this.add
+      .image(
+        orientation === "vertical" ? 0 : deviceOffset,
+        orientation === "vertical" ? deviceOffset : 0,
+        visual.device,
+      )
+      .setDisplaySize(TILE_SIZE * 0.64, TILE_SIZE * 0.64);
+    if (orientation === "vertical") {
+      first.setRotation(Math.PI / 2);
+      second.setRotation(-Math.PI / 2);
+    } else {
+      second.setFlipX(true);
+    }
+    gate.add([first, second]);
     this.gateSprites.set(key, gate);
   }
 

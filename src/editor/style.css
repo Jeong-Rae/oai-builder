@@ -420,6 +420,24 @@ h1 {
   right: -10%;
   transform: scaleX(-1);
 }
+.gate-assets--vertical .gate-laser {
+  transform: rotate(90deg);
+}
+.gate-assets--vertical .gate-device {
+  left: 18%;
+  width: 64%;
+  height: 64%;
+}
+.gate-assets--vertical .gate-device-left {
+  top: -10%;
+  transform: rotate(90deg);
+}
+.gate-assets--vertical .gate-device-right {
+  top: auto;
+  bottom: -10%;
+  right: auto;
+  transform: rotate(-90deg);
+}
 .object-asset {
   z-index: 1;
   display: grid;

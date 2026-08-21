@@ -2,7 +2,10 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { assetForField, overlayForField } from "../../src/game/features/presentation";
 import { createInitialState } from "../../src/game/domain/level";
-import { gateVisualFor } from "../../src/game/features/fields/gate/presentation";
+import {
+  gateOrientationFor,
+  gateVisualFor,
+} from "../../src/game/features/fields/gate/presentation";
 
 describe("에디터 에셋 슬롯", () => {
   it("필드 종류와 상태에 맞는 독립 에셋 슬롯을 선택한다", () => {
@@ -30,5 +33,27 @@ describe("에디터 에셋 슬롯", () => {
 
     expect(gateVisualFor(inactive)).toEqual({ device: "gateDeviceWarn", laser: "gateLaserWarn" });
     expect(gateVisualFor(active)).toEqual({ device: "gateDeviceSafe", laser: undefined });
+  });
+
+  it("게이트 양옆의 길이 방향에 맞춰 레이저를 회전한다", () => {
+    const horizontalRoad = createInitialState({
+      boxCount: 0,
+      tileOverrides: [
+        { position: { x: 4, y: 4 }, kind: "gate" },
+        { position: { x: 4, y: 3 }, kind: "wall" },
+        { position: { x: 4, y: 5 }, kind: "wall" },
+      ],
+    });
+    const verticalRoad = createInitialState({
+      boxCount: 0,
+      tileOverrides: [
+        { position: { x: 4, y: 4 }, kind: "gate" },
+        { position: { x: 3, y: 4 }, kind: "wall" },
+        { position: { x: 5, y: 4 }, kind: "wall" },
+      ],
+    });
+
+    expect(gateOrientationFor(horizontalRoad, { x: 4, y: 4 })).toBe("vertical");
+    expect(gateOrientationFor(verticalRoad, { x: 4, y: 4 })).toBe("horizontal");
   });
 });
