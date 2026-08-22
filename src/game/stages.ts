@@ -83,18 +83,18 @@ const constellationData: ConstellationData = {
 };
 
 const zodiacUrls: Record<ZodiacSign, string> = {
-  ARIES: new URL("@/assets/zodiac/zodiac_aries_active.png", import.meta.url).href,
-  TAURUS: new URL("@/assets/zodiac/zodiac_taurus_active.png", import.meta.url).href,
-  GEMINI: new URL("@/assets/zodiac/zodiac_gemini_active.png", import.meta.url).href,
-  CANCER: new URL("@/assets/zodiac/zodiac_cancer_active.png", import.meta.url).href,
-  LEO: new URL("@/assets/zodiac/zodiac_leo_active.png", import.meta.url).href,
-  VIRGO: new URL("@/assets/zodiac/zodiac_virgo_active.png", import.meta.url).href,
-  LIBRA: new URL("@/assets/zodiac/zodiac_libra_active.png", import.meta.url).href,
-  SCORPIUS: new URL("@/assets/zodiac/zodiac_scorpio_active.png", import.meta.url).href,
-  SAGITTARIUS: new URL("@/assets/zodiac/zodiac_sagittarius_active.png", import.meta.url).href,
-  CAPRICORNUS: new URL("@/assets/zodiac/zodiac_capricorn_active.png", import.meta.url).href,
-  AQUARIUS: new URL("@/assets/zodiac/zodiac_aquarius_active.png", import.meta.url).href,
-  PISCES: new URL("@/assets/zodiac/zodiac_pisces_active.png", import.meta.url).href,
+  ARIES: new URL("@/assets/zodiac/zodiac_aries_active.webp", import.meta.url).href,
+  TAURUS: new URL("@/assets/zodiac/zodiac_taurus_active.webp", import.meta.url).href,
+  GEMINI: new URL("@/assets/zodiac/zodiac_gemini_active.webp", import.meta.url).href,
+  CANCER: new URL("@/assets/zodiac/zodiac_cancer_active.webp", import.meta.url).href,
+  LEO: new URL("@/assets/zodiac/zodiac_leo_active.webp", import.meta.url).href,
+  VIRGO: new URL("@/assets/zodiac/zodiac_virgo_active.webp", import.meta.url).href,
+  LIBRA: new URL("@/assets/zodiac/zodiac_libra_active.webp", import.meta.url).href,
+  SCORPIUS: new URL("@/assets/zodiac/zodiac_scorpio_active.webp", import.meta.url).href,
+  SAGITTARIUS: new URL("@/assets/zodiac/zodiac_sagittarius_active.webp", import.meta.url).href,
+  CAPRICORNUS: new URL("@/assets/zodiac/zodiac_capricorn_active.webp", import.meta.url).href,
+  AQUARIUS: new URL("@/assets/zodiac/zodiac_aquarius_active.webp", import.meta.url).href,
+  PISCES: new URL("@/assets/zodiac/zodiac_pisces_active.webp", import.meta.url).href,
 };
 
 export const chapters: readonly ChapterDefinition[] = zodiacSigns.map((sign) => {

@@ -1,10 +1,5 @@
 import styles from "./backgroundStars.module.css";
-
-const assets = {
-  small: new URL("@/assets/star/star_cross_s.png", import.meta.url).href,
-  medium: new URL("@/assets/star/star_cross_m.png", import.meta.url).href,
-  large: new URL("@/assets/star/star_cross_l.png", import.meta.url).href,
-};
+import { decorAssets } from "../../assets";
 
 const positions = [
   [85.5, 60.5],
@@ -36,7 +31,12 @@ export function createBackgroundStars(): HTMLElement {
   positions.forEach(([x, y], index) => {
     const star = document.createElement("img");
     star.className = `${styles.star} ${index < 11 ? styles.small : index < 16 ? styles.medium : styles.large}`;
-    star.src = index < 11 ? assets.small : index < 16 ? assets.medium : assets.large;
+    star.src =
+      index < 11
+        ? decorAssets.starSmall
+        : index < 16
+          ? decorAssets.starMedium
+          : decorAssets.starLarge;
     star.alt = "";
     star.style.setProperty("--x", `${x}%`);
     star.style.setProperty("--y", `${y}%`);

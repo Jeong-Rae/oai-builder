@@ -1,3 +1,4 @@
+import { allGameAssetUrls } from "./assets";
 import { createChapterScene } from "./scenes/chapter/controller";
 import { createClearScene } from "./scenes/clear/controller";
 import { createGameScene } from "./scenes/game/controller";
@@ -6,13 +7,16 @@ import { createStageSelectScene } from "./scenes/stage-select/controller";
 import { createStartScene } from "./scenes/start/controller";
 import { nextSelection, type PlaySelection } from "./stages";
 import { progressStore } from "./store/progressStore";
+import { preloadAssets } from "./preload";
 
 export class GameApp {
   private disposeScene?: () => void;
+  private preloadPromise?: Promise<void>;
 
   constructor(private readonly root: HTMLElement) {
     if (import.meta.env.DEV) document.addEventListener("keydown", this.handleDevShortcut);
     this.showIntro();
+    this.preloadPromise = preloadAssets(allGameAssetUrls());
   }
 
   private handleDevShortcut = (event: KeyboardEvent): void => {
@@ -30,7 +34,8 @@ export class GameApp {
     showScreen();
   };
 
-  private show(scene: { view: HTMLElement; dispose(): void }): void {
+  private async show(scene: { view: HTMLElement; dispose(): void }): Promise<void> {
+    await this.preloadPromise;
     this.disposeScene?.();
     this.disposeScene = scene.dispose;
     this.root.replaceChildren();
@@ -52,9 +57,9 @@ export class GameApp {
     this.showChapter(0);
   };
 
-  private showChapter = (chapterIndex: number): void =>
+  private showChapter = (chapterIndex: number): Promise<void> =>
     this.show(createChapterScene(chapterIndex, this.showStageSelect));
-  private showStageSelect = (chapterIndex: number): void =>
+  private showStageSelect = (chapterIndex: number): Promise<void> =>
     this.show(
       createStageSelectScene(
         chapterIndex,
@@ -62,7 +67,7 @@ export class GameApp {
         () => this.showChapter(chapterIndex),
       ),
     );
-  private showGame = (selection: PlaySelection): void =>
+  private showGame = (selection: PlaySelection): Promise<void> =>
     this.show(createGameScene(selection, this.showGameStart, () => this.showClear(selection)));
   private showClear = (selection: PlaySelection): void => {
     progressStore.markCleared(selection.chapterIndex, selection.stageIndex);

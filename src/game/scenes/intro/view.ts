@@ -1,21 +1,17 @@
 import styles from "./scene.module.css";
-
-const assets = {
-  background: new URL("@/assets/background/background_space.png", import.meta.url).href,
-  title: new URL("@/assets/title/title_point.png", import.meta.url).href,
-};
+import { backgroundUrl, introAssets } from "../../assets";
 
 export function createIntroView(): { root: HTMLButtonElement; showMessage(): void } {
   const root = document.createElement("button");
   root.type = "button";
   root.className = styles.root;
-  root.style.backgroundImage = `url(${assets.background})`;
+  root.style.backgroundImage = `url(${backgroundUrl})`;
   root.setAttribute("aria-label", "게임 시작 화면으로 이동");
 
   for (const variant of ["mono", "color"] as const) {
     const title = document.createElement("img");
     title.className = `${styles.title} ${styles[variant]}`;
-    title.src = assets.title;
+    title.src = introAssets.title;
     title.alt = "";
     root.append(title);
   }

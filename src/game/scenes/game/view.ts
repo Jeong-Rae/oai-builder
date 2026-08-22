@@ -10,9 +10,9 @@ import {
   textureForField,
 } from "../../features/presentation";
 import { chapters, stageFor, type PlaySelection } from "../../stages";
+import { goalStarUrl } from "../../assets";
 import styles from "./scene.module.css";
 
-const goal = new URL("@/assets/goal/goal.star.webp", import.meta.url).href;
 const key = ({ x, y }: Position) => `${x},${y}`;
 
 export interface GameView {
@@ -101,7 +101,7 @@ export function createGameView(selection: PlaySelection, onHome: () => void): Ga
     if (exit && !exit.querySelector(`.${styles.goal}`)) {
       const image = document.createElement("img");
       image.className = styles.goal;
-      image.src = goal;
+      image.src = goalStarUrl;
       image.alt = "목표";
       exit.append(image);
     }

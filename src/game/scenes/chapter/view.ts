@@ -5,13 +5,7 @@ import { createMoonDecor } from "../shared/moonDecor";
 import { createBackgroundStars } from "../shared/backgroundStars";
 import { createSceneTitle, createTitleStar } from "../shared/title";
 import styles from "./scene.module.css";
-
-const assets = {
-  background: new URL("@/assets/background/background_space.webp", import.meta.url).href,
-  constellationStar: new URL("@/assets/star/star_stell_gold_m.webp", import.meta.url).href,
-  arrowLeft: new URL("@/assets/arrow/arrow_carousel_left.webp", import.meta.url).href,
-  arrowRight: new URL("@/assets/arrow/arrow_carousel_right.webp", import.meta.url).href,
-};
+import { backgroundUrl, chapterAssets } from "../../assets";
 
 export function createChapterView(
   onMove: (offset: -1 | 1) => void,
@@ -19,7 +13,7 @@ export function createChapterView(
 ): { root: HTMLElement; setActive(index: number): void } {
   const root = document.createElement("main");
   root.className = styles.root;
-  root.style.backgroundImage = `url(${assets.background})`;
+  root.style.backgroundImage = `url(${backgroundUrl})`;
   const header = document.createElement("header");
   header.className = "scene-header";
   const titleText = document.createElement("span");
@@ -31,8 +25,8 @@ export function createChapterView(
     createCard(i === 2 ? "current" : "outLeft", i === 2 ? onSelect : () => {}),
   );
   carousel.append(...cards);
-  const left = arrow("이전 챕터", assets.arrowLeft, () => onMove(-1), styles.left);
-  const right = arrow("다음 챕터", assets.arrowRight, () => onMove(1), styles.right);
+  const left = arrow("이전 챕터", chapterAssets.arrowLeft, () => onMove(-1), styles.left);
+  const right = arrow("다음 챕터", chapterAssets.arrowRight, () => onMove(1), styles.right);
   root.append(createBackgroundStars(), header, carousel, left, right, createMoonDecor());
   let slots = [...cards];
   let activeIndex = 0;
@@ -112,7 +106,7 @@ function constellation(chapter: ChapterDefinition): SVGSVGElement {
     emblemSize: { width: 96, height: 80 },
   });
   const svg = renderConstellationSvg(layout, {
-    starUrl: assets.constellationStar,
+    starUrl: chapterAssets.constellationStar,
     starSize: 52,
     lineClass: styles.line,
   });

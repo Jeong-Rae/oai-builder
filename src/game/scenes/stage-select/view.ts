@@ -5,17 +5,7 @@ import { createMoonDecor } from "../shared/moonDecor";
 import { createBackgroundStars } from "../shared/backgroundStars";
 import { createSceneTitle, createTitleStar } from "../shared/title";
 import styles from "./scene.module.css";
-
-const assets = {
-  background: new URL("@/assets/background/background_space.png", import.meta.url).href,
-  clearedStarNode: new URL("@/assets/star/star_node_gold.png", import.meta.url).href,
-  inProgressStarNode: new URL("@/assets/star/star_node_white.png", import.meta.url).href,
-  lockedStarNode: new URL("@/assets/star/star_node_black.png", import.meta.url).href,
-  lock: new URL("@/assets/lock/lock.gray.png", import.meta.url).href,
-  backFrame: new URL("@/assets/button/button_back.png", import.meta.url).href,
-  arrowBack: new URL("@/assets/button/arrow_back.png", import.meta.url).href,
-  bubbleNext: new URL("@/assets/button/button_bubble.png", import.meta.url).href,
-};
+import { backgroundUrl, stageSelectAssets as assets } from "../../assets";
 
 const nodeImageByStatus = {
   cleared: assets.clearedStarNode,
@@ -117,7 +107,7 @@ export function createStageSelectView(
 ): HTMLElement {
   const root = document.createElement("main");
   root.className = styles.root;
-  root.style.backgroundImage = `url(${assets.background})`;
+  root.style.backgroundImage = `url(${backgroundUrl})`;
   const layout = computeLayout(chapter.constellation, {
     width: 1000,
     height: 670,
