@@ -14,7 +14,7 @@ export function createStageSelectScene(
   };
   window.addEventListener("keydown", keydown);
   return {
-    view: createStageSelectView(chapters[chapterIndex]!, onStage, onBack),
+    view: createStageSelectView(chapters[chapterIndex]!, chapterIndex, onStage, onBack),
     dispose: () => window.removeEventListener("keydown", keydown),
   };
 }

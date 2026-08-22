@@ -1,6 +1,12 @@
 import type { ConstellationDefinition } from "./constellation/model";
 import { parseConstellation } from "./constellation/parse";
 import ariesConstellationData from "./data/constellations/aries.json";
+import {
+  deriveStageStatuses,
+  prerequisiteIndices,
+  progressStore,
+  type StageStatus,
+} from "./store/progressStore";
 
 export const stageGroups = ["하", "중", "상"] as const;
 export const stagesPerGroup = 4;
@@ -40,13 +46,22 @@ export const chapters: readonly ChapterDefinition[] = Array.from(
     sign: "ARIES",
     zodiacUrl: ariesZodiac,
     constellation: ariesConstellation,
-    stages: Array.from({ length: 4 }, (_, stageIndex) => ({
+    stages: Array.from({ length: ariesConstellation.points.length }, (_, stageIndex) => ({
       id: `chapter-${chapterIndex + 1}-stage-${stageIndex + 1}`,
       label: `STAGE ${stageIndex + 1}`,
       mapUrl: map001,
     })),
   }),
 );
+
+export function stageStatuses(chapterIndex: number): StageStatus[] {
+  const chapter = chapters[chapterIndex]!;
+  return deriveStageStatuses(
+    chapter.stages.length,
+    prerequisiteIndices(chapter.constellation),
+    progressStore.clearedStages(chapterIndex, chapter.stages.length),
+  );
+}
 
 export function stageFor({ chapterIndex, stageIndex }: PlaySelection): StageDefinition {
   return chapters[chapterIndex]!.stages[stageIndex]!;

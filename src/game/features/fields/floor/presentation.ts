@@ -1,17 +1,17 @@
-import type { FieldPresentation } from '@/src/game/features/presentationTypes';
+import type { FieldPresentation } from "@/src/game/features/presentationTypes";
 
 export const floorPresentation = {
-  kind: 'floor',
-  label: '바닥',
+  kind: "floor",
+  label: "바닥",
   assets: {
     floor: {
-      label: '바닥',
-      url: new URL('@/assets/tile/tile.webp', import.meta.url).href,
-      group: 'field',
+      label: "바닥",
+      url: new URL("@/assets/tile/floor.stone.webp", import.meta.url).href,
+      group: "field",
     },
   },
-  toolAsset: 'floor',
-  gameTextures: ['floor'],
-  editorAsset: () => 'floor',
-  gameTexture: () => 'floor',
+  toolAsset: "floor",
+  gameTextures: ["floor"],
+  editorAsset: () => "floor",
+  gameTexture: () => "floor",
 } satisfies FieldPresentation;

@@ -1,4 +1,4 @@
-import { type ChapterDefinition } from "../../stages";
+import { type ChapterDefinition, stageStatuses } from "../../stages";
 import { computeLayout } from "../../constellation/layout";
 import { renderConstellationSvg } from "../../constellation/render";
 import styles from "./scene.module.css";
@@ -6,25 +6,127 @@ import styles from "./scene.module.css";
 const assets = {
   background: new URL("@/assets/background/background_space.png", import.meta.url).href,
   star: new URL("@/assets/star/star_plus_gold_s.png", import.meta.url).href,
-  node: new URL("@/assets/star/star_stell_gold_m.png", import.meta.url).href,
+  nodeGold: new URL("@/assets/star/star_node_gold.png", import.meta.url).href,
+  nodeWhite: new URL("@/assets/star/star_node_white.png", import.meta.url).href,
+  nodeGray: new URL("@/assets/star/star_node_gray.png", import.meta.url).href,
+  lock: new URL("@/assets/lock/lock.gray.png", import.meta.url).href,
+  backFrame: new URL("@/assets/button/button_back.png", import.meta.url).href,
+  arrowBack: new URL("@/assets/button/arrow_back.png", import.meta.url).href,
+  bubbleNext: new URL("@/assets/button/bubble_next.png", import.meta.url).href,
+  moon: new URL("@/assets/moon/moon.circle.png", import.meta.url).href,
+  mascot: new URL("@/assets/mascot/mascot.135deg.png", import.meta.url).href,
 };
+
+const nodeImageByStatus = {
+  cleared: assets.nodeGold,
+  current: assets.nodeWhite,
+  available: assets.nodeWhite,
+  locked: assets.nodeGray,
+} as const;
+
+function createHeader(chapter: ChapterDefinition, chapterIndex: number): HTMLElement {
+  const header = document.createElement("header");
+  header.className = styles.header;
+  const row = document.createElement("div");
+  row.className = styles.titleRow;
+  const leading = document.createElement("img");
+  leading.src = assets.star;
+  leading.alt = "";
+  const zodiac = document.createElement("img");
+  zodiac.className = styles.zodiac;
+  zodiac.src = chapter.zodiacUrl;
+  zodiac.alt = "";
+  const sign = document.createElement("span");
+  sign.textContent = chapter.sign;
+  const trailing = document.createElement("img");
+  trailing.src = assets.star;
+  trailing.alt = "";
+  row.append(leading, zodiac, sign, trailing);
+  const divider = document.createElement("div");
+  divider.className = styles.divider;
+  const label = document.createElement("p");
+  label.className = styles.chapterLabel;
+  label.textContent = `CHAPTER ${String(chapterIndex + 1).padStart(2, "0")}`;
+  header.append(row, divider, label);
+  return header;
+}
+
+function createBackButton(onBack: () => void): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = styles.back;
+  button.setAttribute("aria-label", "챕터 선택으로 돌아가기");
+  button.style.backgroundImage = `url(${assets.backFrame})`;
+  const icon = document.createElement("img");
+  icon.src = assets.arrowBack;
+  icon.alt = "";
+  button.append(icon);
+  button.addEventListener("click", onBack);
+  return button;
+}
+
+function createNode(
+  stageIndex: number,
+  point: { x: number; y: number },
+  layoutWidth: number,
+  layoutHeight: number,
+  status: ReturnType<typeof stageStatuses>[number],
+  onStage: (index: number) => void,
+): HTMLButtonElement {
+  const node = document.createElement("button");
+  node.type = "button";
+  node.className = styles.node;
+  node.dataset.status = status;
+  node.style.setProperty("--x", `${(point.x / layoutWidth) * 100}%`);
+  node.style.setProperty("--y", `${(point.y / layoutHeight) * 100}%`);
+  node.disabled = status === "locked";
+  const number = stageIndex + 1;
+  node.setAttribute(
+    "aria-label",
+    status === "locked"
+      ? `${number} 스테이지 잠김`
+      : status === "cleared"
+        ? `${number} 스테이지 다시 플레이`
+        : `${number} 스테이지 시작`,
+  );
+  const star = document.createElement("img");
+  star.className = styles.star;
+  star.src = nodeImageByStatus[status];
+  star.alt = "";
+  node.append(star);
+  if (status === "current") {
+    const ring = document.createElement("span");
+    ring.className = styles.ring;
+    const bubble = document.createElement("span");
+    bubble.className = styles.bubble;
+    bubble.textContent = "NEXT";
+    bubble.style.backgroundImage = `url(${assets.bubbleNext})`;
+    node.append(ring, bubble);
+  }
+  if (status === "locked") {
+    const lock = document.createElement("img");
+    lock.className = styles.lock;
+    lock.src = assets.lock;
+    lock.alt = "";
+    node.append(lock);
+  }
+  const label = document.createElement("span");
+  label.className = styles.num;
+  label.textContent = String(number).padStart(2, "0");
+  node.append(label);
+  if (status !== "locked") node.addEventListener("click", () => onStage(stageIndex));
+  return node;
+}
 
 export function createStageSelectView(
   chapter: ChapterDefinition,
+  chapterIndex: number,
   onStage: (index: number) => void,
   onBack: () => void,
 ): HTMLElement {
   const root = document.createElement("main");
   root.className = styles.root;
   root.style.backgroundImage = `url(${assets.background})`;
-  const header = document.createElement("h1");
-  header.className = styles.header;
-  header.innerHTML = `<img src="${assets.star}" alt=""><img class="${styles.zodiac}" src="${chapter.zodiacUrl}" alt="">${chapter.sign}<img src="${assets.star}" alt="">`;
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = styles.back;
-  back.textContent = "BACK";
-  back.addEventListener("click", onBack);
   const layout = computeLayout(chapter.constellation, {
     width: 1000,
     height: 670,
@@ -37,17 +139,29 @@ export function createStageSelectView(
   constellation.setAttribute("aria-hidden", "true");
   const nodes = document.createElement("div");
   nodes.className = styles.nodes;
-  layout.points.forEach(({ x, y }, index) => {
-    const node = document.createElement("button");
-    node.type = "button";
-    node.className = styles.node;
-    node.style.setProperty("--x", `${(x / layout.width) * 100}%`);
-    node.style.setProperty("--y", `${(y / layout.height) * 100}%`);
-    node.setAttribute("aria-label", `${index + 1} 스테이지 시작`);
-    node.innerHTML = `<img src="${assets.node}" alt=""><span>${String(index + 1).padStart(2, "0")}</span>`;
-    node.addEventListener("click", () => onStage(index));
-    nodes.append(node);
+  const statuses = stageStatuses(chapterIndex);
+  layout.points.forEach((point, index) => {
+    nodes.append(createNode(index, point, layout.width, layout.height, statuses[index]!, onStage));
   });
-  root.append(header, constellation, nodes, back);
+  const decor = document.createElement("div");
+  decor.className = styles.decor;
+  const moon = document.createElement("img");
+  moon.className = styles.moon;
+  moon.src = assets.moon;
+  moon.alt = "";
+  const shadow = document.createElement("span");
+  shadow.className = styles.shadow;
+  const mascot = document.createElement("img");
+  mascot.className = styles.mascot;
+  mascot.src = assets.mascot;
+  mascot.alt = "";
+  decor.append(moon, shadow, mascot);
+  root.append(
+    createHeader(chapter, chapterIndex),
+    constellation,
+    nodes,
+    createBackButton(onBack),
+    decor,
+  );
   return root;
 }

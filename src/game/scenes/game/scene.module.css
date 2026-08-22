@@ -8,7 +8,7 @@
 .header {
   color: #81f0c5;
   font:
-    700 1.25cqw "Blrr Pixs",
+    700 1.25cqw "온글잎 박다현체",
     monospace;
   left: 2.5%;
   letter-spacing: 4px;
@@ -23,7 +23,7 @@
   color: #080e14;
   cursor: pointer;
   font:
-    700 1.146cqw "Blrr Pixs",
+    700 1.146cqw "온글잎 박다현체",
     monospace;
   padding: 0.8cqw 1.2cqw;
 }
@@ -125,7 +125,7 @@
 .error {
   color: #fff;
   font:
-    2cqw "Blrr Pixs",
+    2cqw "온글잎 박다현체",
     monospace;
   left: 50%;
   position: fixed;

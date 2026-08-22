@@ -19,11 +19,15 @@ describe("스테이지 선택", () => {
     expect(nextStage({ group: 0, index: 3 })).toEqual({ group: 1, index: 0 });
   });
 
-  it("초기 별자리 챕터는 각각 네 개의 플레이 가능한 스테이지를 가진다", () => {
+  it("초기 별자리 챕터는 별자리 포인트 수만큼의 스테이지를 가진다", () => {
     expect(chapters).toHaveLength(12);
     expect(
-      chapters.every((chapter) => chapter.sign === "ARIES" && chapter.stages.length === 4),
+      chapters.every(
+        (chapter) =>
+          chapter.sign === "ARIES" && chapter.stages.length === chapter.constellation.points.length,
+      ),
     ).toBe(true);
+    expect(chapters[0]!.stages).toHaveLength(4);
     expect(
       new Set(chapters.flatMap((chapter) => chapter.stages.map((stage) => stage.mapUrl))).size,
     ).toBe(1);

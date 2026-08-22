@@ -3,6 +3,7 @@
   "scripts": {
     "asset:resize": "node scripts/resize-game-asset.mjs",
     "asset:trim": "node scripts/crop-transparent.mjs",
+    "asset:webp": "node scripts/png-to-webp.mjs",
     "dev": "pnpm run dev:live",
     "dev:live": "vp dev --config vite.game.config.ts",
     "dev:editor": "vp dev --config vite.editor.config.ts",

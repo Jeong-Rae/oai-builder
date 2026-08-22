@@ -5,6 +5,7 @@ import { createIntroScene } from "./scenes/intro/controller";
 import { createStageSelectScene } from "./scenes/stage-select/controller";
 import { createStartScene } from "./scenes/start/controller";
 import { nextSelection, type PlaySelection } from "./stages";
+import { progressStore } from "./store/progressStore";
 
 export class GameApp {
   private disposeScene?: () => void;
@@ -63,7 +64,8 @@ export class GameApp {
     );
   private showGame = (selection: PlaySelection): void =>
     this.show(createGameScene(selection, this.showGameStart, () => this.showClear(selection)));
-  private showClear = (selection: PlaySelection): void =>
+  private showClear = (selection: PlaySelection): void => {
+    progressStore.markCleared(selection.chapterIndex, selection.stageIndex);
     this.show(
       createClearScene(
         () => this.showGame(nextSelection(selection)),
@@ -71,4 +73,5 @@ export class GameApp {
         this.showGameStart,
       ),
     );
+  };
 }

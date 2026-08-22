@@ -1,7 +1,7 @@
 :root {
   background: #080e14;
   color: #d7f9ff;
-  font-family: "Blrr Pixs", monospace;
+  font-family: "온글잎 박다현체", monospace;
 }
 
 @font-face {
@@ -14,8 +14,8 @@
   font-weight: 700;
 }
 @font-face {
-  font-family: "Blrr Pixs";
-  src: url("../assets/fonts/blrrpixs016.ttf") format("truetype");
+  font-family: "온글잎 박다현체";
+  src: url("../assets/fonts/온글잎 박다현체.ttf") format("truetype");
 }
 
 html,
@@ -47,7 +47,7 @@ button {
   align-items: center;
   color: #fff;
   display: flex;
-  font-family: "Blrr Pixs", monospace;
+  font-family: "온글잎 박다현체", monospace;
   font-size: 1.667cqw;
   gap: 0.55em;
   justify-content: center;
@@ -75,7 +75,7 @@ button {
   border: 0;
   color: #15171d;
   cursor: pointer;
-  font-family: "Blrr Pixs", monospace;
+  font-family: "온글잎 박다현체", monospace;
   font-size: clamp(1.2rem, 4vw, 2rem);
   font-weight: 700;
   letter-spacing: 8px;

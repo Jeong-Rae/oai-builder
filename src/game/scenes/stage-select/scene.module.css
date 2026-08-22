@@ -6,10 +6,45 @@
   width: 100%;
 }
 .header {
-  composes: scene-title from global;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5cqw;
+  left: 50%;
+  position: absolute;
+  top: 4.2%;
+  transform: translateX(-50%);
+  width: max-content;
+  z-index: 3;
 }
-.header .zodiac {
+.titleRow {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-family: "온글잎 박다현체", monospace;
+  font-size: 1.667cqw;
+  gap: 0.55em;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.titleRow > img {
+  height: 0.5em;
+  width: auto;
+}
+.titleRow .zodiac {
   height: 2.083cqw;
+}
+.divider {
+  border-top: 3px dashed rgb(131 144 154 / 55%);
+  width: 12cqw;
+}
+.chapterLabel {
+  color: #d7f9ff;
+  font-family: "온글잎 박다현체", monospace;
+  font-size: 1.042cqw;
+  letter-spacing: 0.35em;
+  margin: 0;
+  text-indent: 0.35em;
 }
 .constellation {
   aspect-ratio: 1000 / 670;
@@ -18,22 +53,24 @@
   position: absolute;
   top: 16.667%;
   transform: translateX(-50%);
+  z-index: 1;
 }
 .line {
   fill: none;
-  filter: drop-shadow(0 0 5px rgb(255 216 102 / 45%));
-  stroke: #ffd866;
+  stroke: #aeb9c2;
   stroke-dasharray: 10 14;
   stroke-linecap: round;
-  stroke-width: 6;
+  stroke-width: 5;
 }
 .nodes {
   aspect-ratio: 1000 / 670;
   height: 62.037%;
   left: 50%;
+  pointer-events: none;
   position: absolute;
   top: 16.667%;
   transform: translateX(-50%);
+  z-index: 2;
 }
 .node {
   background: transparent;
@@ -41,17 +78,66 @@
   cursor: pointer;
   left: var(--x);
   padding: 0;
+  pointer-events: auto;
   position: absolute;
   top: var(--y);
   transform: translate(-50%, -50%);
 }
-.node img {
-  filter: drop-shadow(0 0 10px rgb(255 216 102 / 42%));
+.node[data-status="locked"] {
+  cursor: default;
+  opacity: 0.55;
+}
+.node .star {
+  display: block;
   width: 5.833cqw;
 }
-.node span {
+.node[data-status="cleared"] .star {
+  filter: drop-shadow(0 0 10px rgb(255 216 102 / 45%));
+}
+.node:not([data-status="locked"]):hover .star,
+.node:not([data-status="locked"]):focus-visible .star {
+  filter: brightness(1.25);
+}
+.node:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 5px;
+}
+.ring {
+  aspect-ratio: 1;
+  border: 2px dashed rgb(215 249 255 / 75%);
+  border-radius: 50%;
+  inset: -26%;
+  position: absolute;
+}
+.bubble {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  color: #15171d;
+  font-family: "온글잎 박다현체", monospace;
+  font-size: 0.938cqw;
+  left: 50%;
+  letter-spacing: 0.18em;
+  padding-bottom: 22%;
+  position: absolute;
+  bottom: calc(100% + 0.2cqw);
+  text-align: center;
+  text-indent: 0.18em;
+  transform: translateX(-50%);
+  width: 6.25cqw;
+}
+.lock {
+  height: 42%;
+  left: 50%;
+  object-fit: contain;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -58%);
+  width: 42%;
+}
+.num {
   color: #83909a;
-  font-family: "Blrr Pixs", monospace;
+  font-family: "온글잎 박다현체", monospace;
   font-size: 1.458cqw;
   left: 50%;
   letter-spacing: 3px;
@@ -59,30 +145,61 @@
   top: 100%;
   transform: translateX(-50%);
 }
-.node:hover img,
-.node:focus-visible img {
-  filter: brightness(1.2) drop-shadow(0 0 15px #ffd866);
+.node[data-status="current"] .num {
+  color: #ffd866;
 }
-.node:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 5px;
+.decor {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+.decor .moon {
+  bottom: -45%;
+  height: auto;
+  left: -12%;
+  position: absolute;
+  width: 43%;
+}
+.decor .shadow {
+  aspect-ratio: 2.4 / 1;
+  background: rgb(20 28 36 / 38%);
+  border-radius: 50%;
+  bottom: 12%;
+  filter: blur(2px);
+  left: 14%;
+  position: absolute;
+  width: 7.5%;
+}
+.mascot {
+  bottom: 13%;
+  left: 12%;
+  position: absolute;
+  width: 11%;
 }
 .back {
-  background: transparent;
+  aspect-ratio: 1;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
   border: 0;
-  color: #d7f9ff;
   cursor: pointer;
-  font:
-    700 1.146cqw "Blrr Pixs",
-    monospace;
+  display: grid;
   left: 2.5%;
-  letter-spacing: 3px;
-  padding: 0.8cqw;
+  place-items: center;
   position: absolute;
-  top: 3.889%;
+  top: 4%;
+  width: 4.8cqw;
+  z-index: 3;
 }
-.back:hover,
+.back img {
+  width: 46%;
+}
+.back:hover img,
+.back:focus-visible img {
+  filter: brightness(1.3);
+}
 .back:focus-visible {
-  color: #fff;
   outline: 2px solid #fff;
+  outline-offset: 4px;
 }

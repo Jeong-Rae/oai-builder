@@ -36,9 +36,8 @@
 }
 .message {
   bottom: 19%;
-  font-family: "Pixeloid Sans", monospace;
-  font-size: clamp(0.72rem, 1.7cqw, 1.15rem);
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 400;
   left: 50%;
   letter-spacing: 0.02em;
   line-height: 1.6;
