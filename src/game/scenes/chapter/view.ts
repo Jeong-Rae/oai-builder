@@ -44,8 +44,19 @@ export function createChapterView(
     const roles = ["outLeft", "previous", "current", "next", "outRight"] as const;
     slots.forEach((card, offset) => {
       card.className = `${styles.card} ${styles[roles[offset]]}`;
-      card.onclick = offset === 2 && chapters[index + offset - 2] ? onSelect : null;
-      renderCard(card, chapters[index + offset - 2], offset === 2);
+      const chapter = chapters[index + offset - 2];
+      if (!chapter) {
+        card.onclick = null;
+      } else if (offset === 1) {
+        card.onclick = () => onMove(-1);
+      } else if (offset === 3) {
+        card.onclick = () => onMove(1);
+      } else if (offset === 2) {
+        card.onclick = onSelect;
+      } else {
+        card.onclick = null;
+      }
+      renderCard(card, chapter, offset === 2);
     });
     left.disabled = index === 0;
     right.disabled = index === chapters.length - 1;
