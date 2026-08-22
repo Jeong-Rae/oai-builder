@@ -47,6 +47,14 @@
   transform: translate(-50%, -50%) scale(1);
   z-index: 1;
 }
+.outLeft {
+  left: -15%;
+  opacity: 0;
+}
+.outRight {
+  left: 115%;
+  opacity: 0;
+}
 .card svg {
   height: 100%;
   width: 100%;

@@ -7,10 +7,10 @@ import { createSceneTitle, createTitleStar } from "../shared/title";
 import styles from "./scene.module.css";
 
 const assets = {
-  background: new URL("@/assets/background/background_space.png", import.meta.url).href,
-  constellationStar: new URL("@/assets/star/star_stell_gold_m.png", import.meta.url).href,
-  arrowLeft: new URL("@/assets/arrow/arrow_carousel_left.png", import.meta.url).href,
-  arrowRight: new URL("@/assets/arrow/arrow_carousel_right.png", import.meta.url).href,
+  background: new URL("@/assets/background/background_space.webp", import.meta.url).href,
+  constellationStar: new URL("@/assets/star/star_stell_gold_m.webp", import.meta.url).href,
+  arrowLeft: new URL("@/assets/arrow/arrow_carousel_left.webp", import.meta.url).href,
+  arrowRight: new URL("@/assets/arrow/arrow_carousel_right.webp", import.meta.url).href,
 };
 
 export function createChapterView(
@@ -27,34 +27,32 @@ export function createChapterView(
   header.append(createSceneTitle(createTitleStar(), titleText, createTitleStar()));
   const carousel = document.createElement("div");
   carousel.className = styles.carousel;
-  const previous = createCard("previous", () => {});
-  const current = createCard("current", onSelect);
-  const next = createCard("next", () => {});
-  carousel.append(previous, current, next);
+  const cards = Array.from({ length: 5 }, (_, i) =>
+    createCard(i === 2 ? "current" : "outLeft", i === 2 ? onSelect : () => {}),
+  );
+  carousel.append(...cards);
   const left = arrow("이전 챕터", assets.arrowLeft, () => onMove(-1), styles.left);
   const right = arrow("다음 챕터", assets.arrowRight, () => onMove(1), styles.right);
   root.append(createBackgroundStars(), header, carousel, left, right, createMoonDecor());
-  let slots = [previous, current, next];
+  let slots = [...cards];
   let activeIndex = 0;
   let hasRendered = false;
   const setActive = (index: number) => {
     if (hasRendered) {
-      const forward = (index - activeIndex + chapters.length) % chapters.length === 1;
-      const backward = (activeIndex - index + chapters.length) % chapters.length === 1;
-
-      if (forward) {
-        slots = [slots[1], slots[2], slots[0]];
-      } else if (backward) {
-        slots = [slots[2], slots[0], slots[1]];
+      const delta = index - activeIndex;
+      if (delta > 0) {
+        for (let i = 0; i < delta; i += 1) slots.push(slots.shift()!);
+      } else if (delta < 0) {
+        for (let i = 0; i < -delta; i += 1) slots.unshift(slots.pop()!);
       } else {
-        slots = [previous, current, next];
+        slots = [...cards];
       }
     }
 
-    const roles = ["previous", "current", "next"] as const;
-    slots.forEach((card, cardIndex) => {
-      card.className = `${styles.card} ${styles[roles[cardIndex]]}`;
-      renderCard(card, chapters[index + cardIndex - 1], cardIndex === 1);
+    const roles = ["outLeft", "previous", "current", "next", "outRight"] as const;
+    slots.forEach((card, offset) => {
+      card.className = `${styles.card} ${styles[roles[offset]]}`;
+      renderCard(card, chapters[index + offset - 2], offset === 2);
     });
     left.disabled = index === 0;
     right.disabled = index === chapters.length - 1;
@@ -83,7 +81,7 @@ function arrow(
   return button;
 }
 function createCard(
-  position: "previous" | "current" | "next",
+  position: "previous" | "current" | "next" | "outLeft" | "outRight",
   onClick: () => void,
 ): HTMLButtonElement {
   const card = document.createElement("button");
@@ -98,7 +96,7 @@ function renderCard(
   enabled: boolean,
 ): void {
   card.replaceChildren();
-  card.disabled = false;
+  card.disabled = !chapter;
   card.tabIndex = enabled && chapter ? 0 : -1;
   card.setAttribute("aria-disabled", String(!enabled));
   card.setAttribute("aria-label", chapter ? `${chapter.sign} 챕터 선택` : "");
