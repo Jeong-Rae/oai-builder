@@ -1,4 +1,8 @@
-export const stageGroups = ['하', '중', '상'] as const;
+import type { ConstellationDefinition } from "./constellation/model";
+import { parseConstellation } from "./constellation/parse";
+import ariesConstellationData from "./data/constellations/aries.json";
+
+export const stageGroups = ["하", "중", "상"] as const;
 export const stagesPerGroup = 4;
 
 export interface Stage {
@@ -14,9 +18,9 @@ export interface StageDefinition {
 
 export interface ChapterDefinition {
   id: string;
-  sign: 'ARIES';
+  sign: "ARIES";
   zodiacUrl: string;
-  constellation: readonly { x: number; y: number }[];
+  constellation: ConstellationDefinition;
   stages: readonly StageDefinition[];
 }
 
@@ -25,26 +29,24 @@ export interface PlaySelection {
   stageIndex: number;
 }
 
-const map001 = new URL('@/maps/001.map', import.meta.url).href;
-const ariesZodiac = new URL('@/assets/zodiac/zodiac_aries_active.png', import.meta.url).href;
-const ariesConstellation = [
-  { x: 78, y: 265 },
-  { x: 205, y: 225 },
-  { x: 315, y: 130 },
-  { x: 370, y: 160 },
-] as const;
+const map001 = new URL("@/maps/001.map", import.meta.url).href;
+const ariesZodiac = new URL("@/assets/zodiac/zodiac_aries_active.png", import.meta.url).href;
+const ariesConstellation = parseConstellation(ariesConstellationData);
 
-export const chapters: readonly ChapterDefinition[] = Array.from({ length: 12 }, (_, chapterIndex) => ({
-  id: `chapter-${chapterIndex + 1}`,
-  sign: 'ARIES',
-  zodiacUrl: ariesZodiac,
-  constellation: ariesConstellation,
-  stages: Array.from({ length: 4 }, (_, stageIndex) => ({
-    id: `chapter-${chapterIndex + 1}-stage-${stageIndex + 1}`,
-    label: `STAGE ${stageIndex + 1}`,
-    mapUrl: map001,
-  })),
-}));
+export const chapters: readonly ChapterDefinition[] = Array.from(
+  { length: 12 },
+  (_, chapterIndex) => ({
+    id: `chapter-${chapterIndex + 1}`,
+    sign: "ARIES",
+    zodiacUrl: ariesZodiac,
+    constellation: ariesConstellation,
+    stages: Array.from({ length: 4 }, (_, stageIndex) => ({
+      id: `chapter-${chapterIndex + 1}-stage-${stageIndex + 1}`,
+      label: `STAGE ${stageIndex + 1}`,
+      mapUrl: map001,
+    })),
+  }),
+);
 
 export function stageFor({ chapterIndex, stageIndex }: PlaySelection): StageDefinition {
   return chapters[chapterIndex]!.stages[stageIndex]!;

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "css": {
+      "command": [
+        "npx",
+        "-y",
+        "-p",
+        "vscode-langservers-extracted",
+        "vscode-css-language-server",
+        "--stdio"
+      ],
+      "extensions": [".css", ".scss", ".less"]
+    },
+    "html": {
+      "command": [
+        "npx",
+        "-y",
+        "-p",
+        "vscode-langservers-extracted",
+        "vscode-html-language-server",
+        "--stdio"
+      ],
+      "extensions": [".html", ".htm"]
+    }
+  }
+}

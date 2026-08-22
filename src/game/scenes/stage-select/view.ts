@@ -1,4 +1,6 @@
 import { type ChapterDefinition } from "../../stages";
+import { computeLayout } from "../../constellation/layout";
+import { renderConstellationSvg } from "../../constellation/render";
 import styles from "./scene.module.css";
 
 const assets = {
@@ -23,28 +25,24 @@ export function createStageSelectView(
   back.className = styles.back;
   back.textContent = "BACK";
   back.addEventListener("click", onBack);
-  const constellation = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const layout = computeLayout(chapter.constellation, {
+    width: 1000,
+    height: 670,
+    padding: { top: 50, right: 80, bottom: 50, left: 80 },
+  });
+  const constellation = renderConstellationSvg(layout, {
+    lineClass: styles.line,
+  });
   constellation.setAttribute("class", styles.constellation);
-  constellation.setAttribute("viewBox", "0 0 1000 670");
   constellation.setAttribute("aria-hidden", "true");
-  const source = chapter.constellation;
-  const minX = Math.min(...source.map(({ x }) => x));
-  const maxX = Math.max(...source.map(({ x }) => x));
-  const minY = Math.min(...source.map(({ y }) => y));
-  const maxY = Math.max(...source.map(({ y }) => y));
-  const points = source.map(({ x, y }) => ({
-    x: 80 + (840 * (x - minX)) / (maxX - minX),
-    y: 50 + (570 * (y - minY)) / (maxY - minY),
-  }));
-  constellation.innerHTML = `<polyline class="${styles.line}" points="${points.map(({ x, y }) => `${x},${y}`).join(" ")}"/>`;
   const nodes = document.createElement("div");
   nodes.className = styles.nodes;
-  points.forEach(({ x, y }, index) => {
+  layout.points.forEach(({ x, y }, index) => {
     const node = document.createElement("button");
     node.type = "button";
     node.className = styles.node;
-    node.style.setProperty("--x", `${x / 10}%`);
-    node.style.setProperty("--y", `${y / 6.7}%`);
+    node.style.setProperty("--x", `${(x / layout.width) * 100}%`);
+    node.style.setProperty("--y", `${(y / layout.height) * 100}%`);
     node.setAttribute("aria-label", `${index + 1} 스테이지 시작`);
     node.innerHTML = `<img src="${assets.node}" alt=""><span>${String(index + 1).padStart(2, "0")}</span>`;
     node.addEventListener("click", () => onStage(index));

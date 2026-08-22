@@ -6,35 +6,18 @@
   width: 100%;
 }
 .header {
-  align-items: center;
-  color: #fff;
-  display: flex;
-  font-family: "Blrr Pixs", monospace;
-  font-size: 1.667cqw;
-  gap: 0.9cqw;
-  justify-content: center;
-  left: 50%;
-  letter-spacing: 0.08em;
-  margin: 0;
-  position: absolute;
-  top: 7.4%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  z-index: 2;
-}
-.header > img {
-  height: 0.833cqw;
-  width: auto;
+  composes: scene-title from global;
 }
 .header .zodiac {
   height: 2.083cqw;
 }
 .constellation {
+  aspect-ratio: 1000 / 670;
   height: 62.037%;
-  left: 20%;
+  left: 50%;
   position: absolute;
   top: 16.667%;
-  width: 60%;
+  transform: translateX(-50%);
 }
 .line {
   fill: none;
@@ -45,8 +28,12 @@
   stroke-width: 6;
 }
 .nodes {
-  inset: 16.667% 20% 21.296%;
+  aspect-ratio: 1000 / 670;
+  height: 62.037%;
+  left: 50%;
   position: absolute;
+  top: 16.667%;
+  transform: translateX(-50%);
 }
 .node {
   background: transparent;

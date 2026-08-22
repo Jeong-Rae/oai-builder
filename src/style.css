@@ -43,6 +43,29 @@ button {
   width: min(100vw, 177.778vh);
 }
 
+.scene-title {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-family: "Blrr Pixs", monospace;
+  font-size: 1.667cqw;
+  gap: 0.55em;
+  justify-content: center;
+  left: 50%;
+  letter-spacing: 0.08em;
+  margin: 0;
+  position: absolute;
+  top: 7.4%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  width: 30cqw;
+  z-index: 2;
+}
+.scene-title > img {
+  height: 0.5em;
+  width: auto;
+}
+
 .plate-button {
   aspect-ratio: 1960 / 600;
   background-color: transparent;

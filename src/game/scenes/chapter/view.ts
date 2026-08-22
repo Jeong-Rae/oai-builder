@@ -1,4 +1,6 @@
 import { chapters, type ChapterDefinition } from "../../stages";
+import { computeLayout } from "../../constellation/layout";
+import { renderConstellationSvg } from "../../constellation/render";
 import styles from "./scene.module.css";
 
 const assets = {
@@ -81,11 +83,32 @@ function renderCard(
   if (chapter) card.append(constellation(chapter));
 }
 function constellation(chapter: ChapterDefinition): SVGSVGElement {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 450 600");
+  const layout = computeLayout(chapter.constellation, {
+    width: 450,
+    height: 600,
+    padding: { top: 100, left: 40, right: 40, bottom: 230 },
+    emblemGap: 50,
+    labelGap: 45,
+    emblemSize: { width: 96, height: 80 },
+  });
+  const svg = renderConstellationSvg(layout, {
+    starUrl: assets.constellationStar,
+    starSize: 52,
+    lineClass: styles.line,
+  });
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", `${chapter.sign} 별자리`);
-  const points = chapter.constellation.map(({ x, y }) => `${x},${y}`).join(" ");
-  svg.innerHTML = `<polyline class="${styles.line}" points="${points}"/><g>${chapter.constellation.map(({ x, y }) => `<image href="${assets.constellationStar}" x="${x - 26}" y="${y - 26}" width="52" height="52"/>`).join("")}</g><image href="${chapter.zodiacUrl}" x="177" y="420" width="96" height="80"/><text class="${styles.name}" x="225" y="545">${chapter.sign}</text>`;
+  const emblem = document.createElementNS("http://www.w3.org/2000/svg", "image");
+  emblem.setAttribute("href", chapter.zodiacUrl);
+  emblem.setAttribute("x", String(layout.emblemAnchor.x));
+  emblem.setAttribute("y", String(layout.emblemAnchor.y));
+  emblem.setAttribute("width", "96");
+  emblem.setAttribute("height", "80");
+  const name = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  name.setAttribute("class", styles.name);
+  name.setAttribute("x", String(layout.labelAnchor.x));
+  name.setAttribute("y", String(layout.labelAnchor.y));
+  name.textContent = chapter.sign;
+  svg.append(emblem, name);
   return svg;
 }

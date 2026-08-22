@@ -1,0 +1,14 @@
+{
+  "sign": "ARIES",
+  "points": [
+    { "id": "mesarthim", "x": 0.0, "y": 0.92 },
+    { "id": "sheratan", "x": 0.03, "y": 0.75 },
+    { "id": "hamal", "x": 0.26, "y": 0.44 },
+    { "id": "ari-41", "x": 1.0, "y": 0.0 }
+  ],
+  "edges": [
+    { "from": "mesarthim", "to": "sheratan" },
+    { "from": "sheratan", "to": "hamal" },
+    { "from": "hamal", "to": "ari-41" }
+  ]
+}

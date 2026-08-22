@@ -6,24 +6,7 @@
   width: 100%;
 }
 .title {
-  align-items: center;
-  color: #fff;
-  display: flex;
-  font-family: "Blrr Pixs", monospace;
-  font-size: 1.667cqw;
-  gap: 0.55em;
-  left: 50%;
-  letter-spacing: 0.08em;
-  margin: 0;
-  position: absolute;
-  top: 7.4%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  z-index: 2;
-}
-.title img {
-  height: 0.5em;
-  width: auto;
+  composes: scene-title from global;
 }
 .carousel {
   height: 55.556%;
