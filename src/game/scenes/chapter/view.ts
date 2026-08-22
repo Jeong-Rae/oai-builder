@@ -37,7 +37,11 @@ export function createChapterView(
   const cards = [previous, current, next];
   const setActive = (index: number) =>
     cards.forEach((card, cardIndex) =>
-      renderCard(card, chapters[index + cardIndex - 1], cardIndex === 1),
+      renderCard(
+        card,
+        chapters[(index + cardIndex - 1 + chapters.length) % chapters.length],
+        cardIndex === 1,
+      ),
     );
   setActive(0);
   return { root, setActive };
@@ -76,7 +80,9 @@ function renderCard(
   enabled: boolean,
 ): void {
   card.replaceChildren();
-  card.disabled = !enabled || !chapter;
+  card.disabled = false;
+  card.tabIndex = enabled && chapter ? 0 : -1;
+  card.setAttribute("aria-disabled", String(!enabled));
   card.setAttribute("aria-label", chapter ? `${chapter.sign} 챕터 선택` : "");
   if (chapter) card.append(constellation(chapter));
 }

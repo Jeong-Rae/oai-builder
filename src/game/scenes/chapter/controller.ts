@@ -9,8 +9,8 @@ export function createChapterScene(
   let moving = false;
   let timer: number | undefined;
   const move = (offset: -1 | 1) => {
-    const next = active + offset;
-    if (moving || next < 0 || next >= chapters.length) return;
+    if (moving) return;
+    const next = (active + offset + chapters.length) % chapters.length;
     moving = true;
     active = next;
     view.setActive(active);
