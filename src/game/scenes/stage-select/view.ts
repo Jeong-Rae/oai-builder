@@ -2,6 +2,7 @@ import { type ChapterDefinition, stageStatuses } from "../../stages";
 import { computeLayout } from "../../constellation/layout";
 import { renderConstellationSvg } from "../../constellation/render";
 import { createMoonDecor } from "../shared/moonDecor";
+import { createBackgroundStars } from "../shared/backgroundStars";
 import styles from "./scene.module.css";
 
 const assets = {
@@ -144,6 +145,7 @@ export function createStageSelectView(
   });
   const decor = createMoonDecor();
   root.append(
+    createBackgroundStars(),
     createHeader(chapter, chapterIndex),
     constellation,
     nodes,
