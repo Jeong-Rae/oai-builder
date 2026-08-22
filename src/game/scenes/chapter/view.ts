@@ -1,6 +1,7 @@
 import { chapters, type ChapterDefinition } from "../../stages";
 import { computeLayout } from "../../constellation/layout";
 import { renderConstellationSvg } from "../../constellation/render";
+import { createMoonDecor } from "../shared/moonDecor";
 import styles from "./scene.module.css";
 
 const assets = {
@@ -29,7 +30,7 @@ export function createChapterView(
   carousel.append(previous, current, next);
   const left = arrow("이전 챕터", assets.arrowLeft, () => onMove(-1), styles.left);
   const right = arrow("다음 챕터", assets.arrowRight, () => onMove(1), styles.right);
-  root.append(title, carousel, left, right);
+  root.append(title, carousel, left, right, createMoonDecor());
   const cards = [previous, current, next];
   const setActive = (index: number) =>
     cards.forEach((card, cardIndex) =>

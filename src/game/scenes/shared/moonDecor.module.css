@@ -1,0 +1,28 @@
+.decor {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+.moon {
+  bottom: -45%;
+  height: auto;
+  left: -12%;
+  position: absolute;
+  width: 43%;
+}
+.shadow {
+  aspect-ratio: 2.4 / 1;
+  background: rgb(20 28 36 / 38%);
+  border-radius: 50%;
+  bottom: 12%;
+  filter: blur(2px);
+  left: 14%;
+  position: absolute;
+  width: 7.5%;
+}
+.mascot {
+  bottom: 13%;
+  left: 12%;
+  position: absolute;
+  width: 11%;
+}

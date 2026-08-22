@@ -1,6 +1,7 @@
 import { type ChapterDefinition, stageStatuses } from "../../stages";
 import { computeLayout } from "../../constellation/layout";
 import { renderConstellationSvg } from "../../constellation/render";
+import { createMoonDecor } from "../shared/moonDecor";
 import styles from "./scene.module.css";
 
 const assets = {
@@ -13,8 +14,6 @@ const assets = {
   backFrame: new URL("@/assets/button/button_back.png", import.meta.url).href,
   arrowBack: new URL("@/assets/button/arrow_back.png", import.meta.url).href,
   bubbleNext: new URL("@/assets/button/bubble_next.png", import.meta.url).href,
-  moon: new URL("@/assets/moon/moon.circle.png", import.meta.url).href,
-  mascot: new URL("@/assets/mascot/mascot.135deg.png", import.meta.url).href,
 };
 
 const nodeImageByStatus = {
@@ -143,19 +142,7 @@ export function createStageSelectView(
   layout.points.forEach((point, index) => {
     nodes.append(createNode(index, point, layout.width, layout.height, statuses[index]!, onStage));
   });
-  const decor = document.createElement("div");
-  decor.className = styles.decor;
-  const moon = document.createElement("img");
-  moon.className = styles.moon;
-  moon.src = assets.moon;
-  moon.alt = "";
-  const shadow = document.createElement("span");
-  shadow.className = styles.shadow;
-  const mascot = document.createElement("img");
-  mascot.className = styles.mascot;
-  mascot.src = assets.mascot;
-  mascot.alt = "";
-  decor.append(moon, shadow, mascot);
+  const decor = createMoonDecor();
   root.append(
     createHeader(chapter, chapterIndex),
     constellation,
