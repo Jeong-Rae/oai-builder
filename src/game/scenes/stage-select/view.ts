@@ -14,7 +14,7 @@ const assets = {
   lock: new URL("@/assets/lock/lock.gray.png", import.meta.url).href,
   backFrame: new URL("@/assets/button/button_back.png", import.meta.url).href,
   arrowBack: new URL("@/assets/button/arrow_back.png", import.meta.url).href,
-  bubbleNext: new URL("@/assets/button/bubble_next.png", import.meta.url).href,
+  bubbleNext: new URL("@/assets/button/button_bubble.png", import.meta.url).href,
 };
 
 const nodeImageByStatus = {

@@ -34,15 +34,35 @@ export function createChapterView(
   const left = arrow("이전 챕터", assets.arrowLeft, () => onMove(-1), styles.left);
   const right = arrow("다음 챕터", assets.arrowRight, () => onMove(1), styles.right);
   root.append(createBackgroundStars(), header, carousel, left, right, createMoonDecor());
-  const cards = [previous, current, next];
-  const setActive = (index: number) =>
-    cards.forEach((card, cardIndex) =>
+  let slots = [previous, current, next];
+  let activeIndex = 0;
+  let hasRendered = false;
+  const setActive = (index: number) => {
+    if (hasRendered) {
+      const forward = (index - activeIndex + chapters.length) % chapters.length === 1;
+      const backward = (activeIndex - index + chapters.length) % chapters.length === 1;
+
+      if (forward) {
+        slots = [slots[1], slots[2], slots[0]];
+      } else if (backward) {
+        slots = [slots[2], slots[0], slots[1]];
+      } else {
+        slots = [previous, current, next];
+      }
+    }
+
+    const roles = ["previous", "current", "next"] as const;
+    slots.forEach((card, cardIndex) => {
+      card.className = `${styles.card} ${styles[roles[cardIndex]]}`;
       renderCard(
         card,
         chapters[(index + cardIndex - 1 + chapters.length) % chapters.length],
         cardIndex === 1,
-      ),
-    );
+      );
+    });
+    activeIndex = index;
+    hasRendered = true;
+  };
   setActive(0);
   return { root, setActive };
 }
