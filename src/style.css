@@ -43,6 +43,18 @@ button {
   width: min(100vw, 177.778vh);
 }
 
+.scene-header {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5cqw;
+  left: 50%;
+  position: absolute;
+  top: 4.2%;
+  transform: translateX(-50%);
+  width: 30cqw;
+  z-index: 3;
+}
 .scene-title {
   align-items: center;
   color: #fff;
@@ -50,20 +62,24 @@ button {
   font-family: "온글잎 박다현체", monospace;
   font-size: 1.667cqw;
   gap: 0.55em;
+  height: 2.083cqw;
   justify-content: center;
-  left: 50%;
   letter-spacing: 0.08em;
   margin: 0;
-  position: absolute;
-  top: 7.4%;
-  transform: translateX(-50%);
   white-space: nowrap;
-  width: 30cqw;
-  z-index: 2;
+  width: 100%;
 }
 .scene-title > img {
   height: 0.5em;
   width: auto;
+}
+.scene-title .zodiac {
+  height: 100%;
+  width: auto;
+}
+.scene-divider {
+  border-top: 3px dashed rgb(131 144 154 / 55%);
+  width: 100%;
 }
 
 .plate-button {

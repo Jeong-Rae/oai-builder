@@ -19,9 +19,14 @@ export function createChapterView(
   const root = document.createElement("main");
   root.className = styles.root;
   root.style.backgroundImage = `url(${assets.background})`;
+  const header = document.createElement("header");
+  header.className = "scene-header";
   const title = document.createElement("h1");
   title.className = styles.title;
   title.append(titleStar(), document.createTextNode("CHAPTER SELECT"), titleStar());
+  const divider = document.createElement("div");
+  divider.className = "scene-divider";
+  header.append(title, divider);
   const carousel = document.createElement("div");
   carousel.className = styles.carousel;
   const previous = createCard("previous", () => {});

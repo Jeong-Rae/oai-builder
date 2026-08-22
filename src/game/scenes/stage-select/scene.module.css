@@ -89,7 +89,7 @@
 }
 .node .star {
   display: block;
-  width: 5.833cqw;
+  width: 5cqw;
 }
 .node[data-status="cleared"] .star {
   filter: drop-shadow(0 0 10px rgb(255 216 102 / 45%));
@@ -132,7 +132,7 @@
   object-fit: contain;
   position: absolute;
   top: 50%;
-  transform: translate(-50%, -58%);
+  transform: translate(-50%, -50%);
   width: 42%;
 }
 .num {
