@@ -7,9 +7,9 @@ import styles from "./scene.module.css";
 const assets = {
   background: new URL("@/assets/background/background_space.png", import.meta.url).href,
   star: new URL("@/assets/star/star_plus_gold_s.png", import.meta.url).href,
-  nodeGold: new URL("@/assets/star/star_node_gold.png", import.meta.url).href,
-  nodeWhite: new URL("@/assets/star/star_node_white.png", import.meta.url).href,
-  nodeGray: new URL("@/assets/star/star_node_gray.png", import.meta.url).href,
+  clearedStarNode: new URL("@/assets/star/star_node_gold.png", import.meta.url).href,
+  inProgressStarNode: new URL("@/assets/star/star_node_white.png", import.meta.url).href,
+  lockedStarNode: new URL("@/assets/star/star_node_black.png", import.meta.url).href,
   lock: new URL("@/assets/lock/lock.gray.png", import.meta.url).href,
   backFrame: new URL("@/assets/button/button_back.png", import.meta.url).href,
   arrowBack: new URL("@/assets/button/arrow_back.png", import.meta.url).href,
@@ -17,10 +17,10 @@ const assets = {
 };
 
 const nodeImageByStatus = {
-  cleared: assets.nodeGold,
-  current: assets.nodeWhite,
-  available: assets.nodeWhite,
-  locked: assets.nodeGray,
+  cleared: assets.clearedStarNode,
+  current: assets.inProgressStarNode,
+  available: assets.inProgressStarNode,
+  locked: assets.lockedStarNode,
 } as const;
 
 function createHeader(chapter: ChapterDefinition, chapterIndex: number): HTMLElement {
