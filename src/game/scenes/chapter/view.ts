@@ -21,9 +21,7 @@ export function createChapterView(
   header.append(createSceneTitle(createTitleStar(), titleText, createTitleStar()));
   const carousel = document.createElement("div");
   carousel.className = styles.carousel;
-  const cards = Array.from({ length: 5 }, (_, i) =>
-    createCard(i === 2 ? "current" : "outLeft", i === 2 ? onSelect : () => {}),
-  );
+  const cards = Array.from({ length: 5 }, () => createCard());
   carousel.append(...cards);
   const left = arrow("이전 챕터", chapterAssets.arrowLeft, () => onMove(-1), styles.left);
   const right = arrow("다음 챕터", chapterAssets.arrowRight, () => onMove(1), styles.right);
@@ -46,6 +44,7 @@ export function createChapterView(
     const roles = ["outLeft", "previous", "current", "next", "outRight"] as const;
     slots.forEach((card, offset) => {
       card.className = `${styles.card} ${styles[roles[offset]]}`;
+      card.onclick = offset === 2 && chapters[index + offset - 2] ? onSelect : null;
       renderCard(card, chapters[index + offset - 2], offset === 2);
     });
     left.disabled = index === 0;
@@ -74,14 +73,9 @@ function arrow(
   button.append(image);
   return button;
 }
-function createCard(
-  position: "previous" | "current" | "next" | "outLeft" | "outRight",
-  onClick: () => void,
-): HTMLButtonElement {
+function createCard(): HTMLButtonElement {
   const card = document.createElement("button");
   card.type = "button";
-  card.className = `${styles.card} ${styles[position]}`;
-  card.addEventListener("click", onClick);
   return card;
 }
 function renderCard(
