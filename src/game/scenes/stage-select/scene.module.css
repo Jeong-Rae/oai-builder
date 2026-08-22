@@ -1,0 +1,101 @@
+.root {
+  background: #080e14 center / cover no-repeat;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.header {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-family: "Blrr Pixs", monospace;
+  font-size: 1.667cqw;
+  gap: 0.9cqw;
+  justify-content: center;
+  left: 50%;
+  letter-spacing: 0.08em;
+  margin: 0;
+  position: absolute;
+  top: 7.4%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 2;
+}
+.header > img {
+  height: 0.833cqw;
+  width: auto;
+}
+.header .zodiac {
+  height: 2.083cqw;
+}
+.constellation {
+  height: 62.037%;
+  left: 20%;
+  position: absolute;
+  top: 16.667%;
+  width: 60%;
+}
+.line {
+  fill: none;
+  filter: drop-shadow(0 0 5px rgb(255 216 102 / 45%));
+  stroke: #ffd866;
+  stroke-dasharray: 10 14;
+  stroke-linecap: round;
+  stroke-width: 6;
+}
+.nodes {
+  inset: 16.667% 20% 21.296%;
+  position: absolute;
+}
+.node {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  left: var(--x);
+  padding: 0;
+  position: absolute;
+  top: var(--y);
+  transform: translate(-50%, -50%);
+}
+.node img {
+  filter: drop-shadow(0 0 10px rgb(255 216 102 / 42%));
+  width: 5.833cqw;
+}
+.node span {
+  color: #83909a;
+  font-family: "Blrr Pixs", monospace;
+  font-size: 1.458cqw;
+  left: 50%;
+  letter-spacing: 3px;
+  position: absolute;
+  top: 100%;
+  transform: translateX(-50%);
+}
+.node:hover img,
+.node:focus-visible img {
+  filter: brightness(1.2) drop-shadow(0 0 15px #ffd866);
+}
+.node:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 5px;
+}
+.back {
+  background: transparent;
+  border: 0;
+  color: #d7f9ff;
+  cursor: pointer;
+  font:
+    700 1.146cqw "Blrr Pixs",
+    monospace;
+  left: 2.5%;
+  letter-spacing: 3px;
+  padding: 0.8cqw;
+  position: absolute;
+  top: 3.889%;
+}
+.back:hover,
+.back:focus-visible {
+  color: #fff;
+  outline: 2px solid #fff;
+}

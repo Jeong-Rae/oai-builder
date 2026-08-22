@@ -1,15 +1,16 @@
-import type Phaser from 'phaser';
-
-import { createPhaserGame } from './createGame';
-import { createIntroScene } from './scenes/IntroScene.vn';
-import { createStartScene } from './scenes/StartScene.vn';
+import { createChapterScene } from "./scenes/chapter/controller";
+import { createClearScene } from "./scenes/clear/controller";
+import { createGameScene } from "./scenes/game/controller";
+import { createIntroScene } from "./scenes/intro/controller";
+import { createStageSelectScene } from "./scenes/stage-select/controller";
+import { createStartScene } from "./scenes/start/controller";
+import { nextSelection, type PlaySelection } from "./stages";
 
 export class GameApp {
-  private game?: Phaser.Game;
-  private disposeStartScene?: () => void;
+  private disposeScene?: () => void;
 
   constructor(private readonly root: HTMLElement) {
-    if (import.meta.env.DEV) document.addEventListener('keydown', this.handleDevShortcut);
+    if (import.meta.env.DEV) document.addEventListener("keydown", this.handleDevShortcut);
     this.showIntro();
   }
 
@@ -28,32 +29,46 @@ export class GameApp {
     showScreen();
   };
 
-  private clear(): void {
-    this.disposeStartScene?.();
-    this.disposeStartScene = undefined;
-    this.game?.destroy(true);
-    this.game = undefined;
+  private show(scene: { view: HTMLElement; dispose(): void }): void {
+    this.disposeScene?.();
+    this.disposeScene = scene.dispose;
     this.root.replaceChildren();
+    const frame = document.createElement("div");
+    frame.className = "game-frame";
+    frame.append(scene.view);
+    this.root.append(frame);
   }
 
   private showIntro = (): void => {
-    this.clear();
-    this.root.append(createIntroScene(this.showGameStart));
+    this.show(createIntroScene(this.showGameStart));
   };
 
   showGameStart = (): void => {
-    this.clear();
-    const startScene = createStartScene(this.showGroups);
-    this.disposeStartScene = startScene.dispose;
-    this.root.append(startScene.view);
+    this.show(createStartScene(this.showGroups));
   };
 
   showGroups = (): void => {
-    this.clear();
-    const play = document.createElement('main');
-    play.className = 'phaser-play';
-    play.setAttribute('aria-label', '챕터 선택');
-    this.root.append(play);
-    this.game = createPhaserGame(play, { onExitHome: this.showGameStart });
+    this.showChapter(0);
   };
+
+  private showChapter = (chapterIndex: number): void =>
+    this.show(createChapterScene(chapterIndex, this.showStageSelect));
+  private showStageSelect = (chapterIndex: number): void =>
+    this.show(
+      createStageSelectScene(
+        chapterIndex,
+        (stageIndex) => this.showGame({ chapterIndex, stageIndex }),
+        () => this.showChapter(chapterIndex),
+      ),
+    );
+  private showGame = (selection: PlaySelection): void =>
+    this.show(createGameScene(selection, this.showGameStart, () => this.showClear(selection)));
+  private showClear = (selection: PlaySelection): void =>
+    this.show(
+      createClearScene(
+        () => this.showGame(nextSelection(selection)),
+        () => this.showGame(selection),
+        this.showGameStart,
+      ),
+    );
 }

@@ -1,0 +1,112 @@
+.root {
+  background: #080e14 center / cover no-repeat;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.title {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-family: "Blrr Pixs", monospace;
+  font-size: 1.667cqw;
+  gap: 0.55em;
+  left: 50%;
+  letter-spacing: 0.08em;
+  margin: 0;
+  position: absolute;
+  top: 7.4%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 2;
+}
+.title img {
+  height: 0.5em;
+  width: auto;
+}
+.carousel {
+  height: 55.556%;
+  inset: 22.222% 0 auto;
+  position: absolute;
+}
+.card {
+  aspect-ratio: 3 / 4;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  left: 50%;
+  opacity: 0.8;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.75);
+  transition:
+    left 420ms cubic-bezier(0.22, 0.7, 0.2, 1),
+    opacity 420ms ease,
+    transform 420ms cubic-bezier(0.22, 0.7, 0.2, 1);
+  width: 23.438%;
+}
+.card:disabled {
+  cursor: default;
+  opacity: 0;
+  pointer-events: none;
+}
+.previous {
+  left: 27.826%;
+}
+.next {
+  left: 72.174%;
+}
+.current {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  z-index: 1;
+}
+.card svg {
+  height: 100%;
+  width: 100%;
+}
+.line {
+  fill: none;
+  filter: drop-shadow(0 0 3px rgb(255 216 102 / 45%));
+  stroke: #ffd866;
+  stroke-dasharray: 5 7;
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+.name {
+  fill: #ffd866;
+  font-family: "Blrr Pixs", monospace;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  text-anchor: middle;
+}
+.arrow {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4.167%;
+  z-index: 3;
+}
+.arrow img {
+  display: block;
+  width: 100%;
+}
+.arrow:hover,
+.arrow:focus-visible {
+  filter: brightness(1.18);
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+.left {
+  left: 3.333%;
+}
+.right {
+  right: 3.333%;
+}

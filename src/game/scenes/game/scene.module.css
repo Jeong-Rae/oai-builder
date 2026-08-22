@@ -1,0 +1,135 @@
+.root {
+  background: #080e14;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.header {
+  color: #81f0c5;
+  font:
+    700 1.25cqw "Blrr Pixs",
+    monospace;
+  left: 2.5%;
+  letter-spacing: 4px;
+  position: absolute;
+  top: 3.889%;
+  z-index: 2;
+}
+.home,
+.error button {
+  background: #d7f9ff;
+  border: 0;
+  color: #080e14;
+  cursor: pointer;
+  font:
+    700 1.146cqw "Blrr Pixs",
+    monospace;
+  padding: 0.8cqw 1.2cqw;
+}
+.home {
+  position: absolute;
+  right: 2.5%;
+  top: -0.556cqh;
+}
+.home:hover,
+.home:focus-visible,
+.error button:hover,
+.error button:focus-visible {
+  background: #81f0c5;
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+.board {
+  --tile: min(calc(45cqw / var(--columns)), calc(80cqh / var(--rows)));
+  border: min(0.3125cqw, 0.556cqh) solid #d7f9ff;
+  box-shadow: 0 0 0 min(0.208cqw, 0.37cqh) #263947;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), var(--tile));
+  grid-template-rows: repeat(var(--rows), var(--tile));
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.cell {
+  height: var(--tile);
+  position: relative;
+  width: var(--tile);
+}
+.base,
+.overlay,
+.goal,
+.entity {
+  height: 100%;
+  image-rendering: pixelated;
+  left: 0;
+  object-fit: contain;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.overlay,
+.goal {
+  z-index: 1;
+}
+.entity {
+  z-index: 2;
+}
+.control {
+  height: 21%;
+  image-rendering: pixelated;
+  left: calc(50% + var(--control-offset) * 100%);
+  position: absolute;
+  top: -10%;
+  transform: translateX(-50%);
+  width: 21%;
+  z-index: 3;
+}
+.gate {
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+.device {
+  height: 64%;
+  left: 8%;
+  position: absolute;
+  top: 18%;
+  width: 64%;
+}
+.device.second {
+  left: 28%;
+  transform: scaleX(-1);
+}
+.device.vertical {
+  left: 18%;
+  top: 8%;
+  transform: rotate(90deg);
+}
+.device.vertical.second {
+  left: 18%;
+  top: 28%;
+  transform: rotate(-90deg);
+}
+.laser {
+  height: 38%;
+  left: 0;
+  position: absolute;
+  top: 31%;
+  width: 100%;
+}
+.laser.vertical {
+  transform: rotate(90deg);
+}
+.error {
+  color: #fff;
+  font:
+    2cqw "Blrr Pixs",
+    monospace;
+  left: 50%;
+  position: fixed;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}

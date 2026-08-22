@@ -4,7 +4,7 @@
 
 - Language: TypeScript
 - Build tool: Vite
-- Game framework: Phaser
+- Game renderer: DOM, CSS, and inline SVG
 - State store: Zustand vanilla (`zustand/vanilla`)
 - React and a physics engine are not used.
 
@@ -12,17 +12,17 @@
 
 ```text
 Zustand: confirmed game state and commands
-Phaser: Scene lifecycle, input, assets, sprites, animation, rendering
+DOM scene controllers: lifecycle, input, assets, animation, rendering
 ```
 
-- Phaser objects such as sprites, keyboard handlers, and tweens must never be stored in Zustand.
-- `GameScene` keeps an `EntityId -> Phaser Sprite` mapping and synchronizes sprites from the store.
-- A `GameScene` subscription is disposed when the scene shuts down.
+- DOM nodes, keyboard handlers, and timers must never be stored in Zustand.
+- The game view keeps an `EntityId -> HTMLImageElement` mapping and synchronizes it from the store.
+- A game-scene subscription is disposed when its controller is disposed.
 - The game app and editor app have independent HTML and TypeScript entry points.
 - The game app never imports editor-only modules. The editor reuses the game domain and Zustand command pipeline for inline live tests.
 - Object and field feature modules own their pure rules and presentation metadata. Runtime state remains serializable plain data and stores only each object's `kind`.
 - The central decider coordinates interactions that depend on multiple objects, fields, or the complete board state; entities never call each other directly.
-- `GameScene` and `editorApp` resolve labels, asset slots, and texture URLs through the shared feature presentation catalog.
+- Game scene controllers and `editorApp` resolve labels, asset slots, and texture URLs through the shared feature presentation catalog.
 
 ## Applications and deployment
 
@@ -37,7 +37,7 @@ apps/editor  -> dist/editor  -> editor subdomain
 
 ## Domain model
 
-- All logical positions use tile coordinates (`{ x, y }`); Phaser converts them to pixel coordinates for rendering.
+- All logical positions use tile coordinates (`{ x, y }`); the DOM board maps them to CSS-grid cells for rendering.
 - The exit is represented as a tile rather than an entity, so an entity may occupy it.
 - `Player`, `Normal`, `Anchor`, and `Swapper` are entities with an `EntityId`, tile position, and owned direction controls.
 - Each direction control has exactly one owner. The player owns all four controls at game start.
@@ -66,11 +66,11 @@ GameCommand + GameState -> decide -> GameEvent[] -> evolve -> next GameState
 
 ```text
 keyboard input
--> GameScene creates a command
+-> game controller creates a command
 -> gameStore.dispatch(command)
 -> decide / evolve
 -> Zustand update
--> GameScene synchronizes sprites and ownership arrows
+-> DOM view synchronizes images and ownership arrows
 ```
 
 ## Module layout
@@ -94,7 +94,6 @@ src/
 │  └─ mapFiles.ts
 └─ game/
    ├─ main.ts
-   ├─ createGame.ts
    ├─ domain/
    │  ├─ types.ts
    │  ├─ level.ts
@@ -107,7 +106,7 @@ src/
    ├─ store/
    │  └─ gameStore.ts
    └─ scenes/
-      └─ GameScene.ts
+      └─ <scene>/{controller,view,scene.module.css}
 ```
 
 ## Testing
@@ -117,7 +116,7 @@ src/
 - Test names are Korean sentences.
 - Test the domain and store: movement outcomes, box interactions, emitted events, and state transitions.
 - Do not test rendering asset paths, asset file names, sprite construction details, or animation frame metadata.
-- Verify Phaser integration with the production build and manual browser checks.
+- Verify DOM scene integration with the production build and manual browser checks.
 
 ## Asset conversion
 
@@ -125,7 +124,7 @@ src/
 - The conversion script supports `32`, `36`, `48`, `64`, and `96` pixels: `npm run asset:resize -- assets/tail/tile.1254.png 96`.
 - A source must be a `1254×1254` image. The script crops equal pixels from all four sides to obtain a size divisible by the target, then applies nearest-neighbor scaling.
 - Generated files are never overwritten unless `--force` is supplied.
-- The default runtime asset size is `96`; `GameScene` loads the corresponding `.96.png` files.
+- The default runtime asset size is `96`; the DOM board loads the corresponding runtime assets.
 
 ## Deferred decisions
 

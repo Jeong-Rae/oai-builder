@@ -1,0 +1,70 @@
+.root {
+  background: #080e14 center / cover no-repeat;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.backgroundStars {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+.backgroundStar {
+  left: var(--x);
+  position: absolute;
+  top: var(--y);
+  transform: translate(-50%, -50%);
+}
+.small {
+  width: 0.5%;
+}
+.medium {
+  width: 0.583%;
+}
+.large {
+  width: 0.667%;
+}
+.lunar {
+  bottom: -53%;
+  left: 50%;
+  max-width: none;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 74.5%;
+}
+.mascot {
+  animation: float 2.8s ease-in-out infinite;
+  left: 50%;
+  max-width: 17%;
+  pointer-events: none;
+  position: absolute;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  width: 17%;
+  z-index: 1;
+}
+.startArea {
+  bottom: 8%;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 22.5%;
+  z-index: 2;
+}
+.start {
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+@keyframes float {
+  50% {
+    transform: translate(-50%, calc(-50% - 8px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot {
+    animation: none;
+  }
+}
