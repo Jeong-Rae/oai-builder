@@ -1,0 +1,15 @@
+{
+  "sign": "LIBRA",
+  "points": [
+    { "id": "brachium", "x": 0.05, "y": 0.45 },
+    { "id": "zubenelgenubi", "x": 0.38, "y": 0.75 },
+    { "id": "zubeneschamali", "x": 0.45, "y": 0.3 },
+    { "id": "zubenelakrab", "x": 0.62, "y": 0.52 }
+  ],
+  "edges": [
+    { "from": "brachium", "to": "zubenelgenubi" },
+    { "from": "zubenelgenubi", "to": "zubeneschamali" },
+    { "from": "zubenelgenubi", "to": "zubenelakrab" },
+    { "from": "zubeneschamali", "to": "zubenelakrab" }
+  ]
+}

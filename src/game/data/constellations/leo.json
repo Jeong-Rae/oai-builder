@@ -1,0 +1,25 @@
+{
+  "sign": "LEO",
+  "points": [
+    { "id": "regulus", "x": 0.45, "y": 0.85 },
+    { "id": "eta", "x": 0.35, "y": 0.76 },
+    { "id": "adhafera", "x": 0.26, "y": 0.62 },
+    { "id": "algieba", "x": 0.18, "y": 0.48 },
+    { "id": "rasalas", "x": 0.14, "y": 0.32 },
+    { "id": "ras-elased", "x": 0.22, "y": 0.12 },
+    { "id": "chertan", "x": 0.7, "y": 0.72 },
+    { "id": "zosma", "x": 0.8, "y": 0.5 },
+    { "id": "denebola", "x": 0.96, "y": 0.62 }
+  ],
+  "edges": [
+    { "from": "ras-elased", "to": "rasalas" },
+    { "from": "rasalas", "to": "algieba" },
+    { "from": "algieba", "to": "adhafera" },
+    { "from": "adhafera", "to": "eta" },
+    { "from": "eta", "to": "regulus" },
+    { "from": "regulus", "to": "chertan" },
+    { "from": "chertan", "to": "zosma" },
+    { "from": "zosma", "to": "denebola" },
+    { "from": "denebola", "to": "chertan" }
+  ]
+}

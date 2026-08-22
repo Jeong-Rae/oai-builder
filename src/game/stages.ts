@@ -1,6 +1,17 @@
 import type { ConstellationDefinition } from "./constellation/model";
 import { parseConstellation } from "./constellation/parse";
+import aquariusConstellationData from "./data/constellations/aquarius.json";
 import ariesConstellationData from "./data/constellations/aries.json";
+import cancerConstellationData from "./data/constellations/cancer.json";
+import capricornusConstellationData from "./data/constellations/capricornus.json";
+import geminiConstellationData from "./data/constellations/gemini.json";
+import leoConstellationData from "./data/constellations/leo.json";
+import libraConstellationData from "./data/constellations/libra.json";
+import piscesConstellationData from "./data/constellations/pisces.json";
+import sagittariusConstellationData from "./data/constellations/sagittarius.json";
+import scorpiusConstellationData from "./data/constellations/scorpius.json";
+import taurusConstellationData from "./data/constellations/taurus.json";
+import virgoConstellationData from "./data/constellations/virgo.json";
 import {
   deriveStageStatuses,
   prerequisiteIndices,
@@ -24,7 +35,7 @@ export interface StageDefinition {
 
 export interface ChapterDefinition {
   id: string;
-  sign: "ARIES";
+  sign: ZodiacSign;
   zodiacUrl: string;
   constellation: ConstellationDefinition;
   stages: readonly StageDefinition[];
@@ -36,23 +47,70 @@ export interface PlaySelection {
 }
 
 const map001 = new URL("@/maps/001.map", import.meta.url).href;
-const ariesZodiac = new URL("@/assets/zodiac/zodiac_aries_active.png", import.meta.url).href;
-const ariesConstellation = parseConstellation(ariesConstellationData);
 
-export const chapters: readonly ChapterDefinition[] = Array.from(
-  { length: 12 },
-  (_, chapterIndex) => ({
-    id: `chapter-${chapterIndex + 1}`,
-    sign: "ARIES",
-    zodiacUrl: ariesZodiac,
-    constellation: ariesConstellation,
-    stages: Array.from({ length: ariesConstellation.points.length }, (_, stageIndex) => ({
-      id: `chapter-${chapterIndex + 1}-stage-${stageIndex + 1}`,
+export const zodiacSigns = [
+  "ARIES",
+  "TAURUS",
+  "GEMINI",
+  "CANCER",
+  "LEO",
+  "VIRGO",
+  "LIBRA",
+  "SCORPIUS",
+  "SAGITTARIUS",
+  "CAPRICORNUS",
+  "AQUARIUS",
+  "PISCES",
+] as const;
+
+export type ZodiacSign = (typeof zodiacSigns)[number];
+
+type ConstellationData = Record<ZodiacSign, unknown>;
+
+const constellationData: ConstellationData = {
+  ARIES: ariesConstellationData,
+  TAURUS: taurusConstellationData,
+  GEMINI: geminiConstellationData,
+  CANCER: cancerConstellationData,
+  LEO: leoConstellationData,
+  VIRGO: virgoConstellationData,
+  LIBRA: libraConstellationData,
+  SCORPIUS: scorpiusConstellationData,
+  SAGITTARIUS: sagittariusConstellationData,
+  CAPRICORNUS: capricornusConstellationData,
+  AQUARIUS: aquariusConstellationData,
+  PISCES: piscesConstellationData,
+};
+
+const zodiacUrls: Record<ZodiacSign, string> = {
+  ARIES: new URL("@/assets/zodiac/zodiac_aries_active.png", import.meta.url).href,
+  TAURUS: new URL("@/assets/zodiac/zodiac_taurus_active.png", import.meta.url).href,
+  GEMINI: new URL("@/assets/zodiac/zodiac_gemini_active.png", import.meta.url).href,
+  CANCER: new URL("@/assets/zodiac/zodiac_cancer_active.png", import.meta.url).href,
+  LEO: new URL("@/assets/zodiac/zodiac_leo_active.png", import.meta.url).href,
+  VIRGO: new URL("@/assets/zodiac/zodiac_virgo_active.png", import.meta.url).href,
+  LIBRA: new URL("@/assets/zodiac/zodiac_libra_active.png", import.meta.url).href,
+  SCORPIUS: new URL("@/assets/zodiac/zodiac_scorpio_active.png", import.meta.url).href,
+  SAGITTARIUS: new URL("@/assets/zodiac/zodiac_sagittarius_active.png", import.meta.url).href,
+  CAPRICORNUS: new URL("@/assets/zodiac/zodiac_capricorn_active.png", import.meta.url).href,
+  AQUARIUS: new URL("@/assets/zodiac/zodiac_aquarius_active.png", import.meta.url).href,
+  PISCES: new URL("@/assets/zodiac/zodiac_pisces_active.png", import.meta.url).href,
+};
+
+export const chapters: readonly ChapterDefinition[] = zodiacSigns.map((sign) => {
+  const constellation = parseConstellation(constellationData[sign]);
+  return {
+    id: `chapter-${zodiacSigns.indexOf(sign) + 1}`,
+    sign,
+    zodiacUrl: zodiacUrls[sign],
+    constellation,
+    stages: Array.from({ length: constellation.points.length }, (_, stageIndex) => ({
+      id: `chapter-${zodiacSigns.indexOf(sign) + 1}-stage-${stageIndex + 1}`,
       label: `STAGE ${stageIndex + 1}`,
       mapUrl: map001,
     })),
-  }),
-);
+  };
+});
 
 export function stageStatuses(chapterIndex: number): StageStatus[] {
   const chapter = chapters[chapterIndex]!;

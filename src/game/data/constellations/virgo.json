@@ -1,0 +1,22 @@
+{
+  "sign": "VIRGO",
+  "points": [
+    { "id": "zavijava", "x": 0.05, "y": 0.3 },
+    { "id": "zaniah", "x": 0.25, "y": 0.45 },
+    { "id": "porrima", "x": 0.4, "y": 0.68 },
+    { "id": "spica", "x": 0.35, "y": 0.9 },
+    { "id": "auva", "x": 0.52, "y": 0.55 },
+    { "id": "heze", "x": 0.58, "y": 0.72 },
+    { "id": "vindemiatrix", "x": 0.78, "y": 0.15 },
+    { "id": "syrma", "x": 0.72, "y": 0.95 }
+  ],
+  "edges": [
+    { "from": "zavijava", "to": "zaniah" },
+    { "from": "zaniah", "to": "porrima" },
+    { "from": "porrima", "to": "spica" },
+    { "from": "porrima", "to": "auva" },
+    { "from": "auva", "to": "vindemiatrix" },
+    { "from": "spica", "to": "heze" },
+    { "from": "auva", "to": "syrma" }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "sign": "CANCER",
+  "points": [
+    { "id": "iota", "x": 0.1, "y": 0.25 },
+    { "id": "tarf", "x": 0.22, "y": 0.55 },
+    { "id": "asellus-borealis", "x": 0.55, "y": 0.5 },
+    { "id": "asellus-australis", "x": 0.62, "y": 0.6 },
+    { "id": "acubens", "x": 0.78, "y": 0.88 }
+  ],
+  "edges": [
+    { "from": "iota", "to": "tarf" },
+    { "from": "tarf", "to": "asellus-australis" },
+    { "from": "asellus-australis", "to": "asellus-borealis" },
+    { "from": "asellus-australis", "to": "acubens" }
+  ]
+}

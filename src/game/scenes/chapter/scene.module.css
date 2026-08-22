@@ -5,9 +5,6 @@
   position: relative;
   width: 100%;
 }
-.title {
-  composes: scene-title from global;
-}
 .carousel {
   height: 55.556%;
   inset: 22.222% 0 auto;
@@ -36,10 +33,10 @@
   pointer-events: none;
 }
 .previous {
-  left: 27.826%;
+  left: 20.833%;
 }
 .next {
-  left: 72.174%;
+  left: 79.167%;
 }
 .current {
   opacity: 1;
@@ -88,8 +85,8 @@
   outline-offset: 4px;
 }
 .left {
-  left: 3.333%;
+  left: 33.333%;
 }
 .right {
-  right: 3.333%;
+  right: 33.333%;
 }

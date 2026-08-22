@@ -19,13 +19,24 @@ describe("스테이지 선택", () => {
     expect(nextStage({ group: 0, index: 3 })).toEqual({ group: 1, index: 0 });
   });
 
-  it("초기 별자리 챕터는 별자리 포인트 수만큼의 스테이지를 가진다", () => {
+  it("각 별자리 챕터는 별자리 포인트 수만큼의 스테이지를 가진다", () => {
     expect(chapters).toHaveLength(12);
+    expect(chapters.map((chapter) => chapter.sign)).toEqual([
+      "ARIES",
+      "TAURUS",
+      "GEMINI",
+      "CANCER",
+      "LEO",
+      "VIRGO",
+      "LIBRA",
+      "SCORPIUS",
+      "SAGITTARIUS",
+      "CAPRICORNUS",
+      "AQUARIUS",
+      "PISCES",
+    ]);
     expect(
-      chapters.every(
-        (chapter) =>
-          chapter.sign === "ARIES" && chapter.stages.length === chapter.constellation.points.length,
-      ),
+      chapters.every((chapter) => chapter.stages.length === chapter.constellation.points.length),
     ).toBe(true);
     expect(chapters[0]!.stages).toHaveLength(4);
     expect(
@@ -38,7 +49,13 @@ describe("스테이지 선택", () => {
       chapterIndex: 1,
       stageIndex: 0,
     });
-    expect(nextSelection({ chapterIndex: 11, stageIndex: 3 })).toEqual({
+    const lastChapterIndex = chapters.length - 1;
+    expect(
+      nextSelection({
+        chapterIndex: lastChapterIndex,
+        stageIndex: chapters[lastChapterIndex]!.stages.length - 1,
+      }),
+    ).toEqual({
       chapterIndex: 0,
       stageIndex: 0,
     });

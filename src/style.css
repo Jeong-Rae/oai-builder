@@ -52,7 +52,7 @@ button {
   position: absolute;
   top: 4.2%;
   transform: translateX(-50%);
-  width: 30cqw;
+  width: max-content;
   z-index: 3;
 }
 .scene-title {

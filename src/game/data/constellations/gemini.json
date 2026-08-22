@@ -1,0 +1,21 @@
+{
+  "sign": "GEMINI",
+  "points": [
+    { "id": "castor", "x": 0.22, "y": 0.04 },
+    { "id": "pollux", "x": 0.42, "y": 0.1 },
+    { "id": "mebsuta", "x": 0.16, "y": 0.32 },
+    { "id": "wasat", "x": 0.36, "y": 0.44 },
+    { "id": "tejat", "x": 0.1, "y": 0.62 },
+    { "id": "propus", "x": 0.04, "y": 0.84 },
+    { "id": "alhena", "x": 0.24, "y": 0.92 }
+  ],
+  "edges": [
+    { "from": "castor", "to": "pollux" },
+    { "from": "castor", "to": "mebsuta" },
+    { "from": "pollux", "to": "wasat" },
+    { "from": "mebsuta", "to": "wasat" },
+    { "from": "mebsuta", "to": "tejat" },
+    { "from": "tejat", "to": "propus" },
+    { "from": "wasat", "to": "alhena" }
+  ]
+}

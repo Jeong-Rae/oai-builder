@@ -1,0 +1,20 @@
+{
+  "sign": "TAURUS",
+  "points": [
+    { "id": "alcyone", "x": 0.08, "y": 0.9 },
+    { "id": "lambda", "x": 0.28, "y": 0.8 },
+    { "id": "gamma", "x": 0.36, "y": 0.68 },
+    { "id": "aldebaran", "x": 0.48, "y": 0.6 },
+    { "id": "theta2", "x": 0.52, "y": 0.66 },
+    { "id": "zeta", "x": 0.64, "y": 0.42 },
+    { "id": "elnath", "x": 0.94, "y": 0.06 }
+  ],
+  "edges": [
+    { "from": "alcyone", "to": "lambda" },
+    { "from": "lambda", "to": "gamma" },
+    { "from": "gamma", "to": "aldebaran" },
+    { "from": "aldebaran", "to": "theta2" },
+    { "from": "theta2", "to": "zeta" },
+    { "from": "theta2", "to": "elnath" }
+  ]
+}

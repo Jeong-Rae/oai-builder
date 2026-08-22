@@ -1,0 +1,26 @@
+{
+  "sign": "SAGITTARIUS",
+  "points": [
+    { "id": "lambda", "x": 0.15, "y": 0.55 },
+    { "id": "phi", "x": 0.32, "y": 0.38 },
+    { "id": "gamma2", "x": 0.42, "y": 0.28 },
+    { "id": "delta", "x": 0.52, "y": 0.42 },
+    { "id": "epsilon", "x": 0.65, "y": 0.5 },
+    { "id": "nunki", "x": 0.72, "y": 0.25 },
+    { "id": "zeta", "x": 0.55, "y": 0.62 },
+    { "id": "tau", "x": 0.42, "y": 0.72 },
+    { "id": "sigma", "x": 0.3, "y": 0.62 }
+  ],
+  "edges": [
+    { "from": "lambda", "to": "phi" },
+    { "from": "phi", "to": "gamma2" },
+    { "from": "gamma2", "to": "delta" },
+    { "from": "delta", "to": "epsilon" },
+    { "from": "epsilon", "to": "nunki" },
+    { "from": "epsilon", "to": "zeta" },
+    { "from": "zeta", "to": "tau" },
+    { "from": "tau", "to": "sigma" },
+    { "from": "sigma", "to": "lambda" },
+    { "from": "delta", "to": "tau" }
+  ]
+}

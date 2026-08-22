@@ -1,0 +1,21 @@
+{
+  "sign": "CAPRICORNUS",
+  "points": [
+    { "id": "algoedi", "x": 0.62, "y": 0.06 },
+    { "id": "alpha2", "x": 0.45, "y": 0.16 },
+    { "id": "dabih", "x": 0.38, "y": 0.3 },
+    { "id": "omega", "x": 0.18, "y": 0.55 },
+    { "id": "psi", "x": 0.14, "y": 0.7 },
+    { "id": "zeta", "x": 0.28, "y": 0.78 },
+    { "id": "nashira", "x": 0.62, "y": 0.9 }
+  ],
+  "edges": [
+    { "from": "algoedi", "to": "alpha2" },
+    { "from": "alpha2", "to": "dabih" },
+    { "from": "dabih", "to": "omega" },
+    { "from": "omega", "to": "psi" },
+    { "from": "psi", "to": "zeta" },
+    { "from": "zeta", "to": "nashira" },
+    { "from": "nashira", "to": "algoedi" }
+  ]
+}

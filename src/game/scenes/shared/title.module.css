@@ -1,0 +1,45 @@
+.title {
+  align-items: center;
+  color: #fff;
+  column-gap: 0.75cqw;
+  display: grid;
+  font-family: "온글잎 박다현체", monospace;
+  font-size: 1.667cqw;
+  grid-template-columns: calc(1.4581cqw + 2.1px) 16cqw calc(1.4581cqw + 2.1px);
+  height: calc(2.083cqw + 3px);
+  margin: 0;
+  width: max-content;
+}
+.star {
+  justify-self: center;
+}
+img.star {
+  height: calc(1.4581cqw + 2.1px);
+  width: auto;
+}
+.star:not(img) {
+  font-size: calc(1.4581cqw + 2.1px);
+  line-height: 1;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 16cqw;
+}
+.text {
+  align-items: center;
+  display: flex;
+  height: 2.083cqw;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.text > img {
+  height: 100%;
+  width: auto;
+}
+.divider {
+  border-top: 3px dashed rgb(131 144 154 / 55%);
+  display: block;
+  width: 100%;
+}

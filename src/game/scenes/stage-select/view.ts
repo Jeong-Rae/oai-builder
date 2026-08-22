@@ -3,11 +3,11 @@ import { computeLayout } from "../../constellation/layout";
 import { renderConstellationSvg } from "../../constellation/render";
 import { createMoonDecor } from "../shared/moonDecor";
 import { createBackgroundStars } from "../shared/backgroundStars";
+import { createSceneTitle, createTitleStar } from "../shared/title";
 import styles from "./scene.module.css";
 
 const assets = {
   background: new URL("@/assets/background/background_space.png", import.meta.url).href,
-  star: new URL("@/assets/star/star_plus_gold_s.png", import.meta.url).href,
   clearedStarNode: new URL("@/assets/star/star_node_gold.png", import.meta.url).href,
   inProgressStarNode: new URL("@/assets/star/star_node_white.png", import.meta.url).href,
   lockedStarNode: new URL("@/assets/star/star_node_black.png", import.meta.url).href,
@@ -26,28 +26,19 @@ const nodeImageByStatus = {
 
 function createHeader(chapter: ChapterDefinition, chapterIndex: number): HTMLElement {
   const header = document.createElement("header");
-  header.className = styles.header;
-  const row = document.createElement("div");
-  row.className = styles.titleRow;
-  const leading = document.createElement("img");
-  leading.src = assets.star;
-  leading.alt = "";
+  header.className = "scene-header";
   const zodiac = document.createElement("img");
-  zodiac.className = styles.zodiac;
   zodiac.src = chapter.zodiacUrl;
   zodiac.alt = "";
   const sign = document.createElement("span");
   sign.textContent = chapter.sign;
-  const trailing = document.createElement("img");
-  trailing.src = assets.star;
-  trailing.alt = "";
-  row.append(leading, zodiac, sign, trailing);
-  const divider = document.createElement("div");
-  divider.className = styles.divider;
+  const titleText = document.createElement("span");
+  titleText.className = styles.titleText;
+  titleText.append(zodiac, sign);
   const label = document.createElement("p");
   label.className = styles.chapterLabel;
   label.textContent = `CHAPTER ${String(chapterIndex + 1).padStart(2, "0")}`;
-  header.append(row, divider, label);
+  header.append(createSceneTitle(createTitleStar(), titleText, createTitleStar()), label);
   return header;
 }
 

@@ -1,0 +1,26 @@
+{
+  "sign": "PISCES",
+  "points": [
+    { "id": "gamma", "x": 0.08, "y": 0.1 },
+    { "id": "kappa", "x": 0.17, "y": 0.04 },
+    { "id": "lambda", "x": 0.23, "y": 0.1 },
+    { "id": "iota", "x": 0.21, "y": 0.19 },
+    { "id": "theta", "x": 0.11, "y": 0.19 },
+    { "id": "omicron", "x": 0.16, "y": 0.32 },
+    { "id": "eta", "x": 0.34, "y": 0.42 },
+    { "id": "omega", "x": 0.5, "y": 0.72 },
+    { "id": "alrescha", "x": 0.72, "y": 0.55 }
+  ],
+  "edges": [
+    { "from": "gamma", "to": "kappa" },
+    { "from": "kappa", "to": "lambda" },
+    { "from": "lambda", "to": "iota" },
+    { "from": "iota", "to": "theta" },
+    { "from": "theta", "to": "gamma" },
+    { "from": "theta", "to": "omicron" },
+    { "from": "omicron", "to": "eta" },
+    { "from": "eta", "to": "alrescha" },
+    { "from": "iota", "to": "omega" },
+    { "from": "omega", "to": "alrescha" }
+  ]
+}

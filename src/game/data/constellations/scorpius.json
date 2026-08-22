@@ -1,0 +1,30 @@
+{
+  "sign": "SCORPIUS",
+  "points": [
+    { "id": "acrab", "x": 0.28, "y": 0.06 },
+    { "id": "dschubba", "x": 0.33, "y": 0.16 },
+    { "id": "pi", "x": 0.4, "y": 0.24 },
+    { "id": "antares", "x": 0.52, "y": 0.36 },
+    { "id": "tau", "x": 0.6, "y": 0.47 },
+    { "id": "epsilon", "x": 0.66, "y": 0.58 },
+    { "id": "mu", "x": 0.68, "y": 0.7 },
+    { "id": "zeta", "x": 0.64, "y": 0.81 },
+    { "id": "eta", "x": 0.54, "y": 0.88 },
+    { "id": "sargas", "x": 0.6, "y": 0.96 },
+    { "id": "kappa", "x": 0.74, "y": 0.93 },
+    { "id": "shaula", "x": 0.84, "y": 0.86 }
+  ],
+  "edges": [
+    { "from": "acrab", "to": "dschubba" },
+    { "from": "dschubba", "to": "pi" },
+    { "from": "dschubba", "to": "antares" },
+    { "from": "antares", "to": "tau" },
+    { "from": "tau", "to": "epsilon" },
+    { "from": "epsilon", "to": "mu" },
+    { "from": "mu", "to": "zeta" },
+    { "from": "zeta", "to": "eta" },
+    { "from": "eta", "to": "sargas" },
+    { "from": "sargas", "to": "kappa" },
+    { "from": "kappa", "to": "shaula" }
+  ]
+}

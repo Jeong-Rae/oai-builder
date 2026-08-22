@@ -5,46 +5,16 @@
   position: relative;
   width: 100%;
 }
-.header {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5cqw;
-  left: 50%;
-  position: absolute;
-  top: 4.2%;
-  transform: translateX(-50%);
-  width: max-content;
-  z-index: 3;
-}
-.titleRow {
-  align-items: center;
-  color: #fff;
-  display: flex;
-  font-family: "온글잎 박다현체", monospace;
-  font-size: 1.667cqw;
-  gap: 0.55em;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-.titleRow > img {
-  height: 0.5em;
-  width: auto;
-}
-.titleRow .zodiac {
-  height: 2.083cqw;
-}
-.divider {
-  border-top: 3px dashed rgb(131 144 154 / 55%);
-  width: 12cqw;
-}
 .chapterLabel {
-  color: #d7f9ff;
+  color: rgb(131 144 154 / 55%);
   font-family: "온글잎 박다현체", monospace;
   font-size: 1.042cqw;
   letter-spacing: 0.35em;
   margin: 0;
   text-indent: 0.35em;
+}
+.titleText {
+  gap: 2ch;
 }
 .constellation {
   aspect-ratio: 1000 / 670;

@@ -3,14 +3,14 @@ import { computeLayout } from "../../constellation/layout";
 import { renderConstellationSvg } from "../../constellation/render";
 import { createMoonDecor } from "../shared/moonDecor";
 import { createBackgroundStars } from "../shared/backgroundStars";
+import { createSceneTitle, createTitleStar } from "../shared/title";
 import styles from "./scene.module.css";
 
 const assets = {
   background: new URL("@/assets/background/background_space.png", import.meta.url).href,
-  star: new URL("@/assets/star/star_plus_gold_s.png", import.meta.url).href,
   constellationStar: new URL("@/assets/star/star_stell_gold_m.png", import.meta.url).href,
-  arrowLeft: new URL("@/assets/arrow/arrow_left.svg", import.meta.url).href,
-  arrowRight: new URL("@/assets/arrow/arrow_right.svg", import.meta.url).href,
+  arrowLeft: new URL("@/assets/arrow/arrow_carousel_left.png", import.meta.url).href,
+  arrowRight: new URL("@/assets/arrow/arrow_carousel_right.png", import.meta.url).href,
 };
 
 export function createChapterView(
@@ -22,12 +22,9 @@ export function createChapterView(
   root.style.backgroundImage = `url(${assets.background})`;
   const header = document.createElement("header");
   header.className = "scene-header";
-  const title = document.createElement("h1");
-  title.className = styles.title;
-  title.append(titleStar(), document.createTextNode("CHAPTER SELECT"), titleStar());
-  const divider = document.createElement("div");
-  divider.className = "scene-divider";
-  header.append(title, divider);
+  const titleText = document.createElement("span");
+  titleText.textContent = "CHAPTER SELECT";
+  header.append(createSceneTitle(createTitleStar(), titleText, createTitleStar()));
   const carousel = document.createElement("div");
   carousel.className = styles.carousel;
   const previous = createCard("previous", () => {});
@@ -36,7 +33,7 @@ export function createChapterView(
   carousel.append(previous, current, next);
   const left = arrow("이전 챕터", assets.arrowLeft, () => onMove(-1), styles.left);
   const right = arrow("다음 챕터", assets.arrowRight, () => onMove(1), styles.right);
-  root.append(createBackgroundStars(), title, carousel, left, right, createMoonDecor());
+  root.append(createBackgroundStars(), header, carousel, left, right, createMoonDecor());
   const cards = [previous, current, next];
   const setActive = (index: number) =>
     cards.forEach((card, cardIndex) =>
@@ -46,12 +43,6 @@ export function createChapterView(
   return { root, setActive };
 }
 
-function titleStar(): HTMLImageElement {
-  const image = document.createElement("img");
-  image.src = assets.star;
-  image.alt = "";
-  return image;
-}
 function arrow(
   label: string,
   source: string,
