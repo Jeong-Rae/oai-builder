@@ -5,58 +5,103 @@
   position: relative;
   width: 100%;
 }
+.header {
+  align-items: center;
+  column-gap: 1.25cqw;
+  display: flex;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 16%;
+  transform: translateX(-50%);
+}
 .title {
   color: #fff;
   font:
     700 3.75cqw "온글잎 박다현체",
     monospace;
-  left: 50%;
   letter-spacing: 7px;
   margin: 0;
-  position: absolute;
-  top: 30.556%;
-  transform: translateX(-50%);
+  text-indent: 7px;
   white-space: nowrap;
 }
-.celebration {
-  inset: 0;
+.titleSpark {
+  height: 1.875cqw;
+  width: auto;
+}
+.cluster {
+  aspect-ratio: 1254;
+  left: 50%;
   pointer-events: none;
   position: absolute;
+  top: 46%;
+  transform: translate(-50%, -49%);
+  width: 32cqw;
 }
-.celebration img {
+.star {
+  display: block;
+  filter: drop-shadow(0 0 12px rgb(255 216 102 / 45%));
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.glow {
+  background: radial-gradient(
+    closest-side,
+    rgb(255 224 130 / 38%),
+    rgb(255 224 130 / 12%) 55%,
+    transparent 78%
+  );
+  border-radius: 50%;
+  left: 50%;
+  position: absolute;
+  top: 49%;
+  transform: translate(-50%, -50%);
+  width: 34%;
+  aspect-ratio: 1;
+}
+.cluster img:not(.star) {
   animation: sparkle 900ms cubic-bezier(0.22, 0.7, 0.2, 1) var(--delay) infinite alternate;
-  height: 1.25cqw;
+  height: 6%;
   left: var(--x);
-  opacity: 0.75;
   position: absolute;
   top: var(--y);
   transform: translate(-50%, -50%);
-  width: 1.25cqw;
+  width: 6%;
 }
 .actions {
   display: flex;
-  gap: 4cqw;
+  gap: 3cqw;
   justify-content: center;
   left: 50%;
   position: absolute;
-  top: 65.741%;
+  top: 76%;
   transform: translateX(-50%);
 }
-.actions button {
-  background: #d7f9ff;
+.button {
+  aspect-ratio: 1899 / 613;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   border: 0;
-  color: #080e14;
+  color: #15171d;
   cursor: pointer;
   font:
     700 1.458cqw "온글잎 박다현체",
     monospace;
-  padding: 1cqw 2cqw;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  width: 10cqw;
 }
-.actions button:hover,
-.actions button:focus-visible {
-  background: #81f0c5;
-  outline: 3px solid #fff;
-  outline-offset: 3px;
+.button:hover,
+.button:focus-visible {
+  filter: brightness(1.25);
+}
+.button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
 }
 @keyframes sparkle {
   from {
@@ -64,12 +109,12 @@
     transform: translate(-50%, -50%) scale(0.35);
   }
   to {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1.15);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .celebration img {
+  .cluster img:not(.star) {
     animation: none;
     opacity: 0.7;
   }

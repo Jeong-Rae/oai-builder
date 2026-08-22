@@ -54,12 +54,10 @@ export function createChapterView(
     const roles = ["previous", "current", "next"] as const;
     slots.forEach((card, cardIndex) => {
       card.className = `${styles.card} ${styles[roles[cardIndex]]}`;
-      renderCard(
-        card,
-        chapters[(index + cardIndex - 1 + chapters.length) % chapters.length],
-        cardIndex === 1,
-      );
+      renderCard(card, chapters[index + cardIndex - 1], cardIndex === 1);
     });
+    left.disabled = index === 0;
+    right.disabled = index === chapters.length - 1;
     activeIndex = index;
     hasRendered = true;
   };
