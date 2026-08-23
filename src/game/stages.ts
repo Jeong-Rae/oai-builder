@@ -1,23 +1,23 @@
-import type { ConstellationDefinition } from "./constellation/model";
-import { parseConstellation } from "./constellation/parse";
-import aquariusConstellationData from "./data/constellations/aquarius.json";
-import ariesConstellationData from "./data/constellations/aries.json";
-import cancerConstellationData from "./data/constellations/cancer.json";
-import capricornusConstellationData from "./data/constellations/capricornus.json";
-import geminiConstellationData from "./data/constellations/gemini.json";
-import leoConstellationData from "./data/constellations/leo.json";
-import libraConstellationData from "./data/constellations/libra.json";
-import piscesConstellationData from "./data/constellations/pisces.json";
-import sagittariusConstellationData from "./data/constellations/sagittarius.json";
-import scorpiusConstellationData from "./data/constellations/scorpius.json";
-import taurusConstellationData from "./data/constellations/taurus.json";
-import virgoConstellationData from "./data/constellations/virgo.json";
+import type { ConstellationDefinition } from "@/src/game/constellation/model";
+import { parseConstellation } from "@/src/game/constellation/parse";
+import aquariusConstellationData from "@/src/game/data/constellations/aquarius.json";
+import ariesConstellationData from "@/src/game/data/constellations/aries.json";
+import cancerConstellationData from "@/src/game/data/constellations/cancer.json";
+import capricornusConstellationData from "@/src/game/data/constellations/capricornus.json";
+import geminiConstellationData from "@/src/game/data/constellations/gemini.json";
+import leoConstellationData from "@/src/game/data/constellations/leo.json";
+import libraConstellationData from "@/src/game/data/constellations/libra.json";
+import piscesConstellationData from "@/src/game/data/constellations/pisces.json";
+import sagittariusConstellationData from "@/src/game/data/constellations/sagittarius.json";
+import scorpiusConstellationData from "@/src/game/data/constellations/scorpius.json";
+import taurusConstellationData from "@/src/game/data/constellations/taurus.json";
+import virgoConstellationData from "@/src/game/data/constellations/virgo.json";
 import {
   deriveStageStatuses,
   prerequisiteIndices,
   progressStore,
   type StageStatus,
-} from "./store/progressStore";
+} from "@/src/game/store/progressStore";
 
 export const stageGroups = ["하", "중", "상"] as const;
 export const stagesPerGroup = 4;
@@ -30,7 +30,7 @@ export interface Stage {
 export interface StageDefinition {
   id: string;
   label: string;
-  mapUrl: string;
+  mapUrl?: string;
 }
 
 export interface ChapterDefinition {
@@ -45,8 +45,6 @@ export interface PlaySelection {
   chapterIndex: number;
   stageIndex: number;
 }
-
-const map001 = new URL("@/maps/001.map", import.meta.url).href;
 
 export const zodiacSigns = [
   "ARIES",
@@ -64,6 +62,20 @@ export const zodiacSigns = [
 ] as const;
 
 export type ZodiacSign = (typeof zodiacSigns)[number];
+
+const stageMapUrls: Partial<Record<ZodiacSign, Readonly<Record<number, string>>>> = {
+  ARIES: {
+    0: new URL("@/maps/chapter-01.stage-01.map", import.meta.url).href,
+    1: new URL("@/maps/chapter-01.stage-02.map", import.meta.url).href,
+    2: new URL("@/maps/chapter-01.stage-03.map", import.meta.url).href,
+  },
+  TAURUS: {
+    0: new URL("@/maps/chapter-02.stage-01.map", import.meta.url).href,
+    2: new URL("@/maps/chapter-02.stage-03.map", import.meta.url).href,
+    3: new URL("@/maps/chapter-02.stage-04.map", import.meta.url).href,
+    4: new URL("@/maps/chapter-02.stage-05.map", import.meta.url).href,
+  },
+};
 
 type ConstellationData = Record<ZodiacSign, unknown>;
 
@@ -108,7 +120,7 @@ export const chapters: readonly ChapterDefinition[] = zodiacSigns.map((sign) => 
     stages: Array.from({ length: constellation.points.length }, (_, stageIndex) => ({
       id: `chapter-${zodiacSigns.indexOf(sign) + 1}-stage-${stageIndex + 1}`,
       label: `STAGE ${stageIndex + 1}`,
-      mapUrl: map001,
+      mapUrl: stageMapUrls[sign]?.[stageIndex],
     })),
   };
 });
@@ -119,7 +131,7 @@ export function stageStatuses(chapterIndex: number): StageStatus[] {
     chapter.stages.length,
     prerequisiteIndices(chapter.constellation),
     progressStore.clearedStages(chapterIndex, chapter.stages.length),
-  );
+  ).map((status, stageIndex) => (chapter.stages[stageIndex]!.mapUrl ? status : "locked"));
 }
 
 export function isChapterCleared(chapterIndex: number): boolean {

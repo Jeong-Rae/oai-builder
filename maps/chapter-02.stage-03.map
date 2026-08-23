@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "columns": 9,
+  "rows": 7,
+  "tiles": [
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "exit",
+      "floor",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "gate",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "wormhole",
+      "floor",
+      "floor",
+      "plate",
+      "floor",
+      "floor",
+      "wormhole"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ]
+  ],
+  "objects": [
+    {
+      "id": "normal-1",
+      "kind": "normal",
+      "position": {
+        "x": 6,
+        "y": 5
+      }
+    },
+    {
+      "id": "anchor-1",
+      "kind": "anchor",
+      "position": {
+        "x": 4,
+        "y": 5
+      }
+    },
+    {
+      "id": "player",
+      "kind": "player",
+      "position": {
+        "x": 1,
+        "y": 4
+      }
+    }
+  ]
+}

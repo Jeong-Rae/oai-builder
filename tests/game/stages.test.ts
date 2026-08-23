@@ -9,9 +9,9 @@ import {
   stageFor,
   stageGroups,
   stagesPerGroup,
-} from "../../src/game/stages";
-import { signVisuals } from "../../src/game/data/signVisuals";
-import { progressStore } from "../../src/game/store/progressStore";
+} from "@/src/game/stages";
+import { signVisuals } from "@/src/game/data/signVisuals";
+import { progressStore } from "@/src/game/store/progressStore";
 
 describe("스테이지 선택", () => {
   it("각 난이도 그룹에 네 개의 스테이지를 제공한다", () => {
@@ -45,8 +45,28 @@ describe("스테이지 선택", () => {
     expect(chapters[0]!.stages).toHaveLength(4);
     expect(chapters[1]!.stages).toHaveLength(12);
     expect(
-      new Set(chapters.flatMap((chapter) => chapter.stages.map((stage) => stage.mapUrl))).size,
-    ).toBe(1);
+      chapters.flatMap((chapter) => chapter.stages).filter((stage) => stage.mapUrl),
+    ).toHaveLength(7);
+  });
+
+  it("지정한 스테이지에만 map을 연결한다", () => {
+    expect(chapters[0]!.stages.map((stage) => stage.mapUrl?.split("/").at(-1))).toEqual([
+      "chapter-01.stage-01.map",
+      "chapter-01.stage-02.map",
+      "chapter-01.stage-03.map",
+      undefined,
+    ]);
+    expect(chapters[1]!.stages.map((stage) => stage.mapUrl?.split("/").at(-1))).toEqual([
+      "chapter-02.stage-01.map",
+      undefined,
+      "chapter-02.stage-03.map",
+      "chapter-02.stage-04.map",
+      "chapter-02.stage-05.map",
+      ...Array(7).fill(undefined),
+    ]);
+    expect(
+      chapters.slice(2).every((chapter) => chapter.stages.every((stage) => !stage.mapUrl)),
+    ).toBe(true);
   });
 
   it("Figma Sign의 별 개수와 실제 스테이지 개수를 일치시킨다", () => {

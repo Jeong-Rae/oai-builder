@@ -1,11 +1,11 @@
-import { parseMap } from "../../../map/mapDocument";
-import type { Position } from "../../domain/types";
-import { platePressFrames } from "../../features/fields/plate/presentation";
-import { playerTextureForMove } from "../../features/presentation";
-import { directionFromKey, isUndoShortcut } from "../../input";
-import { createGameStoreFromMap } from "../../store/gameStore";
-import { stageFor, type PlaySelection } from "../../stages";
-import { createGameView } from "./view";
+import { parseMap } from "@/src/map/mapDocument";
+import type { Position } from "@/src/game/domain/types";
+import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
+import { playerTextureForMove } from "@/src/game/features/presentation";
+import { directionFromKey, isUndoShortcut } from "@/src/game/input";
+import { createGameView } from "@/src/game/scenes/game/view";
+import { createGameStoreFromMap } from "@/src/game/store/gameStore";
+import { stageFor, type PlaySelection } from "@/src/game/stages";
 
 export function createGameScene(
   selection: PlaySelection,
@@ -18,7 +18,9 @@ export function createGameScene(
   const timers = new Map<string, number[]>();
   const load = async () => {
     try {
-      const response = await fetch(stageFor(selection).mapUrl, { signal: abort.signal });
+      const mapUrl = stageFor(selection).mapUrl;
+      if (!mapUrl) throw new Error("stage map unavailable");
+      const response = await fetch(mapUrl, { signal: abort.signal });
       const source = await response.text();
       if (!response.ok) throw new Error("map fetch failed");
       const parsed = parseMap(source);

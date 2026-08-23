@@ -7,7 +7,7 @@ const directions = {
   right: [1, 0],
 };
 
-const mapPath = process.argv[2] ?? "maps/001.map";
+const mapPath = process.argv[2] ?? "maps/chapter-01.stage-01.map";
 const map = JSON.parse(await readFile(mapPath, "utf8"));
 const wormholePairs = map.wormholePairs ?? [
   {
