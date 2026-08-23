@@ -472,6 +472,11 @@ h1 {
   width: clamp(0.55rem, 1.2vw, 0.8rem);
   height: clamp(0.55rem, 1.2vw, 0.8rem);
   filter: drop-shadow(0 1px 1px #000);
+  object-fit: contain;
+}
+.control-down,
+.control-left {
+  transform: rotate(180deg);
 }
 .notice {
   min-height: 1.25rem;

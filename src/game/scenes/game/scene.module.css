@@ -68,11 +68,16 @@
   height: 21%;
   image-rendering: pixelated;
   left: calc(50% + var(--control-offset) * 100%);
+  object-fit: contain;
   position: absolute;
   top: -10%;
   transform: translateX(-50%);
   width: 21%;
   z-index: 3;
+}
+.control[data-direction="down"],
+.control[data-direction="left"] {
+  transform: translateX(-50%) rotate(180deg);
 }
 .gate {
   inset: 0;
