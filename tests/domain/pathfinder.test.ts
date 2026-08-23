@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { createGameStateFromMap } from "@/src/game/domain/level";
-import { findBalancedPath, findPath } from "@/src/game/domain/pathfinder";
+import { findBalancedPath, findNextInteraction, findPath } from "@/src/game/domain/pathfinder";
 import type { MapDocument } from "@/src/map/mapDocument";
 
 const map: MapDocument = {
@@ -61,5 +61,9 @@ describe("경로 찾기", () => {
       "left",
       "left",
     ]);
+  });
+
+  it("최소 경로에서 다음 상호작용 대상의 위치를 찾는다", () => {
+    expect(findNextInteraction(createGameStateFromMap(map))).toEqual({ x: 3, y: 1 });
   });
 });

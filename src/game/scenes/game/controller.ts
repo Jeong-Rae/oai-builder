@@ -1,4 +1,5 @@
 import { parseMap } from "@/src/map/mapDocument";
+import { findNextInteraction } from "@/src/game/domain/pathfinder";
 import type { Position } from "@/src/game/domain/types";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import { playerTextureForMove } from "@/src/game/features/presentation";
@@ -29,7 +30,11 @@ export function createGameScene(
     clearPlateTimers();
     store.getState().reset();
   };
-  const view = createGameView(onBack, undo, reset);
+  const hint = () => {
+    if (motionLocked || !store || store.getState().game.status !== "playing") return;
+    view.setHintPosition(findNextInteraction(store.getState().game));
+  };
+  const view = createGameView(onBack, undo, reset, hint);
   const abort = new AbortController();
   let active = false;
   let listening = false;
@@ -62,17 +67,15 @@ export function createGameScene(
     if (teleport?.type === "entity/moved" && teleport.wormhole) {
       motionLocked = true;
       view.setActionAvailability(false, false);
-      void view
-        .playWormhole(teleport.entityId, teleport.wormhole, teleport.to)
-        .finally(() => {
-          motionLocked = false;
-          const state = store?.getState();
-          if (state)
-            view.setActionAvailability(
-              state.game.status === "playing" && state.eventStream.length > 0,
-              state.game.status === "playing",
-            );
-        });
+      void view.playWormhole(teleport.entityId, teleport.wormhole, teleport.to).finally(() => {
+        motionLocked = false;
+        const state = store?.getState();
+        if (state)
+          view.setActionAvailability(
+            state.game.status === "playing" && state.eventStream.length > 0,
+            state.game.status === "playing",
+          );
+      });
     }
   };
   const activateInput = () => {
@@ -103,6 +106,7 @@ export function createGameScene(
       view.setActionAvailability(false, true);
       unsubscribe = loadedStore.subscribe((state, previous) => {
         view.sync(state.game);
+        view.setHintPosition();
         view.setActionAvailability(
           state.game.status === "playing" && state.eventStream.length > 0,
           state.game.status === "playing",

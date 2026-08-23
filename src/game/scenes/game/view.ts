@@ -55,6 +55,7 @@ export interface GameView {
   playWormhole(entityId: string, entry: Position, destination: Position): Promise<void>;
   cancelAnimations(): void;
   setActionAvailability(undoEnabled: boolean, resetEnabled: boolean): void;
+  setHintPosition(position?: Position): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
   showError(onRetry: () => void): void;
@@ -64,6 +65,7 @@ export function createGameView(
   onBack: () => void,
   onUndo: () => void,
   onReset: () => void,
+  onHint: () => void,
 ): GameView {
   const root = document.createElement("main");
   root.className = styles.root;
@@ -97,7 +99,23 @@ export function createGameView(
   resetIcon.textContent = "↻";
   reset.append(resetIcon);
   reset.addEventListener("click", onReset);
-  navigation.append(back, undo, reset);
+  const hint = document.createElement("button");
+  hint.type = "button";
+  hint.className = `${styles.navigationButton} ${styles.hintButton}`;
+  hint.setAttribute("aria-label", "다음 상호작용 힌트 보기");
+  hint.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
+  const hintIcon = document.createElement("span");
+  hintIcon.className = styles.actionIcon;
+  hintIcon.setAttribute("aria-hidden", "true");
+  hintIcon.textContent = "?";
+  const hintBubble = document.createElement("span");
+  hintBubble.className = styles.hintBubble;
+  hintBubble.setAttribute("aria-hidden", "true");
+  hintBubble.textContent = "hint(demo)";
+  hintBubble.style.backgroundImage = `url(${stageSelectAssets.bubbleNext})`;
+  hint.append(hintIcon, hintBubble);
+  hint.addEventListener("click", onHint);
+  navigation.append(back, undo, reset, hint);
   root.append(navigation);
   const board = document.createElement("div");
   board.className = styles.board;
@@ -107,6 +125,9 @@ export function createGameView(
   const entityLayers = new Map<string, HTMLElement>();
   const overlays = new Map<string, HTMLImageElement>();
   const animations = new Set<Animation>();
+  const hintRing = document.createElement("span");
+  hintRing.className = styles.hintRing;
+  hintRing.setAttribute("aria-hidden", "true");
   let animationGeneration = 0;
   let dimensions = "";
   const build = (game: GameState) => {
@@ -331,6 +352,11 @@ export function createGameView(
     setActionAvailability: (undoEnabled, resetEnabled) => {
       undo.disabled = !undoEnabled;
       reset.disabled = !resetEnabled;
+    },
+    setHintPosition: (position) => {
+      hintRing.remove();
+      const cell = position && cells.get(key(position));
+      [...entityLayers.values()].find((layer) => layer.parentElement === cell)?.append(hintRing);
     },
     setPlayerTexture: (source) => {
       const player = entityNodes.get("player");

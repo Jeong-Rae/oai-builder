@@ -1,7 +1,7 @@
-import { decide, evolveAll } from '@/src/game/domain/decider';
-import type { Direction, GameEvent, GameState, Position } from '@/src/game/domain/types';
+import { decide, evolveAll } from "@/src/game/domain/decider";
+import type { Direction, GameEvent, GameState, Position } from "@/src/game/domain/types";
 
-const directions: Direction[] = ['up', 'down', 'left', 'right'];
+const directions: Direction[] = ["up", "down", "left", "right"];
 
 export interface PathMove {
   step: number;
@@ -26,30 +26,61 @@ export interface BalancedPathResult extends PathResult {
   movementCount: number;
 }
 
+function interactionTarget(
+  state: GameState,
+  direction: Direction,
+  events: GameEvent[],
+): Position | undefined {
+  const owner = Object.values(state.entities).find((entity) => entity.controls.includes(direction));
+  if (!owner) return;
+
+  for (const event of events) {
+    if (event.type === "control/transferred") {
+      const id = event.fromEntityId === owner.id ? event.toEntityId : event.fromEntityId;
+      return state.entities[id]?.position;
+    }
+    if (event.type === "controls/swapped") {
+      const id = event.firstEntityId === owner.id ? event.secondEntityId : event.firstEntityId;
+      return state.entities[id]?.position;
+    }
+  }
+}
+
 function stateKey(state: GameState): string {
   return JSON.stringify([
-    Object.values(state.entities).sort((a, b) => a.id.localeCompare(b.id)).map((entity) => [
-      entity.id, entity.position.x, entity.position.y, [...entity.controls].sort(),
-    ]),
-    Object.entries(state.plateStates).sort(), state.goalOpened, state.status,
+    Object.values(state.entities)
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((entity) => [
+        entity.id,
+        entity.position.x,
+        entity.position.y,
+        [...entity.controls].sort(),
+      ]),
+    Object.entries(state.plateStates).sort(),
+    state.goalOpened,
+    state.status,
   ]);
 }
 
 function movesFor(events: GameEvent[], step: number): PathMove[] {
   return events.flatMap((event) => {
-    if (event.type !== 'entity/moved') return [];
-    return [{
-      step,
-      entityId: event.entityId,
-      from: event.from,
-      to: event.to,
-      ...(event.wormhole ? { wormhole: event.wormhole } : {}),
-    }];
+    if (event.type !== "entity/moved") return [];
+    return [
+      {
+        step,
+        entityId: event.entityId,
+        from: event.from,
+        to: event.to,
+        ...(event.wormhole ? { wormhole: event.wormhole } : {}),
+      },
+    ];
   });
 }
 
 function isObjectInteraction(events: GameEvent[]): boolean {
-  return events.some((event) => event.type === 'control/transferred' || event.type === 'controls/swapped');
+  return events.some(
+    (event) => event.type === "control/transferred" || event.type === "controls/swapped",
+  );
 }
 
 /** Returns the fewest accepted direction commands that complete the game. */
@@ -59,10 +90,10 @@ export function findPath(initial: GameState): PathResult | undefined {
 
   for (let head = 0; head < queue.length; head += 1) {
     const current = queue[head];
-    if (current.state.status === 'completed') return { steps: current.steps };
+    if (current.state.status === "completed") return { steps: current.steps };
 
     for (const direction of directions) {
-      const decision = decide(current.state, { type: 'player/move', direction });
+      const decision = decide(current.state, { type: "player/move", direction });
       if (decision.events.length === 0) continue;
       const next = evolveAll(current.state, decision.events);
       const key = stateKey(next);
@@ -70,12 +101,29 @@ export function findPath(initial: GameState): PathResult | undefined {
       visited.add(key);
       queue.push({
         state: next,
-        steps: [...current.steps, {
-          direction,
-          moves: movesFor(decision.events, current.steps.length + 1),
-        }],
+        steps: [
+          ...current.steps,
+          {
+            direction,
+            moves: movesFor(decision.events, current.steps.length + 1),
+          },
+        ],
       });
     }
+  }
+}
+
+/** Returns the object position for the first interaction on the shortest solution path. */
+export function findNextInteraction(initial: GameState): Position | undefined {
+  const path = findPath(initial);
+  if (!path) return;
+
+  let state = initial;
+  for (const { direction } of path.steps) {
+    const decision = decide(state, { type: "player/move", direction });
+    const target = interactionTarget(state, direction, decision.events);
+    if (target) return target;
+    state = evolveAll(state, decision.events);
   }
 }
 
@@ -100,7 +148,7 @@ export function findBalancedPath(initial: GameState): BalancedPathResult | undef
     }
     const current = queue.splice(lowest, 1)[0];
     if (current.cost !== bestCost.get(stateKey(current.state))) continue;
-    if (current.state.status === 'completed') {
+    if (current.state.status === "completed") {
       return {
         steps: current.steps,
         cost: current.cost,
@@ -110,7 +158,7 @@ export function findBalancedPath(initial: GameState): BalancedPathResult | undef
     }
 
     for (const direction of directions) {
-      const decision = decide(current.state, { type: 'player/move', direction });
+      const decision = decide(current.state, { type: "player/move", direction });
       if (decision.events.length === 0) continue;
       const interaction = isObjectInteraction(decision.events);
       const next = evolveAll(current.state, decision.events);
@@ -120,10 +168,13 @@ export function findBalancedPath(initial: GameState): BalancedPathResult | undef
       bestCost.set(key, cost);
       queue.push({
         state: next,
-        steps: [...current.steps, {
-          direction,
-          moves: movesFor(decision.events, current.steps.length + 1),
-        }],
+        steps: [
+          ...current.steps,
+          {
+            direction,
+            moves: movesFor(decision.events, current.steps.length + 1),
+          },
+        ],
         cost,
         interactionCount: current.interactionCount + Number(interaction),
         movementCount: current.movementCount + Number(!interaction),

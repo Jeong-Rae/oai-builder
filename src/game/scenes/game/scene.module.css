@@ -53,6 +53,29 @@
   cursor: default;
   opacity: 0.35;
 }
+.hintButton {
+  position: relative;
+}
+.hintBubble {
+  aspect-ratio: 414 / 230;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  bottom: calc(100% - 0.25cqw);
+  color: #15171d;
+  display: grid;
+  font-family: "온글잎 박다현체", monospace;
+  font-size: 0.82cqw;
+  font-weight: 700;
+  left: 50%;
+  letter-spacing: 0.04em;
+  padding-bottom: 8%;
+  place-content: center;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  width: 5.4cqw;
+}
 .error button {
   background: #d7f9ff;
   border: 0;
@@ -160,6 +183,19 @@
   pointer-events: none;
   position: absolute;
   z-index: 2;
+}
+.hintRing {
+  aspect-ratio: 1;
+  border: 2px dashed rgb(215 249 255 / 75%);
+  border-radius: 50%;
+  box-sizing: border-box;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 136%;
+  z-index: 4;
 }
 .normalLayer {
   inset: 9% 10%;
