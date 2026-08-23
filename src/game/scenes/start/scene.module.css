@@ -107,10 +107,10 @@
   background: rgb(8 14 20 / 78%);
 }
 .gauge::-webkit-progress-value {
-  background: linear-gradient(90deg, #7bd7ec, #d7f9ff);
+  background: #ffd866;
 }
 .gauge::-moz-progress-bar {
-  background: linear-gradient(90deg, #7bd7ec, #d7f9ff);
+  background: #ffd866;
 }
 .percentage {
   color: #d7f9ff;
