@@ -6,11 +6,19 @@ import {
 } from "@/src/game/assets";
 import { computeLayout } from "@/src/game/constellation/layout";
 import { renderConstellationSvg } from "@/src/game/constellation/render";
+import { signVisuals, type SignLineVisual } from "@/src/game/data/signVisuals";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import { createMoonDecor } from "@/src/game/scenes/shared/moonDecor";
 import { createSceneTitle, createTitleStar } from "@/src/game/scenes/shared/title";
 import styles from "@/src/game/scenes/chapter/scene.module.css";
-import { chapters, stageStatuses, type ChapterDefinition } from "@/src/game/stages";
+import {
+  chapters,
+  isChapterUnlocked,
+  stageStatuses,
+  type ChapterDefinition,
+} from "@/src/game/stages";
+
+const svgNamespace = "http://www.w3.org/2000/svg";
 
 export function createChapterView(
   onMove: (offset: -1 | 1) => void,
@@ -57,7 +65,7 @@ export function createChapterView(
       } else if (offset === 3) {
         card.onclick = () => onMove(1);
       } else if (offset === 2) {
-        card.onclick = onSelect;
+        card.onclick = isChapterUnlocked(index) ? onSelect : null;
       } else {
         card.onclick = null;
       }
@@ -102,16 +110,21 @@ function renderCard(
 ): void {
   card.replaceChildren();
   card.disabled = !chapter;
-  card.tabIndex = enabled && chapter ? 0 : -1;
-  card.setAttribute("aria-disabled", String(!enabled));
+  const unlocked = chapter ? isChapterUnlocked(chapterIndex) : false;
+  card.tabIndex = enabled && unlocked ? 0 : -1;
+  card.setAttribute("aria-disabled", String(enabled && !unlocked));
   card.setAttribute("aria-label", chapter ? `${chapter.sign} 챕터 선택` : "");
-  if (chapter) card.append(constellation(chapter, chapterIndex, enabled));
+  if (chapter) card.append(constellation(chapter, chapterIndex, enabled, unlocked));
 }
 function constellation(
   chapter: ChapterDefinition,
   chapterIndex: number,
   active: boolean,
+  unlocked: boolean,
 ): SVGSVGElement {
+  const visual = signVisuals[chapter.sign]?.chapter[active ? "large" : "small"];
+  if (visual) return renderFigmaConstellation(chapter, chapterIndex, visual, unlocked);
+
   const layout = computeLayout(chapter.constellation, {
     width: 478,
     height: 560,
@@ -145,4 +158,84 @@ function constellation(
   emblem.setAttribute("height", "90");
   svg.append(emblem);
   return svg;
+}
+
+function renderFigmaConstellation(
+  chapter: ChapterDefinition,
+  chapterIndex: number,
+  visual: NonNullable<(typeof signVisuals)[keyof typeof signVisuals]>["chapter"]["large"],
+  unlocked: boolean,
+): SVGSVGElement {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.setAttribute("viewBox", `0 0 ${visual.width} ${visual.height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `${chapter.sign} 별자리`);
+
+  svg.append(createLine(visual.line, unlocked));
+  const statuses = unlocked
+    ? stageStatuses(chapterIndex)
+    : Array.from({ length: visual.stars.length }, () => "locked" as const);
+  visual.stars.forEach((point, index) => {
+    const status = statuses[index] ?? "locked";
+    const source =
+      status === "cleared"
+        ? starNodeAssets.gold
+        : status === "locked"
+          ? starNodeAssets.gray
+          : starNodeAssets.white;
+    const star = document.createElementNS(svgNamespace, "image");
+    setImageBox(star, source, point.x, point.y, point.size, point.size);
+    if (point.rotation) {
+      const centerX = point.x + point.size / 2;
+      const centerY = point.y + point.size / 2;
+      star.setAttribute("transform", `rotate(${point.rotation} ${centerX} ${centerY})`);
+    }
+    const glow = star.cloneNode() as SVGImageElement;
+    glow.setAttribute(
+      "class",
+      `${styles.glow} ${status === "cleared" ? styles.goldGlow : styles.grayGlow}`,
+    );
+    svg.append(glow, star);
+  });
+
+  const emblem = document.createElementNS(svgNamespace, "image");
+  setImageBox(
+    emblem,
+    unlocked ? chapter.zodiacUrl : chapterZodiacInactiveAssets[chapter.sign],
+    visual.emblem.x,
+    visual.emblem.y,
+    visual.emblem.width,
+    visual.emblem.height,
+  );
+  svg.append(emblem);
+  return svg;
+}
+
+function createLine(visual: SignLineVisual, unlocked: boolean): SVGImageElement {
+  const image = document.createElementNS(svgNamespace, "image");
+  const source = unlocked ? (visual.activeUrl ?? visual.url) : (visual.lockedUrl ?? visual.url);
+  const x = visual.centered ? visual.x - visual.width / 2 : visual.x;
+  const y = visual.centered ? visual.y - visual.height / 2 : visual.y;
+  setImageBox(image, source, x, y, visual.width, visual.height);
+  if (visual.rotation) {
+    const centerX = visual.centered ? visual.x : visual.x + visual.width / 2;
+    const centerY = visual.centered ? visual.y : visual.y + visual.height / 2;
+    image.setAttribute("transform", `rotate(${visual.rotation} ${centerX} ${centerY})`);
+  }
+  return image;
+}
+
+function setImageBox(
+  image: SVGImageElement,
+  source: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  image.setAttribute("href", source);
+  image.setAttribute("x", String(x));
+  image.setAttribute("y", String(y));
+  image.setAttribute("width", String(width));
+  image.setAttribute("height", String(height));
 }

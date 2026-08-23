@@ -1,20 +1,30 @@
 {
   "sign": "TAURUS",
   "points": [
-    { "id": "alcyone", "x": 0.08, "y": 0.9 },
-    { "id": "lambda", "x": 0.28, "y": 0.8 },
-    { "id": "gamma", "x": 0.36, "y": 0.68 },
-    { "id": "aldebaran", "x": 0.48, "y": 0.6 },
-    { "id": "theta2", "x": 0.52, "y": 0.66 },
-    { "id": "zeta", "x": 0.64, "y": 0.42 },
-    { "id": "elnath", "x": 0.94, "y": 0.06 }
+    { "id": "taurus-01", "x": 0.0, "y": 0.0 },
+    { "id": "taurus-02", "x": 0.1, "y": 0.92 },
+    { "id": "taurus-03", "x": 0.28, "y": 0.35 },
+    { "id": "taurus-04", "x": 0.4, "y": 0.55 },
+    { "id": "taurus-05", "x": 0.43, "y": 1.0 },
+    { "id": "taurus-06", "x": 0.49, "y": 0.75 },
+    { "id": "taurus-07", "x": 0.55, "y": 0.93 },
+    { "id": "taurus-08", "x": 0.56, "y": 0.59 },
+    { "id": "taurus-09", "x": 0.62, "y": 0.81 },
+    { "id": "taurus-10", "x": 0.74, "y": 0.82 },
+    { "id": "taurus-11", "x": 0.92, "y": 0.68 },
+    { "id": "taurus-12", "x": 1.0, "y": 0.93 }
   ],
   "edges": [
-    { "from": "alcyone", "to": "lambda" },
-    { "from": "lambda", "to": "gamma" },
-    { "from": "gamma", "to": "aldebaran" },
-    { "from": "aldebaran", "to": "theta2" },
-    { "from": "theta2", "to": "zeta" },
-    { "from": "theta2", "to": "elnath" }
+    { "from": "taurus-01", "to": "taurus-02" },
+    { "from": "taurus-02", "to": "taurus-03" },
+    { "from": "taurus-03", "to": "taurus-04" },
+    { "from": "taurus-04", "to": "taurus-05" },
+    { "from": "taurus-05", "to": "taurus-06" },
+    { "from": "taurus-06", "to": "taurus-07" },
+    { "from": "taurus-07", "to": "taurus-08" },
+    { "from": "taurus-08", "to": "taurus-09" },
+    { "from": "taurus-09", "to": "taurus-10" },
+    { "from": "taurus-10", "to": "taurus-11" },
+    { "from": "taurus-11", "to": "taurus-12" }
   ]
 }

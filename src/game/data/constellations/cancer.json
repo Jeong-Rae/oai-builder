@@ -1,16 +1,20 @@
 {
   "sign": "CANCER",
   "points": [
-    { "id": "iota", "x": 0.1, "y": 0.25 },
-    { "id": "tarf", "x": 0.22, "y": 0.55 },
-    { "id": "asellus-borealis", "x": 0.55, "y": 0.5 },
-    { "id": "asellus-australis", "x": 0.62, "y": 0.6 },
-    { "id": "acubens", "x": 0.78, "y": 0.88 }
+    { "id": "cancer-01", "x": 0.0, "y": 0.08 },
+    { "id": "cancer-02", "x": 0.34, "y": 0.32 },
+    { "id": "cancer-03", "x": 0.5, "y": 0.24 },
+    { "id": "cancer-04", "x": 0.5, "y": 0.47 },
+    { "id": "cancer-05", "x": 0.67, "y": 1.0 },
+    { "id": "cancer-06", "x": 1.0, "y": 0.29 },
+    { "id": "cancer-07", "x": 0.62, "y": 0.32 }
   ],
   "edges": [
-    { "from": "iota", "to": "tarf" },
-    { "from": "tarf", "to": "asellus-australis" },
-    { "from": "asellus-australis", "to": "asellus-borealis" },
-    { "from": "asellus-australis", "to": "acubens" }
+    { "from": "cancer-01", "to": "cancer-02" },
+    { "from": "cancer-02", "to": "cancer-03" },
+    { "from": "cancer-03", "to": "cancer-04" },
+    { "from": "cancer-03", "to": "cancer-07" },
+    { "from": "cancer-07", "to": "cancer-06" },
+    { "from": "cancer-04", "to": "cancer-05" }
   ]
 }
