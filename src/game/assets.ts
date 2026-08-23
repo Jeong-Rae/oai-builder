@@ -21,7 +21,7 @@ import decorStarLargeUrl from "@/assets/star/star.cross.large.webp";
 import decorMoonUrl from "@/assets/moon/moon.eclipse.trimmed.webp";
 import decorMascotUrl from "@/assets/mascot/mascot.angle-135.webp";
 import { assetUrls } from "@/src/game/features/presentation";
-import { chapters, type ZodiacSign } from "@/src/game/stages";
+import { chapters, visibleChapters, type ZodiacSign } from "@/src/game/stages";
 
 export { backgroundUrl, plateButtonUrl };
 
@@ -78,23 +78,36 @@ export const decorAssets = {
   mascot: decorMascotUrl,
 } as const;
 
-export function allGameAssetUrls(): string[] {
-  return Array.from(
-    new Set([
-      backgroundUrl,
-      plateButtonUrl,
-      startAssets.title,
-      ...startAssets.mascots,
-      startAssets.lunar,
-      ...Object.values(clearAssets),
-      ...Object.values(titleAssets),
-      ...Object.values(starNodeAssets),
-      ...Object.values(chapterAssets),
-      ...Object.values(chapterZodiacInactiveAssets),
-      ...Object.values(stageSelectAssets),
-      ...Object.values(decorAssets),
-      ...Object.values(assetUrls),
-      ...chapters.map((chapter) => chapter.zodiacUrl),
+export function gameAssetUrlGroups(): string[][] {
+  const intro = [
+    backgroundUrl,
+    plateButtonUrl,
+    startAssets.title,
+    startAssets.lunar,
+    ...startAssets.mascots,
+    clearAssets.spark,
+    decorAssets.starSmall,
+    decorAssets.starMedium,
+    decorAssets.starLarge,
+  ];
+  const chapter = [
+    ...Object.values(titleAssets),
+    ...Object.values(starNodeAssets),
+    ...Object.values(chapterAssets),
+    decorAssets.moon,
+    decorAssets.mascot,
+    ...visibleChapters.flatMap(({ sign, zodiacUrl }) => [
+      chapterZodiacInactiveAssets[sign],
+      zodiacUrl,
     ]),
-  );
+  ];
+  const prioritized = new Set([...intro, ...chapter]);
+  const remaining = [
+    ...Object.values(chapterZodiacInactiveAssets),
+    ...Object.values(stageSelectAssets),
+    ...Object.values(assetUrls),
+    ...chapters.map((chapter) => chapter.zodiacUrl),
+  ].filter((url) => !prioritized.has(url));
+
+  return [intro, chapter, remaining];
 }

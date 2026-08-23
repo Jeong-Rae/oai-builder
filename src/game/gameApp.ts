@@ -1,4 +1,4 @@
-import { allGameAssetUrls } from "@/src/game/assets";
+import { gameAssetUrlGroups } from "@/src/game/assets";
 import {
   type BrowserStorage,
   LocalAuthAdapter,
@@ -51,7 +51,11 @@ export class GameApp {
     this.transitionLayer.setAttribute("aria-hidden", "true");
     this.initialStartScene = this.createIntroScene(false);
     this.mount(this.initialStartScene);
-    this.preloadPromise = preloadAssets(allGameAssetUrls(), this.initialStartScene.updateLoading);
+    const [introAssets, ...laterAssets] = gameAssetUrlGroups();
+    this.preloadPromise = preloadAssets(
+      [[() => document.fonts.load('1em "온글잎 박다현체"'), ...introAssets!], ...laterAssets],
+      this.initialStartScene.updateLoading,
+    );
     try {
       this.storage = window.localStorage;
       this.authGateway = new LocalAuthAdapter(this.storage);
