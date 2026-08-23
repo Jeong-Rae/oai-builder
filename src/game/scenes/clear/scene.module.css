@@ -1,6 +1,6 @@
 .root {
   animation: overlay-in 180ms ease-out both;
-  background: rgb(8 14 20 / 76%);
+  background: rgb(0 0 0 / 76%);
   height: 100%;
   overflow: hidden;
   position: relative;
