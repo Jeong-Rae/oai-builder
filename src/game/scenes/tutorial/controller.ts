@@ -1,33 +1,36 @@
 import { createTutorialView, type TutorialView } from "@/src/game/scenes/tutorial/view";
 import { playSfx } from "@/src/game/sfx";
 
-export const tutorialText = {
-  first: `어느 우주…
-별자리를 이루던 별들이 뿔뿔이 흩어졌다.
-흩어진 별들은 방향을 잃어 제자리로 돌아가지 못했고…
-별자리를 잃은 우주는 점점 혼란에 빠져들었다.`,
-  second: `우주를 구하기 위해 고양이 한 마리가 나섰다!!!!!
-
-왜 고양이냐고?!
-고양이는 귀여우니까!`,
-  final: "야옹, 저 너머로!",
+export const tutorialSentences = {
+  first: [
+    "어느 우주…",
+    "\n별자리를 이루던 별들이 뿔뿔이 흩어졌다.",
+    "\n흩어진 별들은 방향을 잃어 제자리로 돌아가지 못했고…",
+    "\n별자리를 잃은 우주는 점점 혼란에 빠져들었다.",
+  ],
+  second: [
+    "우주를 구하기 위해 고양이 한 마리가 나섰다!!!!!",
+    "\n\n왜 고양이냐고?!",
+    "\n고양이는 귀여우니까!",
+  ],
+  final: ["야옹, 저 너머로!"],
 } as const;
 
-const TYPE_INTERVAL = 55;
+export const tutorialText = {
+  first: tutorialSentences.first.join(""),
+  second: tutorialSentences.second.join(""),
+  final: tutorialSentences.final.join(""),
+} as const;
+
+const TYPE_INTERVAL = 150;
+const SPACE_DELAY = 200;
+const WORD_LENGTH_REDUCTION = 15;
+const MIN_TYPE_INTERVAL = 60;
 const BLUR_DURATION = 800;
 const MASCOT_INTERVAL = 320;
 const MASCOT_HOLD = 600;
 
-type Phase =
-  | "idle"
-  | "typing-first"
-  | "holding-first"
-  | "blurring"
-  | "typing-second"
-  | "holding-mascot"
-  | "typing-final"
-  | "holding-final"
-  | "done";
+type Phase = "idle" | "typing-story" | "holding-input" | "blurring" | "holding-mascot" | "done";
 
 interface Typing {
   complete(): void;
@@ -37,6 +40,20 @@ export interface TutorialScene {
   view: HTMLElement;
   activate(): void;
   dispose(): void;
+}
+
+export function typingDelay(characters: readonly string[], index: number): number {
+  const character = characters[index];
+  if (character === " ") return TYPE_INTERVAL + SPACE_DELAY;
+  if (!character || /\s/.test(character)) return TYPE_INTERVAL;
+
+  let wordStart = index;
+  let wordEnd = index;
+  while (wordStart > 0 && !/\s/.test(characters[wordStart - 1]!)) wordStart -= 1;
+  while (wordEnd < characters.length && !/\s/.test(characters[wordEnd]!)) wordEnd += 1;
+
+  const wordLength = wordEnd - wordStart;
+  return Math.max(MIN_TYPE_INTERVAL, TYPE_INTERVAL - (wordLength - 1) * WORD_LENGTH_REDUCTION);
 }
 
 export function createTutorialScene(
@@ -59,16 +76,15 @@ export function createTutorialScene(
 
   const wait = (nextPhase: Phase, duration: number, next: () => void): void => {
     phase = nextPhase;
-    advance = next;
+    advance = undefined;
     timer = window.setTimeout(() => {
       timer = undefined;
-      advance = undefined;
       next();
     }, duration);
   };
 
-  const waitForInput = (nextPhase: "holding-first" | "holding-final", next: () => void): void => {
-    phase = nextPhase;
+  const waitForInput = (next: () => void): void => {
+    phase = "holding-input";
     advance = next;
     view.setContinueVisible(true);
   };
@@ -109,9 +125,31 @@ export function createTutorialScene(
         finish();
         return;
       }
-      timer = window.setTimeout(nextCharacter, TYPE_INTERVAL);
+      timer = window.setTimeout(nextCharacter, typingDelay(characters, index - 1));
     };
     nextCharacter();
+  };
+
+  const typeSentences = (
+    sentences: readonly string[],
+    update: (value: string) => void,
+    finished: () => void,
+  ): void => {
+    let sentenceIndex = 0;
+    const typeNextSentence = (): void => {
+      const precedingText = sentences.slice(0, sentenceIndex).join("");
+      const sentence = sentences[sentenceIndex]!;
+      type(
+        "typing-story",
+        sentence,
+        (value) => update(`${precedingText}${value}`),
+        () => {
+          sentenceIndex += 1;
+          waitForInput(sentenceIndex === sentences.length ? finished : typeNextSentence);
+        },
+      );
+    };
+    typeNextSentence();
   };
 
   const completeTutorial = (): void => {
@@ -121,9 +159,7 @@ export function createTutorialScene(
   };
 
   const typeFinal = (): void => {
-    type("typing-final", tutorialText.final, view.setFinalText, () =>
-      waitForInput("holding-final", completeTutorial),
-    );
+    typeSentences(tutorialSentences.final, view.setFinalText, completeTutorial);
   };
 
   const revealMascots = (): void => {
@@ -151,7 +187,7 @@ export function createTutorialScene(
 
   const typeSecond = (): void => {
     view.setSecondLayout();
-    type("typing-second", tutorialText.second, view.setStoryText, revealMascots);
+    typeSentences(tutorialSentences.second, view.setStoryText, revealMascots);
   };
 
   const blurFirst = (): void => {
@@ -170,22 +206,20 @@ export function createTutorialScene(
   };
 
   const typeFirst = (): void => {
-    type("typing-first", tutorialText.first, view.setStoryText, () =>
-      waitForInput("holding-first", blurFirst),
-    );
+    typeSentences(tutorialSentences.first, view.setStoryText, blurFirst);
   };
 
   const advanceNow = (): void => {
     if (!advance) return;
     clearTimer();
-    if (phase === "holding-first" || phase === "holding-final") view.setContinueVisible(false);
+    if (phase === "holding-input") view.setContinueVisible(false);
     const next = advance;
     advance = undefined;
     next();
   };
 
   view.setContinueHandler(() => {
-    if (phase === "holding-first" || phase === "holding-final") advanceNow();
+    if (phase === "holding-input") advanceNow();
   });
 
   const handleKeydown = (event: KeyboardEvent): void => {
@@ -195,7 +229,7 @@ export function createTutorialScene(
       typing.complete();
       return;
     }
-    advanceNow();
+    if (phase === "holding-input") advanceNow();
   };
 
   return {

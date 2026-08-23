@@ -3,7 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 vi.mock("@/src/game/scenes/tutorial/view", () => ({ createTutorialView: vi.fn() }));
 vi.mock("@/src/game/sfx", () => ({ playSfx: vi.fn() }));
 
-import { createTutorialScene, tutorialText } from "@/src/game/scenes/tutorial/controller";
+import {
+  createTutorialScene,
+  tutorialSentences,
+  tutorialText,
+  typingDelay,
+} from "@/src/game/scenes/tutorial/controller";
 import { playSfx } from "@/src/game/sfx";
 
 const mockedPlaySfx = vi.mocked(playSfx);
@@ -32,6 +37,7 @@ describe("최초 실행 튜토리얼", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.clearAllMocks();
     listeners.clear();
     vi.stubGlobal("window", {
       addEventListener: vi.fn((type: string, listener: EventListener) =>
@@ -49,27 +55,26 @@ describe("최초 실행 튜토리얼", () => {
     vi.unstubAllGlobals();
   });
 
-  it("두 안내 지점에서 화면 입력을 기다린 뒤 완료한다", () => {
+  it("각 문장이 끝날 때마다 화면 입력을 기다린 뒤 완료한다", () => {
     const view = tutorialView();
     const onComplete = vi.fn();
     const scene = createTutorialScene(onComplete, view);
 
     scene.activate();
+    for (let index = 0; index < 7; index += 1) {
+      vi.runAllTimers();
+      expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
+      view.clickScreen();
+    }
     vi.runAllTimers();
     expect(onComplete).not.toHaveBeenCalled();
     expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
-
-    view.clickScreen();
-    vi.runAllTimers();
-    expect(onComplete).not.toHaveBeenCalled();
-    expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
-
     view.clickScreen();
 
     expect(view.announce.mock.calls.map(([text]) => text)).toEqual([
-      tutorialText.first,
-      tutorialText.second,
-      tutorialText.final,
+      ...tutorialSentences.first,
+      ...tutorialSentences.second,
+      ...tutorialSentences.final,
     ]);
     expect(view.setBlurred.mock.calls).toEqual([[true], [false]]);
     expect(view.clearStory).toHaveBeenCalledOnce();
@@ -77,7 +82,9 @@ describe("최초 실행 튜토리얼", () => {
     expect(view.showMascot.mock.calls).toEqual([[0], [1], [2]]);
     expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.second);
     expect(view.setFinalText).toHaveBeenLastCalledWith(tutorialText.final);
-    expect(view.setContinueVisible.mock.calls).toEqual([[true], [false], [true], [false]]);
+    expect(view.setContinueVisible.mock.calls).toEqual(
+      Array.from({ length: 8 }, () => [[true], [false]]).flat(),
+    );
     expect(mockedPlaySfx.mock.calls.filter(([name]) => name === "typing")).toHaveLength(
       Array.from(Object.values(tutorialText).join("")).filter((character) => !/\s/.test(character))
         .length,
@@ -90,7 +97,7 @@ describe("최초 실행 튜토리얼", () => {
     expect(onComplete).toHaveBeenCalledOnce();
   });
 
-  it("Enter를 한 번 누르면 현재 타이핑을 완성하고 다시 누르면 다음 구간으로 간다", () => {
+  it("Enter를 한 번 누르면 현재 문장을 완성하고 다시 누르면 다음 문장으로 간다", () => {
     const view = tutorialView();
     const onComplete = vi.fn();
     const scene = createTutorialScene(onComplete, view);
@@ -100,23 +107,25 @@ describe("최초 실행 튜토리얼", () => {
       keydown({ key: "Enter", preventDefault: vi.fn() } as unknown as KeyboardEvent);
 
     enter();
-    expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.first);
+    expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialSentences.first[0]);
     expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
     expect(view.setBlurred).not.toHaveBeenCalled();
     enter();
     expect(view.setContinueVisible).toHaveBeenLastCalledWith(false);
-    expect(view.setBlurred).toHaveBeenCalledWith(true);
+    enter();
+    expect(view.setStoryText).toHaveBeenLastCalledWith(
+      tutorialSentences.first.slice(0, 2).join(""),
+    );
+    expect(view.setBlurred).not.toHaveBeenCalled();
+  });
 
-    vi.advanceTimersByTime(800);
-    enter();
-    expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.second);
-    expect(view.showMascot).toHaveBeenCalledExactlyOnceWith(0);
-    enter();
-    enter();
-    expect(view.setFinalText).toHaveBeenLastCalledWith(tutorialText.final);
-    expect(onComplete).not.toHaveBeenCalled();
-    enter();
-    expect(onComplete).toHaveBeenCalledOnce();
+  it("단어가 길수록 더 빠르게 입력하고 공백 뒤에는 추가로 기다린다", () => {
+    const characters = Array.from("가 나나나나 아주아주아주아주");
+
+    expect(typingDelay(characters, 0)).toBe(150);
+    expect(typingDelay(characters, 1)).toBe(350);
+    expect(typingDelay(characters, 2)).toBe(105);
+    expect(typingDelay(characters, 7)).toBe(60);
   });
 
   it("장면을 폐기하면 예약 작업과 키보드 입력을 제거한다", () => {
