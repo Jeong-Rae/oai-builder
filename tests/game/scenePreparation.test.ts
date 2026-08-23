@@ -11,6 +11,7 @@ const mocked = vi.hoisted(() => ({
   setActionAvailability: vi.fn(),
   setElapsedMs: vi.fn(),
   setHintPosition: vi.fn(),
+  setPlateFrame: vi.fn(),
   showError: vi.fn(),
   subscribe: vi.fn((_listener: (state: any, previous: any) => void) => vi.fn()),
   sync: vi.fn(),
@@ -26,7 +27,7 @@ vi.mock("@/src/game/scenes/game/view", () => ({
     setElapsedMs: mocked.setElapsedMs,
     setHintPosition: mocked.setHintPosition,
     setPlayerTexture: vi.fn(),
-    setPlateFrame: vi.fn(),
+    setPlateFrame: mocked.setPlateFrame,
     showError: mocked.showError,
   }),
 }));
@@ -109,6 +110,35 @@ describe("게임 장면 사전 준비", () => {
     expect(mocked.removeEventListener).toHaveBeenCalledWith("keydown", expect.any(Function));
   });
 
+  it("플레이트가 활성화되면 높은 프레임부터 누름 연출을 시작한다", async () => {
+    let listener!: (state: any, previous: any) => void;
+    mocked.subscribe.mockImplementationOnce((entry) => {
+      listener = entry;
+      return vi.fn();
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
+    await scene.ready;
+
+    listener(
+      { game: { status: "playing", plateStates: { "2,1": "active" } }, eventStream: [] },
+      { game: { status: "playing", plateStates: { "2,1": "inactive" } }, eventStream: [] },
+    );
+
+    expect(mocked.setPlateFrame).toHaveBeenCalledWith({ x: 2, y: 1 }, "first");
+    scene.dispose();
+  });
+
   it("맵이 없는 스테이지도 화면에 활성화된 후에만 완료한다", async () => {
     mocked.mapUrl = undefined;
     vi.stubGlobal("fetch", vi.fn());
@@ -176,11 +206,7 @@ describe("게임 장면 사전 준비", () => {
     keydown(event);
     expect(mocked.dispatch).toHaveBeenCalledOnce();
     expect(mocked.setActionAvailability).not.toHaveBeenCalled();
-    expect(mocked.playWormhole).toHaveBeenCalledWith(
-      "player",
-      { x: 2, y: 1 },
-      { x: 6, y: 4 },
-    );
+    expect(mocked.playWormhole).toHaveBeenCalledWith("player", { x: 2, y: 1 }, { x: 6, y: 4 });
 
     finishWormhole();
     await Promise.resolve();

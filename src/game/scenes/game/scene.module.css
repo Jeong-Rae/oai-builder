@@ -127,6 +127,20 @@
   top: 0;
   width: 100%;
 }
+.stateAsset {
+  opacity: 0;
+}
+.stateAssetActive {
+  opacity: 1;
+}
+.stateAssetFill {
+  height: 100%;
+  image-rendering: pixelated;
+  inset: 0;
+  object-fit: contain;
+  position: absolute;
+  width: 100%;
+}
 .overlay,
 .goal {
   z-index: 1;

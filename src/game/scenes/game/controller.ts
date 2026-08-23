@@ -174,6 +174,7 @@ function createMapGameScene(
       view.setPlateFrame(position, platePressFrames[2]);
       return;
     }
+    view.setPlateFrame(position, platePressFrames[0]);
     timers.set(
       id,
       platePressFrames
