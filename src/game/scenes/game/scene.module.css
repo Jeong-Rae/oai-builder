@@ -98,7 +98,7 @@
   outline-offset: 3px;
 }
 .board {
-  --tile: min(calc(45cqw / var(--columns)), calc(80cqh / var(--rows)));
+  --tile: 5cqw;
   display: grid;
   grid-template-columns: repeat(var(--columns), var(--tile));
   grid-template-rows: repeat(var(--rows), var(--tile));
