@@ -73,44 +73,23 @@
   min-height: 1.65em;
 }
 
-.touch {
-  align-items: center;
-  aspect-ratio: 1;
-  background: rgb(8 14 20 / 52%);
-  border: max(1px, 0.08cqw) solid rgb(215 249 255 / 72%);
-  border-radius: 50%;
+.prompt {
+  animation: prompt-breathe 1.8s ease-in-out infinite;
   bottom: 3%;
-  box-shadow: 0 0 1.1cqw rgb(121 225 255 / 24%);
-  color: #d7f9ff;
-  cursor: pointer;
-  display: grid;
-  font-family: monospace;
-  font-size: clamp(0.55rem, 0.72cqw, 0.9rem);
+  color: rgb(215 249 255 / 82%);
+  font-size: clamp(0.65rem, 1cqw, 1.25rem);
   left: 50%;
-  letter-spacing: 0.12em;
-  padding: 0 0 0 0.12em;
-  place-items: center;
+  letter-spacing: 0.05em;
+  margin: 0;
+  pointer-events: none;
   position: absolute;
+  text-shadow: 0 0 0.8em rgb(121 225 255 / 35%);
   transform: translateX(-50%);
-  width: 4.2%;
+  white-space: nowrap;
   z-index: 2;
 }
 
-.touch::after {
-  animation: touch-wave 1.5s ease-out infinite;
-  border: max(1px, 0.06cqw) solid rgb(215 249 255 / 62%);
-  border-radius: inherit;
-  content: "";
-  inset: -1px;
-  position: absolute;
-}
-
-.touch:focus-visible {
-  outline: max(2px, 0.1cqw) solid #ffd866;
-  outline-offset: 0.25cqw;
-}
-
-.touch[hidden] {
+.prompt[hidden] {
   display: none;
 }
 
@@ -124,11 +103,10 @@
   width: 1px;
 }
 
-@keyframes touch-wave {
-  70%,
-  100% {
-    opacity: 0;
-    transform: scale(1.7);
+@keyframes prompt-breathe {
+  50% {
+    color: #fff;
+    text-shadow: 0 0 1em rgb(121 225 255 / 70%);
   }
 }
 
@@ -138,7 +116,7 @@
     transition: none;
   }
 
-  .touch::after {
+  .prompt {
     animation: none;
   }
 }

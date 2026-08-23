@@ -66,10 +66,10 @@ export function createTutorialScene(
     }, duration);
   };
 
-  const waitForTouch = (nextPhase: "holding-first" | "holding-final", next: () => void): void => {
+  const waitForInput = (nextPhase: "holding-first" | "holding-final", next: () => void): void => {
     phase = nextPhase;
     advance = next;
-    view.setTouchVisible(true);
+    view.setContinueVisible(true);
   };
 
   const type = (
@@ -121,7 +121,7 @@ export function createTutorialScene(
 
   const typeFinal = (): void => {
     type("typing-final", tutorialText.final, view.setFinalText, () =>
-      waitForTouch("holding-final", completeTutorial),
+      waitForInput("holding-final", completeTutorial),
     );
   };
 
@@ -150,20 +150,20 @@ export function createTutorialScene(
 
   const typeFirst = (): void => {
     type("typing-first", tutorialText.first, view.setStoryText, () =>
-      waitForTouch("holding-first", blurFirst),
+      waitForInput("holding-first", blurFirst),
     );
   };
 
   const advanceNow = (): void => {
     if (!advance) return;
     clearTimer();
-    if (phase === "holding-first" || phase === "holding-final") view.setTouchVisible(false);
+    if (phase === "holding-first" || phase === "holding-final") view.setContinueVisible(false);
     const next = advance;
     advance = undefined;
     next();
   };
 
-  view.setTouchHandler(() => {
+  view.setContinueHandler(() => {
     if (phase === "holding-first" || phase === "holding-final") advanceNow();
   });
 
@@ -191,7 +191,7 @@ export function createTutorialScene(
       clearTimer();
       typing = undefined;
       advance = undefined;
-      view.setTouchHandler(() => {});
+      view.setContinueHandler(() => {});
       window.removeEventListener("keydown", handleKeydown);
     },
   };

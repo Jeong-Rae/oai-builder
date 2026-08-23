@@ -7,7 +7,7 @@ import { createTutorialScene, tutorialText } from "@/src/game/scenes/tutorial/co
 import { playSfx } from "@/src/game/sfx";
 
 function tutorialView() {
-  let touchHandler = () => {};
+  let continueHandler = () => {};
   return {
     root: {} as HTMLElement,
     announce: vi.fn<(text: string) => void>(),
@@ -16,12 +16,12 @@ function tutorialView() {
     setFinalText: vi.fn<(text: string) => void>(),
     setSecondLayout: vi.fn<() => void>(),
     setStoryText: vi.fn<(text: string) => void>(),
-    setTouchHandler: vi.fn<(handler: () => void) => void>((handler) => {
-      touchHandler = handler;
+    setContinueHandler: vi.fn<(handler: () => void) => void>((handler) => {
+      continueHandler = handler;
     }),
-    setTouchVisible: vi.fn<(visible: boolean) => void>(),
+    setContinueVisible: vi.fn<(visible: boolean) => void>(),
     showMascot: vi.fn<() => void>(),
-    touch: () => touchHandler(),
+    clickScreen: () => continueHandler(),
   };
 }
 
@@ -47,7 +47,7 @@ describe("최초 실행 튜토리얼", () => {
     vi.unstubAllGlobals();
   });
 
-  it("두 이야기와 마스코트를 순서대로 표시한 뒤 자동 완료한다", () => {
+  it("두 안내 지점에서 화면 입력을 기다린 뒤 완료한다", () => {
     const view = tutorialView();
     const onComplete = vi.fn();
     const scene = createTutorialScene(onComplete, view);
@@ -55,14 +55,14 @@ describe("최초 실행 튜토리얼", () => {
     scene.activate();
     vi.runAllTimers();
     expect(onComplete).not.toHaveBeenCalled();
-    expect(view.setTouchVisible).toHaveBeenLastCalledWith(true);
+    expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
 
-    view.touch();
+    view.clickScreen();
     vi.runAllTimers();
     expect(onComplete).not.toHaveBeenCalled();
-    expect(view.setTouchVisible).toHaveBeenLastCalledWith(true);
+    expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
 
-    view.touch();
+    view.clickScreen();
 
     expect(view.announce.mock.calls.map(([text]) => text)).toEqual([
       tutorialText.first,
@@ -75,7 +75,7 @@ describe("최초 실행 튜토리얼", () => {
     expect(view.showMascot).toHaveBeenCalledOnce();
     expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.second);
     expect(view.setFinalText).toHaveBeenLastCalledWith(tutorialText.final);
-    expect(view.setTouchVisible.mock.calls).toEqual([[true], [false], [true], [false]]);
+    expect(view.setContinueVisible.mock.calls).toEqual([[true], [false], [true], [false]]);
     expect(playSfx).toHaveBeenCalledTimes(
       Array.from(Object.values(tutorialText).join("")).filter((character) => !/\s/.test(character))
         .length,
@@ -94,10 +94,10 @@ describe("최초 실행 튜토리얼", () => {
 
     enter();
     expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.first);
-    expect(view.setTouchVisible).toHaveBeenLastCalledWith(true);
+    expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
     expect(view.setBlurred).not.toHaveBeenCalled();
     enter();
-    expect(view.setTouchVisible).toHaveBeenLastCalledWith(false);
+    expect(view.setContinueVisible).toHaveBeenLastCalledWith(false);
     expect(view.setBlurred).toHaveBeenCalledWith(true);
 
     vi.advanceTimersByTime(800);

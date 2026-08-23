@@ -10,8 +10,8 @@ export interface TutorialView {
   setFinalText(text: string): void;
   setSecondLayout(): void;
   setStoryText(text: string): void;
-  setTouchHandler(handler: () => void): void;
-  setTouchVisible(visible: boolean): void;
+  setContinueHandler(handler: () => void): void;
+  setContinueVisible(visible: boolean): void;
   showMascot(): void;
 }
 
@@ -38,13 +38,13 @@ export function createTutorialView(): TutorialView {
   narration.setAttribute("aria-live", "polite");
   narration.setAttribute("aria-atomic", "true");
 
-  const touch = document.createElement("button");
-  touch.className = styles.touch;
-  touch.type = "button";
-  touch.textContent = "TOUCH";
-  touch.hidden = true;
+  const prompt = document.createElement("p");
+  prompt.className = styles.prompt;
+  prompt.textContent = "화면을 누르거나, enter를 눌러주세요";
+  prompt.setAttribute("aria-live", "polite");
+  prompt.hidden = true;
 
-  root.append(createBackgroundStars(), story, mascot, finalLine, narration, touch);
+  root.append(createBackgroundStars(), story, mascot, finalLine, narration, prompt);
 
   return {
     root,
@@ -66,12 +66,11 @@ export function createTutorialView(): TutorialView {
     setStoryText(text) {
       story.textContent = text;
     },
-    setTouchHandler(handler) {
-      touch.onclick = handler;
+    setContinueHandler(handler) {
+      root.onclick = handler;
     },
-    setTouchVisible(visible) {
-      touch.hidden = !visible;
-      if (visible) touch.focus({ preventScroll: true });
+    setContinueVisible(visible) {
+      prompt.hidden = !visible;
     },
     showMascot() {
       mascot.classList.add(styles.visible);
