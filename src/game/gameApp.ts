@@ -15,6 +15,7 @@ import { createStageSelectScene } from "@/src/game/scenes/stage-select/controlle
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
 import { nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
+import { playSfx, preloadSfx } from "@/src/game/sfx";
 
 export class GameApp {
   private disposeScene?: () => void;
@@ -27,6 +28,8 @@ export class GameApp {
 
   constructor(private readonly root: HTMLElement) {
     this.root.addEventListener("dragstart", (event) => event.preventDefault());
+    this.root.addEventListener("click", this.handleButtonSound);
+    preloadSfx();
     if (import.meta.env.DEV) document.addEventListener("keydown", this.handleDevShortcut);
     this.initialStartScene = this.createIntroScene(false);
     this.mount(this.initialStartScene);
@@ -42,6 +45,13 @@ export class GameApp {
     }
     void this.restoreSession();
   }
+
+  private handleButtonSound = (event: MouseEvent): void => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest<HTMLButtonElement>("button");
+    if (!button || button.disabled || button.getAttribute("aria-disabled") === "true") return;
+    playSfx(button.dataset.sfx === "button" ? "button" : "click");
+  };
 
   private createIntroScene(loaded: boolean): StartScene {
     let scene: StartScene;

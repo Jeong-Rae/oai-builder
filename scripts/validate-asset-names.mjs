@@ -17,8 +17,8 @@ const ATTRIBUTE_PATTERNS = {
 export function validateAssetName(fileName) {
   const errors = [];
 
-  if (![".webp", ".svg"].includes(extname(fileName))) {
-    errors.push("확장자는 .webp 또는 .svg여야 합니다.");
+  if (![".webp", ".svg", ".mp3"].includes(extname(fileName))) {
+    errors.push("확장자는 .webp, .svg 또는 .mp3여야 합니다.");
   }
 
   const facets = parse(fileName).name.split(".");

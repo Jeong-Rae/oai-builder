@@ -4,6 +4,7 @@ import { platePressFrames } from "@/src/game/features/fields/plate/presentation"
 import { playerTextureForMove } from "@/src/game/features/presentation";
 import { directionFromKey, isUndoShortcut } from "@/src/game/input";
 import { createGameView } from "@/src/game/scenes/game/view";
+import { playSfx } from "@/src/game/sfx";
 import { createGameStoreFromMap } from "@/src/game/store/gameStore";
 import { stageFor, type PlaySelection } from "@/src/game/stages";
 
@@ -49,6 +50,8 @@ export function createGameScene(
         event.preventDefault();
         const game = store.getState().game;
         const decision = store.getState().dispatch({ type: "player/move", direction });
+        if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
+        if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");
         view.setPlayerTexture(playerTextureForMove(game, direction, decision));
       };
       window.addEventListener("keydown", keydown);

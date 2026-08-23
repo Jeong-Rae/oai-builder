@@ -1,5 +1,5 @@
-import styles from "./scene.module.css";
-import { clearAssets, plateButtonUrl } from "../../assets";
+import { clearAssets, plateButtonUrl } from "@/src/game/assets";
+import styles from "@/src/game/scenes/clear/scene.module.css";
 
 function createSpark(angle: number, distance: number, delay: number, size = 6): HTMLImageElement {
   const image = document.createElement("img");
@@ -61,6 +61,7 @@ export function createClearView(
     const button = document.createElement("button");
     button.type = "button";
     button.className = styles.button;
+    button.dataset.sfx = "button";
     button.style.backgroundImage = `url(${plateButtonUrl})`;
     button.style.setProperty("--button-delay", `${500 + index * 70}ms`);
     button.textContent = label as string;
