@@ -37,18 +37,37 @@
   z-index: 1;
 }
 .startArea {
+  align-items: center;
   bottom: 8%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55cqw;
   left: 50%;
   position: absolute;
   transform: translateX(-50%);
-  width: 26%;
+  width: 40%;
   z-index: 2;
 }
 .start {
-  margin-inline: 6.73%;
+  font-size: clamp(0.7rem, 1.6cqw, 2rem);
+  letter-spacing: 0.08em;
   position: relative;
-  width: 86.54%;
+  width: 60%;
   z-index: 1;
+}
+.notice,
+.error {
+  font-size: clamp(0.45rem, 0.8cqw, 1rem);
+  line-height: 1.25;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 2px 8px #000;
+}
+.notice {
+  color: #d7f9ff;
+}
+.error {
+  color: #ff9e9e;
 }
 .loading {
   align-items: center;

@@ -11,9 +11,11 @@ import { preloadAssets } from "@/src/game/preload";
 import { createChapterScene } from "@/src/game/scenes/chapter/controller";
 import { createClearScene } from "@/src/game/scenes/clear/controller";
 import { createGameScene } from "@/src/game/scenes/game/controller";
-import { createLoginScene } from "@/src/game/scenes/login/controller";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
-import { createStartScene } from "@/src/game/scenes/start/controller";
+import {
+  createStartScene,
+  type StartScene,
+} from "@/src/game/scenes/start/controller";
 import { nextSelection, type PlaySelection } from "@/src/game/stages";
 import {
   initializeProgressStore,
@@ -26,12 +28,13 @@ export class GameApp {
   private preloadPromise?: Promise<void>;
   private authGateway?: AuthGateway;
   private storage?: BrowserStorage;
-  private readonly initialStartScene: ReturnType<typeof createStartScene>;
+  private readonly initialStartScene: StartScene;
   private session?: GameSession;
 
   constructor(private readonly root: HTMLElement) {
     if (import.meta.env.DEV) document.addEventListener("keydown", this.handleDevShortcut);
-    this.initialStartScene = createStartScene(this.showGroups);
+    this.initialStartScene = this.createIntroScene(false);
+    this.mount(this.initialStartScene);
     this.preloadPromise = preloadAssets(
       allGameAssetUrls(),
       this.initialStartScene.updateLoading,
@@ -40,42 +43,64 @@ export class GameApp {
       this.storage = window.localStorage;
       this.authGateway = new LocalAuthAdapter(this.storage);
     } catch {
-      this.showLogin("브라우저 저장소에 접근할 수 없습니다. 저장소 설정을 확인해 주세요.");
+      this.initialStartScene.setError(
+        "브라우저 저장소에 접근할 수 없습니다. 저장소 설정을 확인해 주세요.",
+      );
       return;
     }
     void this.restoreSession();
+  }
+
+  private createIntroScene(loaded: boolean): StartScene {
+    let scene: StartScene;
+    scene = createStartScene(
+      () => this.startFromIntro(scene),
+      loaded,
+      Boolean(this.session),
+    );
+    return scene;
   }
 
   private restoreSession = async (): Promise<void> => {
     try {
       if (!this.authGateway) throw new Error("브라우저 저장소를 사용할 수 없습니다.");
       const authSession = await this.authGateway.restore();
-      if (authSession === null) {
-        this.showLogin();
-        return;
-      }
-      await this.enterGame(authSession);
+      if (authSession === null) return;
+      await this.establishSession(authSession);
+      this.initialStartScene.setAuthenticated(true);
     } catch {
-      this.showLogin("저장된 로그인 정보를 읽지 못했습니다. 브라우저 저장소를 확인해 주세요.");
+      this.initialStartScene.setError(
+        "저장된 로그인 정보를 읽지 못했습니다. 브라우저 저장소를 확인해 주세요.",
+      );
     }
   };
 
-  private showLogin(error?: string): void {
-    this.mount(createLoginScene(this.signIn, error));
-  }
-
-  private signIn = async (): Promise<void> => {
-    if (!this.authGateway) throw new Error("브라우저 저장소를 사용할 수 없습니다.");
-    const authSession = await this.authGateway.signIn("GOOGLE");
-    await this.enterGame(authSession);
-  };
-
-  private async enterGame(authSession: AuthSession): Promise<void> {
+  private async establishSession(authSession: AuthSession): Promise<void> {
     if (!this.storage) throw new Error("브라우저 저장소를 사용할 수 없습니다.");
-    this.session = { playerId: authSession.playerId };
-    await initializeProgressStore(new LocalGameDataStore(this.storage, this.session.playerId));
-    this.mount(this.initialStartScene);
+    const session: GameSession = { playerId: authSession.playerId };
+    await initializeProgressStore(new LocalGameDataStore(this.storage, session.playerId));
+    this.session = session;
   }
+
+  private startFromIntro = async (scene: StartScene): Promise<void> => {
+    if (this.session) {
+      this.showGroups();
+      return;
+    }
+
+    scene.setPending(true);
+    scene.setError();
+    try {
+      if (!this.authGateway) throw new Error("브라우저 저장소를 사용할 수 없습니다.");
+      await this.establishSession(await this.authGateway.signIn("GOOGLE"));
+      scene.setAuthenticated(true);
+      this.showGroups();
+    } catch {
+      scene.setError("로그인 정보를 저장하지 못했습니다. 브라우저 저장소 설정을 확인해 주세요.");
+    } finally {
+      scene.setPending(false);
+    }
+  };
 
   private handleDevShortcut = (event: KeyboardEvent): void => {
     if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.repeat) return;
@@ -121,7 +146,7 @@ export class GameApp {
     });
 
   showGameStart = (): void => {
-    this.show(createStartScene(this.showGroups, true));
+    this.show(this.createIntroScene(true));
   };
 
   showGroups = (): void => {

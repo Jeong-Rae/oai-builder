@@ -3,9 +3,16 @@ import { createPlateButton } from "@/src/game/components/PlateButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/start/scene.module.css";
 
-export function createStartView(onStart: () => void): {
+export function startButtonLabel(authenticated: boolean): "Start" | "Start with Google" {
+  return authenticated ? "Start" : "Start with Google";
+}
+
+export function createStartView(onStart: () => void, initiallyAuthenticated = false): {
   root: HTMLElement;
   updateLoading(loaded: number, total: number): void;
+  setAuthenticated(authenticated: boolean): void;
+  setPending(pending: boolean): void;
+  setError(message?: string): void;
 } {
   const root = document.createElement("main");
   root.className = styles.root;
@@ -39,7 +46,32 @@ export function createStartView(onStart: () => void): {
   area.append(loading);
   root.append(stars, title, lunar, mascot, area);
 
+  let authenticated = initiallyAuthenticated;
+  let pending = false;
+  let errorMessage: string | undefined;
   let ready = false;
+  let start: HTMLButtonElement | undefined;
+  const notice = document.createElement("p");
+  notice.className = styles.notice;
+  notice.textContent = "데모 로그인입니다. 실제 Google 계정과 연결되지 않습니다.";
+  const error = document.createElement("p");
+  error.className = styles.error;
+  error.setAttribute("role", "alert");
+
+  const renderAction = (): void => {
+    if (!ready) return;
+    if (!start) {
+      start = createPlateButton(startButtonLabel(authenticated), onStart);
+      start.classList.add(styles.start);
+      area.replaceChildren(start, notice, error);
+    }
+    start.textContent = startButtonLabel(authenticated);
+    start.disabled = pending;
+    notice.hidden = authenticated;
+    error.textContent = errorMessage ?? "";
+    error.hidden = !errorMessage;
+  };
+
   const updateLoading = (loaded: number, total: number): void => {
     const complete = loaded >= total;
     const percent = total === 0 ? 100 : Math.round((loaded / total) * 100);
@@ -49,10 +81,23 @@ export function createStartView(onStart: () => void): {
     if (!complete || ready) return;
 
     ready = true;
-    const start = createPlateButton("START", onStart);
-    start.classList.add(styles.start);
-    area.replaceChildren(start);
+    renderAction();
   };
 
-  return { root, updateLoading };
+  return {
+    root,
+    updateLoading,
+    setAuthenticated(value) {
+      authenticated = value;
+      renderAction();
+    },
+    setPending(value) {
+      pending = value;
+      renderAction();
+    },
+    setError(value) {
+      errorMessage = value;
+      renderAction();
+    },
+  };
 }

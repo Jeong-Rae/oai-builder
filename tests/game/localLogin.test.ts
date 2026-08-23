@@ -7,6 +7,7 @@ import {
   type BrowserStorage,
 } from "@/src/game/auth";
 import { LocalGameDataStore } from "@/src/game/dataStore";
+import { startButtonLabel } from "@/src/game/scenes/start/view";
 
 function memoryStorage(): BrowserStorage & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -19,6 +20,11 @@ function memoryStorage(): BrowserStorage & { data: Map<string, string> } {
 }
 
 describe("Local Login", () => {
+  it("인증 여부에 맞는 Start 문구를 사용한다", () => {
+    expect(startButtonLabel(false)).toBe("Start with Google");
+    expect(startButtonLabel(true)).toBe("Start");
+  });
+
   it("최초 로그인 후 같은 Local Player를 복구한다", async () => {
     const storage = memoryStorage();
     const ids = ["installation-id", "player-id"];
