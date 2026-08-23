@@ -1,13 +1,14 @@
 import styles from "./scene.module.css";
-import { backgroundUrl, clearAssets, plateButtonUrl } from "../../assets";
+import { clearAssets, plateButtonUrl } from "../../assets";
 
-function createSpark(angle: number, distance: number, delay: number): HTMLImageElement {
+function createSpark(angle: number, distance: number, delay: number, size = 6): HTMLImageElement {
   const image = document.createElement("img");
   image.src = clearAssets.spark;
   image.alt = "";
   image.style.setProperty("--x", `${50 + Math.cos(angle) * distance}%`);
   image.style.setProperty("--y", `${49 + Math.sin(angle) * distance}%`);
   image.style.setProperty("--delay", `${delay}ms`);
+  image.style.setProperty("--size", `${size}%`);
   return image;
 }
 
@@ -23,7 +24,9 @@ function createStarCluster(): HTMLElement {
   image.alt = "";
   for (let index = 0; index < 10; index += 1) {
     const angle = (index * 36 * Math.PI) / 180;
-    cluster.append(createSpark(angle, 15.5 + (index % 3) * 3.5, (index % 3) * 90));
+    cluster.append(
+      createSpark(angle, 15.5 + (index % 3) * 3.5, (index % 3) * 90, 5 + (index % 3) * 2),
+    );
   }
   cluster.append(glow, image);
   return cluster;
@@ -50,7 +53,6 @@ export function createClearView(
 ): HTMLElement {
   const root = document.createElement("main");
   root.className = styles.root;
-  root.style.backgroundImage = `url(${backgroundUrl})`;
   const actions = document.createElement("div");
   actions.className = styles.actions;
   [

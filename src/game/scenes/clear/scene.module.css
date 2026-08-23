@@ -1,5 +1,5 @@
 .root {
-  background: #080e14 center / cover no-repeat;
+  background: rgb(8 14 20 / 62%);
   height: 100%;
   overflow: hidden;
   position: relative;
@@ -30,7 +30,7 @@
   width: auto;
 }
 .cluster {
-  aspect-ratio: 1254;
+  aspect-ratio: 1;
   left: 50%;
   pointer-events: none;
   position: absolute;
@@ -63,20 +63,21 @@
 }
 .cluster img:not(.star) {
   animation: sparkle 900ms cubic-bezier(0.22, 0.7, 0.2, 1) var(--delay) infinite alternate;
-  height: 6%;
+  height: var(--size);
   left: var(--x);
   position: absolute;
   top: var(--y);
   transform: translate(-50%, -50%);
-  width: 6%;
+  width: var(--size);
 }
 .actions {
   display: flex;
-  gap: 3cqw;
+  flex-direction: column;
+  gap: 1.2cqh;
   justify-content: center;
   left: 50%;
   position: absolute;
-  top: 76%;
+  top: 62%;
   transform: translateX(-50%);
 }
 .button {
@@ -89,11 +90,11 @@
   color: #15171d;
   cursor: pointer;
   font:
-    700 1.458cqw "온글잎 박다현체",
+    700 1.25cqw "온글잎 박다현체",
     monospace;
   letter-spacing: 0.18em;
   text-indent: 0.18em;
-  width: 10cqw;
+  width: 8.5cqw;
 }
 .button:hover,
 .button:focus-visible {

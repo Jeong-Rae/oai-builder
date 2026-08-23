@@ -11,6 +11,7 @@ import { preloadAssets } from "./preload";
 
 export class GameApp {
   private disposeScene?: () => void;
+  private frame?: HTMLElement;
   private preloadPromise?: Promise<void>;
 
   constructor(private readonly root: HTMLElement) {
@@ -42,8 +43,22 @@ export class GameApp {
     const frame = document.createElement("div");
     frame.className = "game-frame";
     frame.append(scene.view);
+    this.frame = frame;
     this.root.append(frame);
   }
+
+  private showOverlay = (scene: { view: HTMLElement; dispose(): void }): Promise<void> =>
+    (this.preloadPromise ?? Promise.resolve()).then(() => {
+      const previousDispose = this.disposeScene;
+      this.disposeScene = () => {
+        scene.dispose();
+        previousDispose?.();
+      };
+      const overlay = document.createElement("div");
+      overlay.className = "game-overlay";
+      overlay.append(scene.view);
+      this.frame?.append(overlay);
+    });
 
   private showIntro = (): void => {
     this.show(createIntroScene(this.showGameStart));
@@ -71,7 +86,7 @@ export class GameApp {
     this.show(createGameScene(selection, this.showGameStart, () => this.showClear(selection)));
   private showClear = (selection: PlaySelection): void => {
     progressStore.markCleared(selection.chapterIndex, selection.stageIndex);
-    this.show(
+    this.showOverlay(
       createClearScene(
         () => this.showGame(nextSelection(selection)),
         () => this.showGame(selection),

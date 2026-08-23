@@ -34,6 +34,14 @@ button {
   width: min(100vw, 177.778vh);
 }
 
+.game-overlay {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
 .scene-header {
   align-items: center;
   display: flex;
