@@ -173,7 +173,7 @@ export function mountEditor(
   let testStore: GameStoreApi | undefined;
   let unsubscribeTest: (() => void) | undefined;
   let testMoved = false;
-  let playerAsset: AssetKey = "playerDefault";
+  let playerAsset: AssetKey = "playerDown";
   let pathResult: PathResult | undefined;
   const pathCache = new Map<string, PathResult | null>();
   let pathMode: PathMode = "shortest";
@@ -191,7 +191,7 @@ export function mountEditor(
     unsubscribeTest = undefined;
     testStore = undefined;
     testMoved = false;
-    playerAsset = "playerDefault";
+    playerAsset = "playerDown";
   }
 
   function createTestState(clearPath = true): void {
@@ -456,7 +456,7 @@ export function mountEditor(
     if (isUndoShortcut(event) && testStore) {
       event.preventDefault();
       if (testStore.getState().undo()) {
-        playerAsset = "playerDefault";
+        playerAsset = "playerDown";
         render();
         showNotice("최근 테스트 이동을 되돌렸습니다.");
       } else {

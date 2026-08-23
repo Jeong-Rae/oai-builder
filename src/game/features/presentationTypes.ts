@@ -17,7 +17,6 @@ export type AssetSlot =
   | "normalActive"
   | "anchor"
   | "swapper"
-  | "playerDefault"
   | "playerUp"
   | "playerDown"
   | "playerLeft"

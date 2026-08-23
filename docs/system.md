@@ -121,7 +121,7 @@ src/
 ## Asset conversion
 
 - Unscaled assets omit a size facet; generated assets use `<name>.size-<width>x<height>.webp` (for example, `tile.webp` and `tile.size-96x96.webp`).
-- The conversion script supports `32`, `36`, `48`, `64`, and `96` pixels: `pnpm run asset:resize -- assets/playable/player.direction-front.webp 96`.
+- The conversion script supports `32`, `36`, `48`, `64`, and `96` pixels: `pnpm run asset:resize -- assets/playable/playable.size-1254x1254.webp 96`.
 - A source must be a `1254×1254` image. The script crops equal pixels from all four sides to obtain a size divisible by the target, then applies nearest-neighbor scaling.
 - New and replaced images are trimmed at alpha threshold 1 and encoded as WebP.
 - Generated files are never overwritten unless `--force` is supplied.

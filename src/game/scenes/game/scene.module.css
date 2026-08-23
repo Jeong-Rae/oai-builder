@@ -164,6 +164,9 @@
 .normalLayer {
   inset: 9% 10%;
 }
+.playerLayer {
+  inset: 9%;
+}
 .normalLayer .normal {
   height: 100%;
   left: 0;

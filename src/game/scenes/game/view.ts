@@ -210,7 +210,9 @@ export function createGameView(
         layer.className =
           entity.kind === "normal"
             ? `${styles.entityLayer} ${styles.normalLayer}`
-            : styles.entityLayer;
+            : entity.kind === "player"
+              ? `${styles.entityLayer} ${styles.playerLayer}`
+              : styles.entityLayer;
         image = document.createElement("img");
         image.className =
           entity.kind === "normal" ? `${styles.entity} ${styles.normal}` : styles.entity;

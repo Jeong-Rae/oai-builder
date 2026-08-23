@@ -5,6 +5,10 @@ import { decide } from "../../src/game/domain/decider";
 import { playerTextureForMove, playerTextureKeys } from "../../src/game/features/presentation";
 
 describe("플레이어 방향 스프라이트", () => {
+  it("기본 상태에서 아래쪽을 바라본다", () => {
+    expect(playerTextureKeys.default).toBe(playerTextureKeys.down);
+  });
+
   it("플레이어가 이동하면 입력 방향을 바라본다", () => {
     const game = createInitialState({ boxCount: 0 });
     const decision = decide(game, { type: "player/move", direction: "up" });

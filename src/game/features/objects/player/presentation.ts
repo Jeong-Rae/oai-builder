@@ -2,7 +2,7 @@ import type { Decision, Direction, GameState } from "@/src/game/domain/types";
 import type { AssetSlot, ObjectPresentation } from "@/src/game/features/presentationTypes";
 
 export const playerTextureKeys: Record<"default" | Direction, AssetSlot> = {
-  default: "playerDefault",
+  default: "playerDown",
   up: "playerUp",
   down: "playerDown",
   left: "playerLeft",
@@ -35,11 +35,6 @@ export const playerPresentation = {
   kind: "player",
   label: "플레이어",
   assets: {
-    playerDefault: {
-      label: "플레이어·기본",
-      url: new URL("@/assets/playable/player.direction-front.webp", import.meta.url).href,
-      group: "object",
-    },
     playerUp: {
       label: "플레이어 위 방향",
       url: new URL("@/assets/playable/player.direction-up.webp", import.meta.url).href,
@@ -61,8 +56,8 @@ export const playerPresentation = {
       group: "object",
     },
   },
-  toolAsset: "playerDefault",
+  toolAsset: "playerDown",
   gameTextures: Object.values(playerTextureKeys),
-  editorAsset: "playerDefault",
-  gameTexture: "playerDefault",
+  editorAsset: "playerDown",
+  gameTexture: "playerDown",
 } satisfies ObjectPresentation;
