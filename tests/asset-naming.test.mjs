@@ -7,6 +7,7 @@ describe("에셋 네이밍", () => {
     expect(validateAssetName("box.normal.color-blue.webp")).toEqual([]);
     expect(validateAssetName("goal.frame-01.size-96x96.webp")).toEqual([]);
     expect(validateAssetName("star.cross.large.webp")).toEqual([]);
+    expect(validateAssetName("line.taurus.stage.svg")).toEqual([]);
   });
 
   it.each([

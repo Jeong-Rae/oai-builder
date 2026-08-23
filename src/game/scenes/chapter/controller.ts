@@ -1,5 +1,5 @@
-import { chapters } from "../../stages";
-import { createChapterView } from "./view";
+import { createChapterView } from "@/src/game/scenes/chapter/view";
+import { chapters, isChapterUnlocked } from "@/src/game/stages";
 
 export function createChapterScene(
   initialIndex: number,
@@ -23,8 +23,9 @@ export function createChapterScene(
     );
   };
   const view = createChapterView(move, () => {
-    if (!moving) onSelect(active);
+    if (!moving && isChapterUnlocked(active)) onSelect(active);
   });
+  view.setActive(active);
   const keydown = (event: KeyboardEvent) => {
     if (event.key === "ArrowLeft") move(-1);
     if (event.key === "ArrowRight") move(1);

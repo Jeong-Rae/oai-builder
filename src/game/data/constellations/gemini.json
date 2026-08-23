@@ -1,21 +1,37 @@
 {
   "sign": "GEMINI",
   "points": [
-    { "id": "castor", "x": 0.22, "y": 0.04 },
-    { "id": "pollux", "x": 0.42, "y": 0.1 },
-    { "id": "mebsuta", "x": 0.16, "y": 0.32 },
-    { "id": "wasat", "x": 0.36, "y": 0.44 },
-    { "id": "tejat", "x": 0.1, "y": 0.62 },
-    { "id": "propus", "x": 0.04, "y": 0.84 },
-    { "id": "alhena", "x": 0.24, "y": 0.92 }
+    { "id": "gemini-01", "x": 0.0, "y": 0.39 },
+    { "id": "gemini-02", "x": 0.0, "y": 0.19 },
+    { "id": "gemini-03", "x": 0.1, "y": 0.29 },
+    { "id": "gemini-04", "x": 0.14, "y": 0.05 },
+    { "id": "gemini-05", "x": 0.31, "y": 0.15 },
+    { "id": "gemini-06", "x": 0.48, "y": 0.0 },
+    { "id": "gemini-07", "x": 0.23, "y": 0.49 },
+    { "id": "gemini-08", "x": 0.21, "y": 0.7 },
+    { "id": "gemini-09", "x": 0.39, "y": 0.56 },
+    { "id": "gemini-10", "x": 0.55, "y": 0.31 },
+    { "id": "gemini-11", "x": 0.58, "y": 1.0 },
+    { "id": "gemini-12", "x": 0.66, "y": 0.77 },
+    { "id": "gemini-13", "x": 0.77, "y": 0.58 },
+    { "id": "gemini-14", "x": 0.82, "y": 0.42 },
+    { "id": "gemini-15", "x": 1.0, "y": 0.4 }
   ],
   "edges": [
-    { "from": "castor", "to": "pollux" },
-    { "from": "castor", "to": "mebsuta" },
-    { "from": "pollux", "to": "wasat" },
-    { "from": "mebsuta", "to": "wasat" },
-    { "from": "mebsuta", "to": "tejat" },
-    { "from": "tejat", "to": "propus" },
-    { "from": "wasat", "to": "alhena" }
+    { "from": "gemini-01", "to": "gemini-02" },
+    { "from": "gemini-02", "to": "gemini-03" },
+    { "from": "gemini-03", "to": "gemini-04" },
+    { "from": "gemini-04", "to": "gemini-05" },
+    { "from": "gemini-05", "to": "gemini-06" },
+    { "from": "gemini-03", "to": "gemini-07" },
+    { "from": "gemini-07", "to": "gemini-08" },
+    { "from": "gemini-07", "to": "gemini-09" },
+    { "from": "gemini-09", "to": "gemini-10" },
+    { "from": "gemini-10", "to": "gemini-14" },
+    { "from": "gemini-10", "to": "gemini-12" },
+    { "from": "gemini-12", "to": "gemini-11" },
+    { "from": "gemini-12", "to": "gemini-13" },
+    { "from": "gemini-13", "to": "gemini-14" },
+    { "from": "gemini-14", "to": "gemini-15" }
   ]
 }

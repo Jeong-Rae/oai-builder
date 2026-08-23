@@ -122,6 +122,18 @@ export function stageStatuses(chapterIndex: number): StageStatus[] {
   );
 }
 
+export function isChapterCleared(chapterIndex: number): boolean {
+  const chapter = chapters[chapterIndex]!;
+  return (
+    progressStore.clearedStages(chapterIndex, chapter.stages.length).size === chapter.stages.length
+  );
+}
+
+export function isChapterUnlocked(chapterIndex: number): boolean {
+  if (chapterIndex <= 0) return true;
+  return isChapterCleared(chapterIndex - 1);
+}
+
 export function stageFor({ chapterIndex, stageIndex }: PlaySelection): StageDefinition {
   return chapters[chapterIndex]!.stages[stageIndex]!;
 }

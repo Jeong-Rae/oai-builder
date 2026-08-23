@@ -42,6 +42,17 @@
   transform: translateX(-50%);
   z-index: 2;
 }
+.exactLine {
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+.exactNodes {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
 .node {
   background: transparent;
   border: 0;
@@ -52,6 +63,16 @@
   position: absolute;
   top: var(--y);
   transform: translate(-50%, -50%);
+}
+.exactNode {
+  aspect-ratio: 1;
+  transform: none;
+}
+.exactNode[data-status="locked"] {
+  opacity: 1;
+}
+.exactNode .bubble {
+  width: 7.708cqw;
 }
 .node[data-status="locked"] {
   cursor: default;
@@ -72,6 +93,10 @@
   position: absolute;
   top: 0;
   width: 5cqw;
+}
+.exactNode .star,
+.exactNode .glow {
+  width: 100%;
 }
 .node:not([data-status="locked"]):hover .star,
 .node:not([data-status="locked"]):focus-visible .star {
