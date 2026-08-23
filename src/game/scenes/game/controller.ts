@@ -11,21 +11,35 @@ import { stageFor, type PlaySelection } from "@/src/game/stages";
 export function createGameScene(
   selection: PlaySelection,
   onComplete: () => void,
+  onBack: () => void,
 ): { view: HTMLElement; ready: Promise<void>; activate(): void; dispose(): void } {
-  const view = createGameView();
+  const timers = new Map<string, number[]>();
+  const clearPlateTimers = () => {
+    timers.forEach((entries) => entries.forEach(window.clearTimeout));
+    timers.clear();
+  };
+  let store: ReturnType<typeof createGameStoreFromMap> | undefined;
+  const undo = () => {
+    if (store?.getState().game.status !== "playing") return;
+    if (store.getState().undo()) clearPlateTimers();
+  };
+  const reset = () => {
+    if (store?.getState().game.status !== "playing") return;
+    clearPlateTimers();
+    store.getState().reset();
+  };
+  const view = createGameView(onBack, undo, reset);
   const abort = new AbortController();
   let active = false;
   let listening = false;
   let completesOnActivate = false;
-  let store: ReturnType<typeof createGameStoreFromMap> | undefined;
   let unsubscribe: (() => void) | undefined;
   let completeTimer: number | undefined;
-  const timers = new Map<string, number[]>();
   const keydown = (event: KeyboardEvent) => {
     if (!store || store.getState().game.status === "completed") return;
     if (isUndoShortcut(event)) {
       event.preventDefault();
-      store.getState().undo();
+      undo();
       return;
     }
     const direction = directionFromKey(event.key);
@@ -59,10 +73,16 @@ export function createGameScene(
       if (!response.ok) throw new Error("map fetch failed");
       const parsed = parseMap(source);
       if (!parsed.ok) throw new Error("invalid map");
-      store = createGameStoreFromMap(parsed.map);
-      view.sync(store.getState().game);
-      unsubscribe = store.subscribe((state, previous) => {
+      const loadedStore = createGameStoreFromMap(parsed.map);
+      store = loadedStore;
+      view.sync(loadedStore.getState().game);
+      view.setActionAvailability(false, true);
+      unsubscribe = loadedStore.subscribe((state, previous) => {
         view.sync(state.game);
+        view.setActionAvailability(
+          state.game.status === "playing" && state.eventStream.length > 0,
+          state.game.status === "playing",
+        );
         Object.entries(state.game.plateStates).forEach(([position, value]) => {
           if (previous.game.plateStates[position] === value || value !== "active") return;
           const [x, y] = position.split(",").map(Number);
@@ -108,7 +128,7 @@ export function createGameScene(
       if (listening) window.removeEventListener("keydown", keydown);
       listening = false;
       if (completeTimer) window.clearTimeout(completeTimer);
-      timers.forEach((entries) => entries.forEach(window.clearTimeout));
+      clearPlateTimers();
     },
   };
 }

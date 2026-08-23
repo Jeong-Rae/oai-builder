@@ -219,7 +219,11 @@ export class GameApp {
       ),
     );
   private prepareGame(selection: PlaySelection): ReturnType<typeof createGameScene> {
-    return createGameScene(selection, () => this.showClear(selection));
+    return createGameScene(
+      selection,
+      () => this.showClear(selection),
+      () => this.showStageSelect(selection.chapterIndex),
+    );
   }
 
   private showGame = (selection: PlaySelection): Promise<void> =>

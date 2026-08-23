@@ -1,32 +1,76 @@
-import type { GameState, Position } from "../../domain/types";
-import { findExit } from "../../features/fields/exit/rules";
-import { gateOrientationFor, gateVisualFor } from "../../features/fields/gate/presentation";
+import type { GameState, Position } from "@/src/game/domain/types";
+import { findExit } from "@/src/game/features/fields/exit/rules";
+import { gateOrientationFor, gateVisualFor } from "@/src/game/features/fields/gate/presentation";
 import {
   assetForDirection,
   assetUrls,
   overlayForField,
   textureForEntity,
   textureForField,
-} from "../../features/presentation";
-import { backgroundUrl, goalStarUrl } from "../../assets";
-import { createBackgroundStars } from "../shared/backgroundStars";
-import styles from "./scene.module.css";
+} from "@/src/game/features/presentation";
+import { backgroundUrl, goalStarUrl, stageSelectAssets } from "@/src/game/assets";
+import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
+import styles from "@/src/game/scenes/game/scene.module.css";
 
 const key = ({ x, y }: Position) => `${x},${y}`;
 
 export interface GameView {
   root: HTMLElement;
   sync(game: GameState): void;
+  setActionAvailability(undoEnabled: boolean, resetEnabled: boolean): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
   showError(onRetry: () => void): void;
 }
 
-export function createGameView(): GameView {
+export function createGameView(
+  onBack: () => void,
+  onUndo: () => void,
+  onReset: () => void,
+): GameView {
   const root = document.createElement("main");
   root.className = styles.root;
   root.style.backgroundImage = `url(${backgroundUrl})`;
   root.append(createBackgroundStars());
+  const navigation = document.createElement("nav");
+  navigation.className = styles.navigation;
+  navigation.setAttribute("aria-label", "게임 조작");
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = styles.navigationButton;
+  back.setAttribute("aria-label", "스테이지 선택으로 돌아가기");
+  back.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
+  const backIcon = document.createElement("img");
+  backIcon.src = stageSelectAssets.arrowBack;
+  backIcon.alt = "";
+  back.append(backIcon);
+  back.addEventListener("click", onBack);
+  const undo = document.createElement("button");
+  undo.type = "button";
+  undo.className = styles.navigationButton;
+  undo.setAttribute("aria-label", "마지막 이동 되돌리기");
+  undo.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
+  undo.disabled = true;
+  const undoIcon = document.createElement("span");
+  undoIcon.className = styles.actionIcon;
+  undoIcon.setAttribute("aria-hidden", "true");
+  undoIcon.textContent = "↶";
+  undo.append(undoIcon);
+  undo.addEventListener("click", onUndo);
+  const reset = document.createElement("button");
+  reset.type = "button";
+  reset.className = styles.navigationButton;
+  reset.setAttribute("aria-label", "스테이지 처음부터 다시하기");
+  reset.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
+  reset.disabled = true;
+  const resetIcon = document.createElement("span");
+  resetIcon.className = styles.actionIcon;
+  resetIcon.setAttribute("aria-hidden", "true");
+  resetIcon.textContent = "↻";
+  reset.append(resetIcon);
+  reset.addEventListener("click", onReset);
+  navigation.append(back, undo, reset);
+  root.append(navigation);
   const board = document.createElement("div");
   board.className = styles.board;
   root.append(board);
@@ -135,6 +179,10 @@ export function createGameView(): GameView {
   return {
     root,
     sync,
+    setActionAvailability: (undoEnabled, resetEnabled) => {
+      undo.disabled = !undoEnabled;
+      reset.disabled = !resetEnabled;
+    },
     setPlayerTexture: (source) => {
       const player = entityNodes.get("player");
       if (player) player.src = assetUrls[source as keyof typeof assetUrls] ?? source;

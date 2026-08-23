@@ -4,6 +4,7 @@ const mocked = vi.hoisted(() => ({
   addEventListener: vi.fn(),
   mapUrl: "/stage.map" as string | undefined,
   removeEventListener: vi.fn(),
+  setActionAvailability: vi.fn(),
   showError: vi.fn(),
   subscribe: vi.fn(() => vi.fn()),
   sync: vi.fn(),
@@ -13,6 +14,7 @@ vi.mock("@/src/game/scenes/game/view", () => ({
   createGameView: () => ({
     root: {} as HTMLElement,
     sync: mocked.sync,
+    setActionAvailability: mocked.setActionAvailability,
     setPlayerTexture: vi.fn(),
     setPlateFrame: vi.fn(),
     showError: mocked.showError,
@@ -70,7 +72,7 @@ describe("게임 장면 사전 준비", () => {
       setTimeout,
     });
 
-    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn());
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
     scene.activate();
 
     expect(mocked.sync).not.toHaveBeenCalled();
@@ -99,7 +101,7 @@ describe("게임 장면 사전 준비", () => {
     });
     const onComplete = vi.fn();
 
-    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, onComplete);
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, onComplete, vi.fn());
     await scene.ready;
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(onComplete).not.toHaveBeenCalled();
