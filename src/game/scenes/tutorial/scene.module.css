@@ -10,7 +10,7 @@
 .finalLine {
   color: #fff;
   font-size: clamp(1rem, 2.05cqw, 2.6rem);
-  font-weight: 600;
+  font-weight: 500;
   left: 50%;
   letter-spacing: 0.045em;
   line-height: 1.65;
@@ -75,9 +75,10 @@
 
 .prompt {
   animation: prompt-breathe 1.8s ease-in-out infinite;
-  bottom: 3%;
+  bottom: 4%;
   color: rgb(215 249 255 / 82%);
   font-size: clamp(0.65rem, 1cqw, 1.25rem);
+  font-weight: 400;
   left: 50%;
   letter-spacing: 0.05em;
   margin: 0;
