@@ -18,10 +18,10 @@ import bubbleNextUrl from "@/assets/button/button.bubble.webp";
 import decorStarSmallUrl from "@/assets/star/star.cross.small.webp";
 import decorStarMediumUrl from "@/assets/star/star.cross.medium.webp";
 import decorStarLargeUrl from "@/assets/star/star.cross.large.webp";
-import decorMoonUrl from "@/assets/moon/moon.circle.webp";
+import decorMoonUrl from "@/assets/moon/moon.eclipse.trimmed.webp";
 import decorMascotUrl from "@/assets/mascot/mascot.angle-135.webp";
-import { assetUrls } from "./features/presentation";
-import { chapters } from "./stages";
+import { assetUrls } from "@/src/game/features/presentation";
+import { chapters, type ZodiacSign } from "@/src/game/stages";
 
 export { backgroundUrl, plateButtonUrl, goalStarUrl };
 
@@ -45,6 +45,23 @@ export const chapterAssets = {
   arrowLeft: chapterArrowLeftUrl,
   arrowRight: chapterArrowRightUrl,
 } as const;
+
+export const chapterZodiacInactiveAssets: Record<ZodiacSign, string> = {
+  ARIES: new URL("@/assets/zodiac/zodiac.aries.state-inactive.webp", import.meta.url).href,
+  TAURUS: new URL("@/assets/zodiac/zodiac.taurus.state-inactive.webp", import.meta.url).href,
+  GEMINI: new URL("@/assets/zodiac/zodiac.gemini.state-inactive.webp", import.meta.url).href,
+  CANCER: new URL("@/assets/zodiac/zodiac.cancer.state-inactive.webp", import.meta.url).href,
+  LEO: new URL("@/assets/zodiac/zodiac.leo.state-inactive.webp", import.meta.url).href,
+  VIRGO: new URL("@/assets/zodiac/zodiac.virgo.state-inactive.webp", import.meta.url).href,
+  LIBRA: new URL("@/assets/zodiac/zodiac.libra.state-inactive.webp", import.meta.url).href,
+  SCORPIUS: new URL("@/assets/zodiac/zodiac.scorpio.state-inactive.webp", import.meta.url).href,
+  SAGITTARIUS: new URL("@/assets/zodiac/zodiac.sagittarius.state-inactive.webp", import.meta.url)
+    .href,
+  CAPRICORNUS: new URL("@/assets/zodiac/zodiac.capricorn.state-inactive.webp", import.meta.url)
+    .href,
+  AQUARIUS: new URL("@/assets/zodiac/zodiac.aquarius.state-inactive.webp", import.meta.url).href,
+  PISCES: new URL("@/assets/zodiac/zodiac.pisces.state-inactive.webp", import.meta.url).href,
+};
 
 export const stageSelectAssets = {
   backFrame: backFrameUrl,
@@ -72,6 +89,7 @@ export function allGameAssetUrls(): string[] {
       ...Object.values(clearAssets),
       ...Object.values(starNodeAssets),
       ...Object.values(chapterAssets),
+      ...Object.values(chapterZodiacInactiveAssets),
       ...Object.values(stageSelectAssets),
       ...Object.values(decorAssets),
       ...Object.values(assetUrls),

@@ -6,13 +6,13 @@
   width: 100%;
 }
 .lunar {
-  bottom: -53%;
+  bottom: -51.44%;
   left: 50%;
   max-width: none;
   pointer-events: none;
   position: absolute;
   transform: translateX(-50%);
-  width: 74.5%;
+  width: 68.37%;
 }
 .mascot {
   animation: float 2.8s ease-in-out infinite;
