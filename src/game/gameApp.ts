@@ -83,7 +83,7 @@ export class GameApp {
       ),
     );
   private showGame = (selection: PlaySelection): Promise<void> =>
-    this.show(createGameScene(selection, this.showGameStart, () => this.showClear(selection)));
+    this.show(createGameScene(selection, () => this.showClear(selection)));
   private showClear = (selection: PlaySelection): void => {
     progressStore.markCleared(selection.chapterIndex, selection.stageIndex);
     this.showOverlay(

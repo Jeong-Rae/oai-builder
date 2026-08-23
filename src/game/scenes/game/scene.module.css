@@ -5,18 +5,6 @@
   position: relative;
   width: 100%;
 }
-.header {
-  color: #81f0c5;
-  font:
-    700 1.25cqw "온글잎 박다현체",
-    monospace;
-  left: 2.5%;
-  letter-spacing: 4px;
-  position: absolute;
-  top: 3.889%;
-  z-index: 2;
-}
-.home,
 .error button {
   background: #d7f9ff;
   border: 0;
@@ -27,13 +15,6 @@
     monospace;
   padding: 0.8cqw 1.2cqw;
 }
-.home {
-  position: absolute;
-  right: 2.5%;
-  top: -0.556cqh;
-}
-.home:hover,
-.home:focus-visible,
 .error button:hover,
 .error button:focus-visible {
   background: #81f0c5;
@@ -42,8 +23,6 @@
 }
 .board {
   --tile: min(calc(45cqw / var(--columns)), calc(80cqh / var(--rows)));
-  border: min(0.3125cqw, 0.556cqh) solid #d7f9ff;
-  box-shadow: 0 0 0 min(0.208cqw, 0.37cqh) #263947;
   display: grid;
   grid-template-columns: repeat(var(--columns), var(--tile));
   grid-template-rows: repeat(var(--rows), var(--tile));
@@ -51,6 +30,7 @@
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
+  z-index: 1;
 }
 .cell {
   height: var(--tile);

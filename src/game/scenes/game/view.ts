@@ -9,8 +9,8 @@ import {
   textureForEntity,
   textureForField,
 } from "../../features/presentation";
-import { chapters, stageFor, type PlaySelection } from "../../stages";
 import { backgroundUrl, goalStarUrl } from "../../assets";
+import { createBackgroundStars } from "../shared/backgroundStars";
 import styles from "./scene.module.css";
 
 const key = ({ x, y }: Position) => `${x},${y}`;
@@ -23,20 +23,11 @@ export interface GameView {
   showError(onRetry: () => void): void;
 }
 
-export function createGameView(selection: PlaySelection, onHome: () => void): GameView {
+export function createGameView(): GameView {
   const root = document.createElement("main");
   root.className = styles.root;
   root.style.backgroundImage = `url(${backgroundUrl})`;
-  const header = document.createElement("header");
-  header.className = styles.header;
-  header.textContent = `${chapters[selection.chapterIndex]!.sign} · ${stageFor(selection).label}`;
-  const home = document.createElement("button");
-  home.type = "button";
-  home.textContent = "HOME";
-  home.className = styles.home;
-  home.addEventListener("click", onHome);
-  header.append(home);
-  root.append(header);
+  root.append(createBackgroundStars());
   const board = document.createElement("div");
   board.className = styles.board;
   root.append(board);
@@ -85,11 +76,12 @@ export function createGameView(selection: PlaySelection, onHome: () => void): Ga
         if (overlayTexture) {
           const overlay = old ?? document.createElement("img");
           const overlayKind = game.tiles[y]![x];
-          overlay.className = overlayKind === "plate"
-            ? `${styles.overlay} ${styles.plate}`
-            : overlayKind === "wormhole"
-              ? `${styles.overlay} ${styles.wormhole}`
-              : styles.overlay;
+          overlay.className =
+            overlayKind === "plate"
+              ? `${styles.overlay} ${styles.plate}`
+              : overlayKind === "wormhole"
+                ? `${styles.overlay} ${styles.wormhole}`
+                : styles.overlay;
           overlay.alt = "";
           overlay.src = assetUrls[overlayTexture];
           if (!old) {
@@ -117,9 +109,8 @@ export function createGameView(selection: PlaySelection, onHome: () => void): Ga
       let image = entityNodes.get(entity.id);
       if (!image) {
         image = document.createElement("img");
-        image.className = entity.kind === "normal"
-          ? `${styles.entity} ${styles.normal}`
-          : styles.entity;
+        image.className =
+          entity.kind === "normal" ? `${styles.entity} ${styles.normal}` : styles.entity;
         image.alt = entity.kind === "player" ? "플레이어" : entity.kind;
         entityNodes.set(entity.id, image);
       }

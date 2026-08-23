@@ -17,7 +17,7 @@ export function createIntroView(): { root: HTMLButtonElement; showMessage(): voi
   }
   const message = document.createElement("p");
   message.className = styles.message;
-  message.textContent = "고양이는 세상을 구할 수 있습니다. 귀엽기 때문이죠.";
+  message.textContent = "고양이는 세상을 구할 수 있습니다. 귀여우니까요!.";
   root.append(message);
   return { root, showMessage: () => message.classList.add(styles.messageVisible) };
 }

@@ -9,10 +9,9 @@ import { createGameView } from "./view";
 
 export function createGameScene(
   selection: PlaySelection,
-  onHome: () => void,
   onComplete: () => void,
 ): { view: HTMLElement; dispose(): void } {
-  const view = createGameView(selection, onHome);
+  const view = createGameView();
   const abort = new AbortController();
   let unsubscribe: (() => void) | undefined;
   let completeTimer: number | undefined;
