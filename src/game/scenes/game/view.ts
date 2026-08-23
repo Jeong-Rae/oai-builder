@@ -55,7 +55,7 @@ export interface GameView {
   sync(game: GameState): void;
   playWormhole(entityId: string, entry: Position, destination: Position): Promise<void>;
   cancelAnimations(): void;
-  setActionAvailability(undoEnabled: boolean, resetEnabled: boolean): void;
+  setActionAvailability(undoEnabled: boolean, navigationEnabled: boolean): void;
   setHintPosition(position?: Position): void;
   setElapsedMs(durationMs: number): void;
   setPlayerTexture(source: string): void;
@@ -358,9 +358,11 @@ export function createGameView(
       if (exitPulse) stop(exitPulse);
     },
     cancelAnimations,
-    setActionAvailability: (undoEnabled, resetEnabled) => {
-      undo.disabled = !undoEnabled;
-      reset.disabled = !resetEnabled;
+    setActionAvailability: (undoEnabled, navigationEnabled) => {
+      back.disabled = !navigationEnabled;
+      undo.disabled = !navigationEnabled || !undoEnabled;
+      reset.disabled = !navigationEnabled;
+      hint.disabled = !navigationEnabled;
     },
     setHintPosition: (position) => {
       hintRing.remove();

@@ -102,6 +102,7 @@ describe("게임 장면 사전 준비", () => {
 
     expect(mocked.sync).toHaveBeenCalledOnce();
     expect(mocked.subscribe).toHaveBeenCalledOnce();
+    expect(mocked.setActionAvailability).toHaveBeenCalledWith(false, true);
     expect(mocked.addEventListener).toHaveBeenCalledWith("keydown", expect.any(Function));
 
     scene.dispose();
@@ -170,15 +171,48 @@ describe("게임 장면 사전 준비", () => {
     )?.[1] as (event: KeyboardEvent) => void;
     const event = { key: "ArrowRight", preventDefault: vi.fn() } as unknown as KeyboardEvent;
 
+    mocked.setActionAvailability.mockClear();
     keydown(event);
     keydown(event);
     expect(mocked.dispatch).toHaveBeenCalledOnce();
-    expect(mocked.playWormhole).toHaveBeenCalledWith("player", { x: 2, y: 1 }, { x: 6, y: 4 });
+    expect(mocked.setActionAvailability).not.toHaveBeenCalled();
+    expect(mocked.playWormhole).toHaveBeenCalledWith(
+      "player",
+      { x: 2, y: 1 },
+      { x: 6, y: 4 },
+    );
 
     finishWormhole();
     await Promise.resolve();
     keydown(event);
     expect(mocked.dispatch).toHaveBeenCalledTimes(2);
+    scene.dispose();
+  });
+
+  it("클리어하면 버튼 그룹을 비활성화한다", async () => {
+    mocked.subscribe.mockImplementation((listener) => {
+      listener(
+        { game: { status: "completed", plateStates: {} }, eventStream: [] },
+        { game: { status: "playing", plateStates: {} }, eventStream: [] },
+      );
+      return vi.fn();
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
+    await scene.ready;
+
+    expect(mocked.setActionAvailability).toHaveBeenLastCalledWith(false, false);
     scene.dispose();
   });
 

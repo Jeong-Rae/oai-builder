@@ -116,15 +116,8 @@ function createMapGameScene(
     );
     if (teleport?.type === "entity/moved" && teleport.wormhole) {
       motionLocked = true;
-      view.setActionAvailability(false, false);
       void view.playWormhole(teleport.entityId, teleport.wormhole, teleport.to).finally(() => {
         motionLocked = false;
-        const state = store?.getState();
-        if (state)
-          view.setActionAvailability(
-            state.game.status === "playing" && state.eventStream.length > 0,
-            state.game.status === "playing",
-          );
       });
     }
   };

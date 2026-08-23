@@ -24,6 +24,7 @@
   display: grid;
   padding: 0;
   place-items: center;
+  transition: filter 150ms ease;
   width: 4.8cqw;
 }
 .navigationButton img {
@@ -36,18 +37,10 @@
   line-height: 1;
   transform: translateY(-4%);
 }
-.navigationButton:hover:not(:disabled) img,
-.navigationButton:focus-visible:not(:disabled) img {
-  filter: brightness(1.3);
-}
-.navigationButton:hover:not(:disabled) .actionIcon,
-.navigationButton:focus-visible:not(:disabled) .actionIcon {
-  color: #fff;
+.navigationButton:hover:not(:disabled),
+.navigationButton:focus-visible:not(:disabled) {
   filter: drop-shadow(0 0 0.35cqw rgb(215 249 255 / 70%));
-}
-.navigationButton:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 4px;
+  outline: none;
 }
 .navigationButton:disabled {
   cursor: default;
