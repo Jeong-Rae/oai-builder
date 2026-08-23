@@ -48,7 +48,7 @@ describe("스테이지 선택", () => {
     expect(chapters[1]!.stages).toHaveLength(12);
     expect(
       chapters.flatMap((chapter) => chapter.stages).filter((stage) => stage.mapUrl),
-    ).toHaveLength(7);
+    ).toHaveLength(9);
   });
 
   it("챕터 선택 화면에는 앞의 네 별자리만 노출한다", () => {
@@ -65,7 +65,7 @@ describe("스테이지 선택", () => {
       "chapter-01.stage-01.map",
       "chapter-01.stage-02.map",
       "chapter-01.stage-03.map",
-      undefined,
+      "chapter-01.stage-04.map",
     ]);
     expect(chapters[1]!.stages.map((stage) => stage.mapUrl?.split("/").at(-1))).toEqual([
       "chapter-02.stage-01.map",
@@ -73,7 +73,9 @@ describe("스테이지 선택", () => {
       "chapter-02.stage-03.map",
       "chapter-02.stage-04.map",
       "chapter-02.stage-05.map",
-      ...Array(7).fill(undefined),
+      undefined,
+      "chapter-02.stage-07.map",
+      ...Array(5).fill(undefined),
     ]);
     expect(
       chapters.slice(2).every((chapter) => chapter.stages.every((stage) => !stage.mapUrl)),
@@ -82,11 +84,12 @@ describe("스테이지 선택", () => {
 
   it("map이 없는 스테이지도 진행 순서에 따라 입장할 수 있다", async () => {
     await progressStore.reset();
-    await progressStore.markCleared(0, 0);
-    await progressStore.markCleared(0, 1);
-    await progressStore.markCleared(0, 2);
-    expect(chapters[0]!.stages[3]!.mapUrl).toBeUndefined();
-    expect(stageStatuses(0)[3]).toBe("current");
+    for (const stageIndex of chapters[0]!.stages.keys()) {
+      await progressStore.markCleared(0, stageIndex);
+    }
+    await progressStore.markCleared(1, 0);
+    expect(chapters[1]!.stages[1]!.mapUrl).toBeUndefined();
+    expect(stageStatuses(1)[1]).toBe("current");
     await progressStore.reset();
   });
 

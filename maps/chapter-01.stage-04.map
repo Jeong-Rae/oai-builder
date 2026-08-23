@@ -1,0 +1,148 @@
+{
+  "version": 2,
+  "columns": 9,
+  "rows": 9,
+  "tiles": [
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "wall",
+      "wall",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "wall",
+      "exit",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "gate",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "wormhole",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "floor",
+      "wall",
+      "floor",
+      "floor",
+      "floor",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "plate",
+      "wall",
+      "plate",
+      "floor",
+      "wormhole",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ]
+  ],
+  "wormholePairs": [
+    {
+      "id": 2,
+      "variant": 4,
+      "positions": [
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 5,
+          "y": 6
+        }
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "normal-1",
+      "kind": "normal",
+      "position": {
+        "x": 5,
+        "y": 5
+      }
+    },
+    {
+      "id": "player",
+      "kind": "player",
+      "position": {
+        "x": 5,
+        "y": 4
+      }
+    },
+    {
+      "id": "normal-3",
+      "kind": "normal",
+      "position": {
+        "x": 4,
+        "y": 4
+      }
+    }
+  ]
+}
