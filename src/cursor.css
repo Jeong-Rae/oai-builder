@@ -6,12 +6,22 @@
 
 html,
 body,
-#app,
-#app * {
+#app {
   cursor: var(--cursor-open);
 }
 
-#app :is(button, input, select, .file-button):not(:disabled):not(.disabled) {
+#app
+  :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    a[href],
+    area[href],
+    input:not(:disabled),
+    select:not(:disabled),
+    summary,
+    [role="button"]:not([aria-disabled="true"]),
+    [data-clickable],
+    .file-button:not(.disabled)
+  ) {
   cursor: var(--cursor-point);
 }
 
