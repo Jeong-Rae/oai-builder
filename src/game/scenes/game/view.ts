@@ -7,11 +7,41 @@ import {
   textureForEntity,
   textureForField,
 } from "@/src/game/features/presentation";
-import { backgroundUrl, stageSelectAssets } from "@/src/game/assets";
+import { backgroundUrl, clearAssets, stageSelectAssets } from "@/src/game/assets";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/game/scene.module.css";
 
 const key = ({ x, y }: Position) => `${x},${y}`;
+const goalSparks = [
+  [8, 18, 0, 11],
+  [45, 3, 180, 8],
+  [88, 17, 360, 10],
+  [96, 58, 540, 8],
+  [74, 94, 720, 11],
+  [31, 97, 900, 8],
+  [3, 66, 1_080, 10],
+] as const;
+
+function createGoalEffect(): HTMLElement {
+  const effect = document.createElement("span");
+  effect.className = styles.goalEffect;
+  effect.setAttribute("aria-hidden", "true");
+  const glow = document.createElement("span");
+  glow.className = styles.goalGlow;
+  effect.append(glow);
+  goalSparks.forEach(([x, y, delay, size]) => {
+    const spark = document.createElement("img");
+    spark.className = styles.goalSpark;
+    spark.src = clearAssets.spark;
+    spark.alt = "";
+    spark.style.setProperty("--x", `${x}%`);
+    spark.style.setProperty("--y", `${y}%`);
+    spark.style.setProperty("--delay", `${delay}ms`);
+    spark.style.setProperty("--size", `${size}%`);
+    effect.append(spark);
+  });
+  return effect;
+}
 
 export interface GameView {
   root: HTMLElement;
@@ -139,6 +169,11 @@ export function createGameView(
           old?.remove();
           overlays.delete(key(position));
         }
+        const activeGoal = game.tiles[y]![x] === "exit" && game.goalOpened;
+        cell.classList.toggle(styles.goalActive, activeGoal);
+        const goalEffect = cell.querySelector(`.${styles.goalEffect}`);
+        if (activeGoal && !goalEffect) cell.append(createGoalEffect());
+        else if (!activeGoal) goalEffect?.remove();
         if (game.tiles[y]![x] === "gate") renderGate(cell, game, position);
         else cell.querySelector(`.${styles.gate}`)?.remove();
       }
