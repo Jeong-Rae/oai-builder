@@ -8,6 +8,7 @@ import {
   textureForField,
 } from "@/src/game/features/presentation";
 import { backgroundUrl, clearAssets, stageSelectAssets } from "@/src/game/assets";
+import { formatDuration } from "@/src/game/challenge";
 import { createBackButton } from "@/src/game/components/BackButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/game/scene.module.css";
@@ -56,6 +57,7 @@ export interface GameView {
   cancelAnimations(): void;
   setActionAvailability(undoEnabled: boolean, resetEnabled: boolean): void;
   setHintPosition(position?: Position): void;
+  setElapsedMs(durationMs: number): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
   showError(onRetry: () => void): void;
@@ -66,6 +68,7 @@ export function createGameView(
   onUndo: () => void,
   onReset: () => void,
   onHint: () => void,
+  timed = false,
 ): GameView {
   const root = document.createElement("main");
   root.className = styles.root;
@@ -117,6 +120,12 @@ export function createGameView(
   hint.addEventListener("click", onHint);
   navigation.append(back, undo, reset, hint);
   root.append(navigation);
+  const timer = document.createElement("output");
+  timer.className = styles.timer;
+  timer.setAttribute("aria-label", "챌린지 경과 시간");
+  timer.value = formatDuration(0);
+  timer.hidden = !timed;
+  root.append(timer);
   const board = document.createElement("div");
   board.className = styles.board;
   root.append(board);
@@ -357,6 +366,9 @@ export function createGameView(
       hintRing.remove();
       const cell = position && cells.get(key(position));
       [...entityLayers.values()].find((layer) => layer.parentElement === cell)?.append(hintRing);
+    },
+    setElapsedMs: (durationMs) => {
+      timer.value = formatDuration(durationMs);
     },
     setPlayerTexture: (source) => {
       const player = entityNodes.get("player");
