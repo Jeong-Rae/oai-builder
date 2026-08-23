@@ -2,6 +2,7 @@ import {
   backgroundUrl,
   chapterAssets,
   chapterZodiacInactiveAssets,
+  decorAssets,
   starNodeAssets,
 } from "@/src/game/assets";
 import { computeLayout } from "@/src/game/constellation/layout";
@@ -203,23 +204,30 @@ function challengeConstellation(): SVGSVGElement {
   const svg = document.createElementNS(svgNamespace, "svg");
   svg.setAttribute("viewBox", "0 0 478 560");
   svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", "모래시계 모양의 오늘의 챌린지 별자리");
-  const line = document.createElementNS(svgNamespace, "path");
-  line.setAttribute("class", styles.challengeLine);
-  line.setAttribute("d", "M125 100 H353 L145 338 H333 L125 100 M353 100 L145 338");
-  svg.append(line);
+  svg.setAttribute("aria-label", "반짝이는 큰 노란별 모양의 오늘의 챌린지");
+
+  const star = document.createElementNS(svgNamespace, "image");
+  setImageBox(star, starNodeAssets.gold, 154, 98, 170, 170);
+  const glow = star.cloneNode() as SVGImageElement;
+  glow.setAttribute("class", `${styles.glow} ${styles.goldGlow}`);
+  svg.append(glow, star);
+
   [
-    [100, 75],
-    [328, 75],
-    [120, 313],
-    [308, 313],
-    [214, 194],
-  ].forEach(([x, y], index) => {
-    const star = document.createElementNS(svgNamespace, "image");
-    setImageBox(star, index === 4 ? starNodeAssets.gold : starNodeAssets.white, x!, y!, 50, 50);
-    const glow = star.cloneNode() as SVGImageElement;
-    glow.setAttribute("class", `${styles.glow} ${styles.goldGlow}`);
-    svg.append(glow, star);
+    [decorAssets.starLarge, 300, 84, 54, 58],
+    [decorAssets.starMedium, 110, 148, 34, 37],
+    [decorAssets.starSmall, 318, 238, 24, 23],
+  ].forEach(([source, x, y, width, height]) => {
+    const sparkle = document.createElementNS(svgNamespace, "image");
+    sparkle.setAttribute("class", styles.challengeSparkle);
+    setImageBox(
+      sparkle,
+      source as string,
+      x as number,
+      y as number,
+      width as number,
+      height as number,
+    );
+    svg.append(sparkle);
   });
   const title = document.createElementNS(svgNamespace, "text");
   title.setAttribute("class", styles.challengeTitle);

@@ -76,14 +76,8 @@
   filter: none;
   stroke: #aeb9c2;
 }
-.challengeLine {
-  fill: none;
-  filter: drop-shadow(0 0 8px rgb(255 216 102 / 48%));
-  stroke: #ffd866;
-  stroke-dasharray: 5 8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 4;
+.challengeSparkle {
+  filter: drop-shadow(0 0 4px rgb(255 216 102 / 55%));
 }
 .challengeTitle,
 .challengeSubtitle {
