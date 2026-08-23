@@ -21,8 +21,8 @@ function memoryStorage(): BrowserStorage & { data: Map<string, string> } {
 
 describe("Local Login", () => {
   it("인증 여부에 맞는 Start 문구를 사용한다", () => {
-    expect(startButtonLabel(false)).toBe("Start with Google");
-    expect(startButtonLabel(true)).toBe("Start");
+    expect(startButtonLabel(false)).toBe("START with Google");
+    expect(startButtonLabel(true)).toBe("START");
   });
 
   it("최초 로그인 후 같은 Local Player를 복구한다", async () => {

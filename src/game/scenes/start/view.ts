@@ -3,8 +3,8 @@ import { createPlateButton } from "@/src/game/components/PlateButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/start/scene.module.css";
 
-export function startButtonLabel(authenticated: boolean): "Start" | "Start with Google" {
-  return authenticated ? "Start" : "Start with Google";
+export function startButtonLabel(authenticated: boolean): "START" | "START with Google" {
+  return authenticated ? "START" : "START with Google";
 }
 
 export function createStartView(onStart: () => void, initiallyAuthenticated = false): {
