@@ -1,4 +1,5 @@
-import { clearAssets, plateButtonUrl } from "@/src/game/assets";
+import { clearAssets } from "@/src/game/assets";
+import { createPlateButton } from "@/src/game/components/PlateButton";
 import styles from "@/src/game/scenes/clear/scene.module.css";
 
 function createSpark(angle: number, distance: number, delay: number, size = 6): HTMLImageElement {
@@ -58,14 +59,8 @@ export function createClearView(
     ["RETRY", onRetry],
     ["HOME", onHome],
   ].forEach(([label, action], index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = styles.button;
-    button.dataset.sfx = "button";
-    button.style.backgroundImage = `url(${plateButtonUrl})`;
+    const button = createPlateButton(label as string, action as () => void, styles.button);
     button.style.setProperty("--button-delay", `${500 + index * 70}ms`);
-    button.textContent = label as string;
-    button.addEventListener("click", action as () => void);
     actions.append(button);
   });
   root.append(createHeader(), createStarCluster(), actions);

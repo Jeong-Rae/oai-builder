@@ -26,13 +26,14 @@ interface Scene {
 }
 
 const svgNamespace = "http://www.w3.org/2000/svg";
+const meteors = [
+  { source: decorAssets.starMedium, x: 90, y: 18, size: 2.5, delay: 120, duration: 720 },
+  { source: clearAssets.spark, x: 92, y: 40, size: 2, delay: 80, duration: 760 },
+  { source: decorAssets.starLarge, x: 95, y: 65, size: 3, delay: 40, duration: 800 },
+  { source: clearAssets.spark, x: 98, y: 86, size: 2.25, delay: 0, duration: 840 },
+] as const;
 
-function createSceneTransition(): HTMLElement {
-  const layer = document.createElement("div");
-  layer.className = "scene-transition";
-  layer.setAttribute("aria-hidden", "true");
-  const band = document.createElement("div");
-  band.className = "transition-band";
+function createTransitionWave(): SVGSVGElement {
   const wave = document.createElementNS(svgNamespace, "svg");
   wave.classList.add("transition-wave");
   wave.setAttribute("viewBox", "0 0 2688 1080");
@@ -43,29 +44,35 @@ function createSceneTransition(): HTMLElement {
     "M60 0 C170 120 20 240 130 360 C250 480 80 600 190 720 C310 840 160 960 260 1080 L2640 1080 C2520 970 2670 850 2580 740 C2470 620 2660 510 2520 390 C2420 270 2520 130 2380 0 Z",
   );
   wave.append(shape);
-  band.append(wave);
+  return wave;
+}
 
-  const meteors = [
-    { source: decorAssets.starMedium, x: 90, y: 18, size: 2.5, delay: 120, duration: 720 },
-    { source: clearAssets.spark, x: 92, y: 40, size: 2, delay: 80, duration: 760 },
-    { source: decorAssets.starLarge, x: 95, y: 65, size: 3, delay: 40, duration: 800 },
-    { source: clearAssets.spark, x: 98, y: 86, size: 2.25, delay: 0, duration: 840 },
-  ] as const;
-  meteors.forEach(({ source, x, y, size, delay, duration }, index) => {
-    const meteor = document.createElement("span");
-    meteor.className = "transition-meteor";
-    meteor.style.setProperty("--meteor-x", `${x}%`);
-    meteor.style.setProperty("--meteor-y", `${y}%`);
-    meteor.style.setProperty("--meteor-size", `${size}cqw`);
-    meteor.style.setProperty("--meteor-delay", `${delay}ms`);
-    meteor.style.setProperty("--meteor-duration", `${duration}ms`);
-    meteor.style.setProperty("--meteor-color", index % 2 === 0 ? "215 249 255" : "247 211 111");
-    const star = document.createElement("img");
-    star.src = source;
-    star.alt = "";
-    meteor.append(star);
-    band.append(meteor);
-  });
+function createTransitionMeteor(
+  { source, x, y, size, delay, duration }: (typeof meteors)[number],
+  index: number,
+): HTMLElement {
+  const meteor = document.createElement("span");
+  meteor.className = "transition-meteor";
+  meteor.style.setProperty("--meteor-x", `${x}%`);
+  meteor.style.setProperty("--meteor-y", `${y}%`);
+  meteor.style.setProperty("--meteor-size", `${size}cqw`);
+  meteor.style.setProperty("--meteor-delay", `${delay}ms`);
+  meteor.style.setProperty("--meteor-duration", `${duration}ms`);
+  meteor.style.setProperty("--meteor-color", index % 2 === 0 ? "215 249 255" : "247 211 111");
+  const star = document.createElement("img");
+  star.src = source;
+  star.alt = "";
+  meteor.append(star);
+  return meteor;
+}
+
+function createSceneTransition(): HTMLElement {
+  const layer = document.createElement("div");
+  layer.className = "scene-transition";
+  layer.setAttribute("aria-hidden", "true");
+  const band = document.createElement("div");
+  band.className = "transition-band";
+  band.append(createTransitionWave(), ...meteors.map(createTransitionMeteor));
   layer.append(band);
   return layer;
 }
