@@ -1,5 +1,5 @@
 .root {
-  background: #080e14;
+  background: #080e14 center / cover no-repeat;
   height: 100%;
   overflow: hidden;
   position: relative;

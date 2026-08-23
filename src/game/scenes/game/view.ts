@@ -10,7 +10,7 @@ import {
   textureForField,
 } from "../../features/presentation";
 import { chapters, stageFor, type PlaySelection } from "../../stages";
-import { goalStarUrl } from "../../assets";
+import { backgroundUrl, goalStarUrl } from "../../assets";
 import styles from "./scene.module.css";
 
 const key = ({ x, y }: Position) => `${x},${y}`;
@@ -26,6 +26,7 @@ export interface GameView {
 export function createGameView(selection: PlaySelection, onHome: () => void): GameView {
   const root = document.createElement("main");
   root.className = styles.root;
+  root.style.backgroundImage = `url(${backgroundUrl})`;
   const header = document.createElement("header");
   header.className = styles.header;
   header.textContent = `${chapters[selection.chapterIndex]!.sign} · ${stageFor(selection).label}`;
