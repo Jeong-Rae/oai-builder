@@ -45,6 +45,7 @@ function createMapGameScene(
   };
   let store: ReturnType<typeof createGameStoreFromMap> | undefined;
   let motionLocked = false;
+  let hintedEntityId: string | undefined;
   const undo = () => {
     if (motionLocked || store?.getState().game.status !== "playing") return;
     if (store.getState().undo()) clearPlateTimers();
@@ -56,7 +57,14 @@ function createMapGameScene(
   };
   const hint = () => {
     if (motionLocked || !store || store.getState().game.status !== "playing") return;
-    view.setHintPosition(findNextInteraction(store.getState().game));
+    const game = store.getState().game;
+    const position = findNextInteraction(game);
+    hintedEntityId = position
+      ? Object.values(game.entities).find(
+          (entity) => entity.position.x === position.x && entity.position.y === position.y,
+        )?.id
+      : undefined;
+    view.setHintPosition(position);
   };
   const view = createGameView(onBack, undo, reset, hint, timed);
   const abort = new AbortController();
@@ -108,6 +116,18 @@ function createMapGameScene(
     event.preventDefault();
     const game = store.getState().game;
     const decision = store.getState().dispatch({ type: "player/move", direction });
+    if (
+      hintedEntityId &&
+      decision.events.some((entry) =>
+        entry.type === "control/transferred"
+          ? entry.fromEntityId === hintedEntityId || entry.toEntityId === hintedEntityId
+          : entry.type === "controls/swapped" &&
+            (entry.firstEntityId === hintedEntityId || entry.secondEntityId === hintedEntityId),
+      )
+    ) {
+      hintedEntityId = undefined;
+      view.setHintPosition();
+    }
     if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
     if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");
     view.setPlayerTexture(playerTextureForMove(game, direction, decision));
@@ -149,7 +169,6 @@ function createMapGameScene(
       view.setActionAvailability(false, true);
       unsubscribe = loadedStore.subscribe((state, previous) => {
         view.sync(state.game);
-        view.setHintPosition();
         view.setActionAvailability(
           state.game.status === "playing" && state.eventStream.length > 0,
           state.game.status === "playing",
