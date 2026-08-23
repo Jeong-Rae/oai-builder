@@ -3,11 +3,42 @@ import { createPlateButton } from "@/src/game/components/PlateButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/start/scene.module.css";
 
-export function startButtonLabel(authenticated: boolean): "START" | "START with Google" {
-  return authenticated ? "START" : "START with Google";
+function createGoogleMark(): SVGSVGElement {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add(styles.googleMark);
+  svg.setAttribute("viewBox", "0 0 18 18");
+  svg.setAttribute("aria-hidden", "true");
+  const paths = [
+    [
+      "#4285f4",
+      "M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.798 2.717v2.258h2.91c1.704-1.568 2.684-3.878 2.684-6.615Z",
+    ],
+    [
+      "#34a853",
+      "M9 18c2.43 0 4.467-.806 5.956-2.18l-2.91-2.258c-.806.54-1.835.858-3.046.858-2.344 0-4.328-1.584-5.037-3.71H.956v2.332A9 9 0 0 0 9 18Z",
+    ],
+    [
+      "#fbbc05",
+      "M3.963 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.281-1.71V4.958H.956A9 9 0 0 0 0 9c0 1.45.347 2.824.956 4.042l3.007-2.332Z",
+    ],
+    [
+      "#ea4335",
+      "M9 3.58c1.321 0 2.507.454 3.441 1.346l2.581-2.581C13.463.892 11.426 0 9 0A9 9 0 0 0 .956 4.958L3.963 7.29C4.672 5.164 6.656 3.58 9 3.58Z",
+    ],
+  ] as const;
+  paths.forEach(([fill, d]) => {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", fill);
+    path.setAttribute("d", d);
+    svg.append(path);
+  });
+  return svg;
 }
 
-export function createStartView(onStart: () => void, initiallyAuthenticated = false): {
+export function createStartView(
+  onStart: () => void,
+  initiallyAuthenticated = false,
+): {
   root: HTMLElement;
   updateLoading(loaded: number, total: number): void;
   setAuthenticated(authenticated: boolean): void;
@@ -51,6 +82,7 @@ export function createStartView(onStart: () => void, initiallyAuthenticated = fa
   let errorMessage: string | undefined;
   let ready = false;
   let start: HTMLButtonElement | undefined;
+  let googleMark: SVGSVGElement | undefined;
   const notice = document.createElement("p");
   notice.className = styles.notice;
   notice.textContent = "데모 로그인입니다. 실제 Google 계정과 연결되지 않습니다.";
@@ -61,11 +93,13 @@ export function createStartView(onStart: () => void, initiallyAuthenticated = fa
   const renderAction = (): void => {
     if (!ready) return;
     if (!start) {
-      start = createPlateButton(startButtonLabel(authenticated), onStart);
+      start = createPlateButton("START", onStart);
       start.classList.add(styles.start);
+      googleMark = createGoogleMark();
+      start.append(googleMark);
       area.replaceChildren(start, notice, error);
     }
-    start.textContent = startButtonLabel(authenticated);
+    googleMark!.style.display = authenticated ? "none" : "";
     start.disabled = pending;
     notice.hidden = authenticated;
     error.textContent = errorMessage ?? "";

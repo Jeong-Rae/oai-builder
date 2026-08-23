@@ -120,7 +120,6 @@ export function createGameView(): GameView {
         const control = document.createElement("img");
         control.className = styles.control;
         control.dataset.direction = direction;
-        control.dataset.entityKind = entity.kind;
         control.src = assetUrls[assetForDirection(direction)];
         control.alt = "";
         image.parentElement!.append(control);

@@ -125,13 +125,15 @@ export const chapters: readonly ChapterDefinition[] = zodiacSigns.map((sign) => 
   };
 });
 
+export const visibleChapters = chapters.slice(0, 4);
+
 export function stageStatuses(chapterIndex: number): StageStatus[] {
   const chapter = chapters[chapterIndex]!;
   return deriveStageStatuses(
     chapter.stages.length,
     prerequisiteIndices(chapter.constellation),
     progressStore.clearedStages(chapterIndex, chapter.stages.length),
-  ).map((status, stageIndex) => (chapter.stages[stageIndex]!.mapUrl ? status : "locked"));
+  );
 }
 
 export function isChapterCleared(chapterIndex: number): boolean {
@@ -155,7 +157,7 @@ export function nextSelection({ chapterIndex, stageIndex }: PlaySelection): Play
     return { chapterIndex, stageIndex: stageIndex + 1 };
   }
 
-  return { chapterIndex: (chapterIndex + 1) % chapters.length, stageIndex: 0 };
+  return { chapterIndex: (chapterIndex + 1) % visibleChapters.length, stageIndex: 0 };
 }
 
 export function nextStage(stage: Stage): Stage {

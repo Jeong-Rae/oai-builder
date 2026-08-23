@@ -172,7 +172,7 @@ export class GameApp {
         createClearScene(
           () => this.showGame(nextSelection(selection)),
           () => this.showGame(selection),
-          this.showGameStart,
+          () => this.showStageSelect(selection.chapterIndex),
         ),
       );
     } catch {

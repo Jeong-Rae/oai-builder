@@ -30,7 +30,7 @@
 .line {
   fill: none;
   stroke: #aeb9c2;
-  stroke-dasharray: 10 14;
+  stroke-dasharray: 12 7;
   stroke-linecap: round;
   stroke-width: 5;
 }
@@ -70,15 +70,11 @@
   aspect-ratio: 1;
   transform: none;
 }
-.exactNode[data-status="locked"] {
-  opacity: 1;
-}
 .exactNode .bubble {
   width: 7.708cqw;
 }
 .node[data-status="locked"] {
   cursor: default;
-  opacity: 0.55;
 }
 .node[data-status="current"] {
   z-index: 10;
@@ -112,8 +108,12 @@
   aspect-ratio: 1;
   border: 2px dashed rgb(215 249 255 / 75%);
   border-radius: 50%;
-  inset: -26%;
+  box-sizing: border-box;
+  left: 50%;
   position: absolute;
+  top: 54.25%;
+  transform: translate(-50%, -50%);
+  width: 152%;
 }
 .bubble {
   aspect-ratio: 414 / 230;
@@ -123,11 +123,11 @@
   color: #15171d;
   display: grid;
   font-family: "온글잎 박다현체", monospace;
-  font-size: 1cqw;
+  font-size: 1.5cqw;
   font-weight: 700;
   left: 50%;
   letter-spacing: 0.18em;
-  padding-bottom: 18%;
+  padding-bottom: 8%;
   place-items: center;
   position: absolute;
   bottom: calc(100% + 0.2cqw);

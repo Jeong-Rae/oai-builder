@@ -20,7 +20,10 @@ export function createGameScene(
   const load = async () => {
     try {
       const mapUrl = stageFor(selection).mapUrl;
-      if (!mapUrl) throw new Error("stage map unavailable");
+      if (!mapUrl) {
+        completeTimer = window.setTimeout(onComplete, 0);
+        return;
+      }
       const response = await fetch(mapUrl, { signal: abort.signal });
       const source = await response.text();
       if (!response.ok) throw new Error("map fetch failed");

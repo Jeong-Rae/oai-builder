@@ -1,5 +1,5 @@
 import { createChapterView } from "@/src/game/scenes/chapter/view";
-import { chapters, isChapterUnlocked } from "@/src/game/stages";
+import { isChapterUnlocked, visibleChapters } from "@/src/game/stages";
 
 export function createChapterScene(
   initialIndex: number,
@@ -11,7 +11,7 @@ export function createChapterScene(
   const move = (offset: -1 | 1) => {
     if (moving) return;
     const next = active + offset;
-    if (next < 0 || next >= chapters.length) return;
+    if (next < 0 || next >= visibleChapters.length) return;
     moving = true;
     active = next;
     view.setActive(active);

@@ -8,7 +8,9 @@ import {
   nextStage,
   stageFor,
   stageGroups,
+  stageStatuses,
   stagesPerGroup,
+  visibleChapters,
 } from "@/src/game/stages";
 import { signVisuals } from "@/src/game/data/signVisuals";
 import { progressStore } from "@/src/game/store/progressStore";
@@ -49,6 +51,15 @@ describe("스테이지 선택", () => {
     ).toHaveLength(7);
   });
 
+  it("챕터 선택 화면에는 앞의 네 별자리만 노출한다", () => {
+    expect(visibleChapters.map((chapter) => chapter.sign)).toEqual([
+      "ARIES",
+      "TAURUS",
+      "GEMINI",
+      "CANCER",
+    ]);
+  });
+
   it("지정한 스테이지에만 map을 연결한다", () => {
     expect(chapters[0]!.stages.map((stage) => stage.mapUrl?.split("/").at(-1))).toEqual([
       "chapter-01.stage-01.map",
@@ -67,6 +78,16 @@ describe("스테이지 선택", () => {
     expect(
       chapters.slice(2).every((chapter) => chapter.stages.every((stage) => !stage.mapUrl)),
     ).toBe(true);
+  });
+
+  it("map이 없는 스테이지도 진행 순서에 따라 입장할 수 있다", async () => {
+    await progressStore.reset();
+    await progressStore.markCleared(0, 0);
+    await progressStore.markCleared(0, 1);
+    await progressStore.markCleared(0, 2);
+    expect(chapters[0]!.stages[3]!.mapUrl).toBeUndefined();
+    expect(stageStatuses(0)[3]).toBe("current");
+    await progressStore.reset();
   });
 
   it("Figma Sign의 별 개수와 실제 스테이지 개수를 일치시킨다", () => {
@@ -99,11 +120,11 @@ describe("스테이지 선택", () => {
       chapterIndex: 1,
       stageIndex: 0,
     });
-    const lastChapterIndex = chapters.length - 1;
+    const lastChapterIndex = visibleChapters.length - 1;
     expect(
       nextSelection({
         chapterIndex: lastChapterIndex,
-        stageIndex: chapters[lastChapterIndex]!.stages.length - 1,
+        stageIndex: visibleChapters[lastChapterIndex]!.stages.length - 1,
       }),
     ).toEqual({
       chapterIndex: 0,

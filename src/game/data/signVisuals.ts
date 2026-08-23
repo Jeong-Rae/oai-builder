@@ -75,6 +75,7 @@ export interface SignStarVisual {
 export interface SignLineVisual {
   url: string;
   activeUrl?: string;
+  inactiveUrl?: string;
   lockedUrl?: string;
   x: number;
   y: number;
@@ -123,6 +124,7 @@ export const signVisuals: Partial<Record<ZodiacSign, SignVisual>> = {
         ],
         line: {
           url: ariesChapterActiveLineUrl,
+          inactiveUrl: ariesChapterInactiveLineUrl,
           x: 238.71,
           y: 180.26,
           width: 381.08,
@@ -185,6 +187,7 @@ export const signVisuals: Partial<Record<ZodiacSign, SignVisual>> = {
         ],
         line: {
           url: taurusChapterActiveLineUrl,
+          inactiveUrl: taurusChapterInactiveLineUrl,
           lockedUrl: taurusChapterLockedLineUrl,
           x: 69.84,
           y: 68.54,
@@ -269,6 +272,7 @@ export const signVisuals: Partial<Record<ZodiacSign, SignVisual>> = {
         ],
         line: {
           url: geminiChapterActiveLineUrl,
+          inactiveUrl: geminiChapterInactiveLineUrl,
           lockedUrl: geminiChapterLockedLineUrl,
           x: 62.77,
           y: 46.62,
@@ -325,6 +329,7 @@ export const signVisuals: Partial<Record<ZodiacSign, SignVisual>> = {
         ],
         line: {
           url: cancerChapterActiveLineUrl,
+          inactiveUrl: cancerChapterInactiveLineUrl,
           lockedUrl: cancerChapterLockedLineUrl,
           x: 51.35,
           y: 95.29,

@@ -79,10 +79,6 @@
   width: 21%;
   z-index: 3;
 }
-.control[data-entity-kind="normal"] {
-  --entity-end: 83%;
-  --entity-start: 17%;
-}
 .control[data-direction="up"] {
   top: var(--entity-start);
 }

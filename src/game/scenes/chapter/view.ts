@@ -12,11 +12,11 @@ import { createMoonDecor } from "@/src/game/scenes/shared/moonDecor";
 import { createSceneTitle, createTitleStar } from "@/src/game/scenes/shared/title";
 import styles from "@/src/game/scenes/chapter/scene.module.css";
 import {
-  chapters,
   isChapterCleared,
   isChapterUnlocked,
   stageStatuses,
   type ChapterDefinition,
+  visibleChapters,
 } from "@/src/game/stages";
 
 const svgNamespace = "http://www.w3.org/2000/svg";
@@ -63,7 +63,7 @@ export function createChapterView(
     const roles = ["outLeft", "previous", "current", "next", "outRight"] as const;
     slots.forEach((card, offset) => {
       card.className = `${styles.card} ${styles[roles[offset]]}`;
-      const chapter = chapters[index + offset - 2];
+      const chapter = visibleChapters[index + offset - 2];
       if (!chapter) {
         card.onclick = null;
       } else if (offset === 1) {
@@ -78,7 +78,7 @@ export function createChapterView(
       renderCard(card, chapter, index + offset - 2, offset === 2);
     });
     left.disabled = index === 0;
-    right.disabled = index === chapters.length - 1;
+    right.disabled = index === visibleChapters.length - 1;
     activeIndex = index;
     hasRendered = true;
   };
@@ -143,7 +143,7 @@ function constellation(
   const svg = renderConstellationSvg(layout, {
     starUrl: starNodeAssets.gray,
     starSize: active ? 84 : 70,
-    lineClass: `${styles.line} ${active ? "" : styles.lineInactive}`,
+    lineClass: `${styles.line} ${cleared ? "" : styles.lineInactive}`,
   });
   const statuses = stageStatuses(chapterIndex);
   svg.querySelectorAll("image").forEach((star, index) => {
@@ -180,7 +180,7 @@ function renderFigmaConstellation(
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", `${chapter.sign} 별자리`);
 
-  svg.append(createLine(visual.line, unlocked));
+  svg.append(createLine(visual.line, cleared));
   const statuses = unlocked
     ? stageStatuses(chapterIndex)
     : Array.from({ length: visual.stars.length }, () => "locked" as const);
@@ -220,9 +220,11 @@ function renderFigmaConstellation(
   return svg;
 }
 
-function createLine(visual: SignLineVisual, unlocked: boolean): SVGImageElement {
+function createLine(visual: SignLineVisual, cleared: boolean): SVGImageElement {
   const image = document.createElementNS(svgNamespace, "image");
-  const source = unlocked ? (visual.activeUrl ?? visual.url) : (visual.lockedUrl ?? visual.url);
+  const source = cleared
+    ? (visual.activeUrl ?? visual.url)
+    : (visual.inactiveUrl ?? visual.lockedUrl ?? visual.url);
   const x = visual.centered ? visual.x - visual.width / 2 : visual.x;
   const y = visual.centered ? visual.y - visual.height / 2 : visual.y;
   setImageBox(image, source, x, y, visual.width, visual.height);

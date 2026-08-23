@@ -49,11 +49,20 @@
   z-index: 2;
 }
 .start {
+  align-items: center;
+  display: flex;
   font-size: clamp(0.7rem, 1.6cqw, 2rem);
+  gap: 0.45em;
+  justify-content: center;
   letter-spacing: 0.08em;
   position: relative;
   width: 60%;
   z-index: 1;
+}
+.googleMark {
+  flex: 0 0 auto;
+  height: 0.9em;
+  width: 0.9em;
 }
 .notice,
 .error {
