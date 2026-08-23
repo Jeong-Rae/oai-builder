@@ -65,19 +65,35 @@
   z-index: 2;
 }
 .control {
+  --entity-end: 100%;
+  --entity-start: 0%;
   height: 21%;
   image-rendering: pixelated;
-  left: calc(50% + var(--control-offset) * 100%);
+  left: 50%;
   object-fit: contain;
   position: absolute;
-  top: -10%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: 21%;
   z-index: 3;
 }
-.control[data-direction="down"],
+.control[data-entity-kind="normal"] {
+  --entity-end: 83%;
+  --entity-start: 17%;
+}
+.control[data-direction="up"] {
+  top: var(--entity-start);
+}
+.control[data-direction="right"] {
+  left: var(--entity-end);
+}
+.control[data-direction="down"] {
+  top: var(--entity-end);
+  transform: translate(-50%, -50%) rotate(180deg);
+}
 .control[data-direction="left"] {
-  transform: translateX(-50%) rotate(180deg);
+  left: var(--entity-start);
+  transform: translate(-50%, -50%) rotate(180deg);
 }
 .gate {
   inset: 0;
