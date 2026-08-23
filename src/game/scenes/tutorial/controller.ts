@@ -15,7 +15,8 @@ export const tutorialText = {
 
 const TYPE_INTERVAL = 55;
 const BLUR_DURATION = 800;
-const MASCOT_HOLD = 700;
+const MASCOT_INTERVAL = 320;
+const MASCOT_HOLD = 600;
 
 type Phase =
   | "idle"
@@ -125,12 +126,32 @@ export function createTutorialScene(
     );
   };
 
+  const revealMascots = (): void => {
+    phase = "holding-mascot";
+    advance = typeFinal;
+    if (reducedMotion) {
+      [0, 1, 2].forEach(view.showMascot);
+      wait("holding-mascot", MASCOT_HOLD, typeFinal);
+      return;
+    }
+
+    let index = 0;
+    const revealNext = (): void => {
+      view.showMascot(index);
+      playSfx("button");
+      index += 1;
+      if (index === 3) {
+        wait("holding-mascot", MASCOT_HOLD, typeFinal);
+        return;
+      }
+      timer = window.setTimeout(revealNext, MASCOT_INTERVAL);
+    };
+    revealNext();
+  };
+
   const typeSecond = (): void => {
     view.setSecondLayout();
-    type("typing-second", tutorialText.second, view.setStoryText, () => {
-      view.showMascot();
-      wait("holding-mascot", MASCOT_HOLD, typeFinal);
-    });
+    type("typing-second", tutorialText.second, view.setStoryText, revealMascots);
   };
 
   const blurFirst = (): void => {

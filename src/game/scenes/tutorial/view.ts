@@ -12,7 +12,7 @@ export interface TutorialView {
   setStoryText(text: string): void;
   setContinueHandler(handler: () => void): void;
   setContinueVisible(visible: boolean): void;
-  showMascot(): void;
+  showMascot(index: number): void;
 }
 
 export function createTutorialView(): TutorialView {
@@ -24,10 +24,16 @@ export function createTutorialView(): TutorialView {
   story.className = styles.story;
   story.setAttribute("aria-hidden", "true");
 
-  const mascot = document.createElement("img");
-  mascot.className = styles.mascot;
-  mascot.src = startAssets.mascots[Math.floor(Math.random() * startAssets.mascots.length)]!;
-  mascot.alt = "";
+  const mascotClasses = [styles.mascotTop, styles.mascotLeft, styles.mascotRight];
+  const mascots = [startAssets.mascots[0], startAssets.mascots[1], startAssets.mascots[0]].map(
+    (source, index) => {
+      const mascot = document.createElement("img");
+      mascot.className = `${styles.mascot} ${mascotClasses[index]}`;
+      mascot.src = source;
+      mascot.alt = "";
+      return mascot;
+    },
+  );
 
   const finalLine = document.createElement("p");
   finalLine.className = styles.finalLine;
@@ -44,7 +50,7 @@ export function createTutorialView(): TutorialView {
   prompt.setAttribute("aria-live", "polite");
   prompt.hidden = true;
 
-  root.append(createBackgroundStars(), story, mascot, finalLine, narration, prompt);
+  root.append(createBackgroundStars(), story, ...mascots, finalLine, narration, prompt);
 
   return {
     root,
@@ -72,8 +78,8 @@ export function createTutorialView(): TutorialView {
     setContinueVisible(visible) {
       prompt.hidden = !visible;
     },
-    showMascot() {
-      mascot.classList.add(styles.visible);
+    showMascot(index) {
+      mascots[index]?.classList.add(styles.visible);
     },
   };
 }

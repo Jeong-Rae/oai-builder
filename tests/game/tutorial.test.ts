@@ -6,6 +6,8 @@ vi.mock("@/src/game/sfx", () => ({ playSfx: vi.fn() }));
 import { createTutorialScene, tutorialText } from "@/src/game/scenes/tutorial/controller";
 import { playSfx } from "@/src/game/sfx";
 
+const mockedPlaySfx = vi.mocked(playSfx);
+
 function tutorialView() {
   let continueHandler = () => {};
   return {
@@ -20,7 +22,7 @@ function tutorialView() {
       continueHandler = handler;
     }),
     setContinueVisible: vi.fn<(visible: boolean) => void>(),
-    showMascot: vi.fn<() => void>(),
+    showMascot: vi.fn<(index: number) => void>(),
     clickScreen: () => continueHandler(),
   };
 }
@@ -72,14 +74,19 @@ describe("최초 실행 튜토리얼", () => {
     expect(view.setBlurred.mock.calls).toEqual([[true], [false]]);
     expect(view.clearStory).toHaveBeenCalledOnce();
     expect(view.setSecondLayout).toHaveBeenCalledOnce();
-    expect(view.showMascot).toHaveBeenCalledOnce();
+    expect(view.showMascot.mock.calls).toEqual([[0], [1], [2]]);
     expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.second);
     expect(view.setFinalText).toHaveBeenLastCalledWith(tutorialText.final);
     expect(view.setContinueVisible.mock.calls).toEqual([[true], [false], [true], [false]]);
-    expect(playSfx).toHaveBeenCalledTimes(
+    expect(mockedPlaySfx.mock.calls.filter(([name]) => name === "typing")).toHaveLength(
       Array.from(Object.values(tutorialText).join("")).filter((character) => !/\s/.test(character))
         .length,
     );
+    expect(mockedPlaySfx.mock.calls.filter(([name]) => name === "button")).toEqual([
+      ["button"],
+      ["button"],
+      ["button"],
+    ]);
     expect(onComplete).toHaveBeenCalledOnce();
   });
 
@@ -103,7 +110,7 @@ describe("최초 실행 튜토리얼", () => {
     vi.advanceTimersByTime(800);
     enter();
     expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.second);
-    expect(view.showMascot).toHaveBeenCalledOnce();
+    expect(view.showMascot).toHaveBeenCalledExactlyOnceWith(0);
     enter();
     enter();
     expect(view.setFinalText).toHaveBeenLastCalledWith(tutorialText.final);
