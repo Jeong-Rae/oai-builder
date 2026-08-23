@@ -1,11 +1,16 @@
-import { chapters, stageStatuses, type ChapterDefinition } from "../../stages";
-import { computeLayout } from "../../constellation/layout";
-import { renderConstellationSvg } from "../../constellation/render";
-import { createMoonDecor } from "../shared/moonDecor";
-import { createBackgroundStars } from "../shared/backgroundStars";
-import { createSceneTitle, createTitleStar } from "../shared/title";
-import styles from "./scene.module.css";
-import { backgroundUrl, chapterAssets, starNodeAssets } from "../../assets";
+import {
+  backgroundUrl,
+  chapterAssets,
+  chapterZodiacInactiveAssets,
+  starNodeAssets,
+} from "@/src/game/assets";
+import { computeLayout } from "@/src/game/constellation/layout";
+import { renderConstellationSvg } from "@/src/game/constellation/render";
+import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
+import { createMoonDecor } from "@/src/game/scenes/shared/moonDecor";
+import { createSceneTitle, createTitleStar } from "@/src/game/scenes/shared/title";
+import styles from "@/src/game/scenes/chapter/scene.module.css";
+import { chapters, stageStatuses, type ChapterDefinition } from "@/src/game/stages";
 
 export function createChapterView(
   onMove: (offset: -1 | 1) => void,
@@ -100,25 +105,28 @@ function renderCard(
   card.tabIndex = enabled && chapter ? 0 : -1;
   card.setAttribute("aria-disabled", String(!enabled));
   card.setAttribute("aria-label", chapter ? `${chapter.sign} 챕터 선택` : "");
-  if (chapter) card.append(constellation(chapter, chapterIndex));
+  if (chapter) card.append(constellation(chapter, chapterIndex, enabled));
 }
-function constellation(chapter: ChapterDefinition, chapterIndex: number): SVGSVGElement {
+function constellation(
+  chapter: ChapterDefinition,
+  chapterIndex: number,
+  active: boolean,
+): SVGSVGElement {
   const layout = computeLayout(chapter.constellation, {
-    width: 450,
-    height: 600,
+    width: 478,
+    height: 560,
     padding: { top: 100, left: 40, right: 40, bottom: 230 },
-    emblemGap: 50,
-    labelGap: 45,
-    emblemSize: { width: 96, height: 80 },
+    emblemGap: 100,
+    emblemSize: { width: 110, height: 90 },
   });
   const svg = renderConstellationSvg(layout, {
     starUrl: starNodeAssets.gray,
-    starSize: 52,
-    lineClass: styles.line,
+    starSize: active ? 84 : 70,
+    lineClass: `${styles.line} ${active ? "" : styles.lineInactive}`,
   });
   const statuses = stageStatuses(chapterIndex);
   svg.querySelectorAll("image").forEach((star, index) => {
-    const cleared = statuses[index] === "cleared";
+    const cleared = active && statuses[index] === "cleared";
     star.setAttribute("href", cleared ? starNodeAssets.gold : starNodeAssets.gray);
     const glow = star.cloneNode() as SVGImageElement;
     glow.setAttribute("class", `${styles.glow} ${cleared ? styles.goldGlow : styles.grayGlow}`);
@@ -127,16 +135,14 @@ function constellation(chapter: ChapterDefinition, chapterIndex: number): SVGSVG
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", `${chapter.sign} 별자리`);
   const emblem = document.createElementNS("http://www.w3.org/2000/svg", "image");
-  emblem.setAttribute("href", chapter.zodiacUrl);
+  emblem.setAttribute(
+    "href",
+    active ? chapter.zodiacUrl : chapterZodiacInactiveAssets[chapter.sign],
+  );
   emblem.setAttribute("x", String(layout.emblemAnchor.x));
   emblem.setAttribute("y", String(layout.emblemAnchor.y));
-  emblem.setAttribute("width", "96");
-  emblem.setAttribute("height", "80");
-  const name = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  name.setAttribute("class", styles.name);
-  name.setAttribute("x", String(layout.labelAnchor.x));
-  name.setAttribute("y", String(layout.labelAnchor.y));
-  name.textContent = chapter.sign;
-  svg.append(emblem, name);
+  emblem.setAttribute("width", "110");
+  emblem.setAttribute("height", "90");
+  svg.append(emblem);
   return svg;
 }
