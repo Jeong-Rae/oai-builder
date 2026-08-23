@@ -96,7 +96,7 @@
 .gauge {
   appearance: none;
   background: rgb(8 14 20 / 78%);
-  border: 2px solid rgb(215 249 255 / 80%);
+  border: 2px solid rgb(255 216 102 / 80%);
   border-radius: 999px;
   box-shadow: 0 0 1cqw rgb(255 216 102 / 22%);
   height: 0.75cqw;
