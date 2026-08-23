@@ -1,11 +1,11 @@
-import { chapters, type ChapterDefinition } from "../../stages";
+import { chapters, stageStatuses, type ChapterDefinition } from "../../stages";
 import { computeLayout } from "../../constellation/layout";
 import { renderConstellationSvg } from "../../constellation/render";
 import { createMoonDecor } from "../shared/moonDecor";
 import { createBackgroundStars } from "../shared/backgroundStars";
 import { createSceneTitle, createTitleStar } from "../shared/title";
 import styles from "./scene.module.css";
-import { backgroundUrl, chapterAssets } from "../../assets";
+import { backgroundUrl, chapterAssets, starNodeAssets } from "../../assets";
 
 export function createChapterView(
   onMove: (offset: -1 | 1) => void,
@@ -56,7 +56,7 @@ export function createChapterView(
       } else {
         card.onclick = null;
       }
-      renderCard(card, chapter, offset === 2);
+      renderCard(card, chapter, index + offset - 2, offset === 2);
     });
     left.disabled = index === 0;
     right.disabled = index === chapters.length - 1;
@@ -92,6 +92,7 @@ function createCard(): HTMLButtonElement {
 function renderCard(
   card: HTMLButtonElement,
   chapter: ChapterDefinition | undefined,
+  chapterIndex: number,
   enabled: boolean,
 ): void {
   card.replaceChildren();
@@ -99,9 +100,9 @@ function renderCard(
   card.tabIndex = enabled && chapter ? 0 : -1;
   card.setAttribute("aria-disabled", String(!enabled));
   card.setAttribute("aria-label", chapter ? `${chapter.sign} 챕터 선택` : "");
-  if (chapter) card.append(constellation(chapter));
+  if (chapter) card.append(constellation(chapter, chapterIndex));
 }
-function constellation(chapter: ChapterDefinition): SVGSVGElement {
+function constellation(chapter: ChapterDefinition, chapterIndex: number): SVGSVGElement {
   const layout = computeLayout(chapter.constellation, {
     width: 450,
     height: 600,
@@ -111,9 +112,17 @@ function constellation(chapter: ChapterDefinition): SVGSVGElement {
     emblemSize: { width: 96, height: 80 },
   });
   const svg = renderConstellationSvg(layout, {
-    starUrl: chapterAssets.constellationStar,
+    starUrl: starNodeAssets.gray,
     starSize: 52,
     lineClass: styles.line,
+  });
+  const statuses = stageStatuses(chapterIndex);
+  svg.querySelectorAll("image").forEach((star, index) => {
+    const cleared = statuses[index] === "cleared";
+    star.setAttribute("href", cleared ? starNodeAssets.gold : starNodeAssets.gray);
+    const glow = star.cloneNode() as SVGImageElement;
+    glow.setAttribute("class", `${styles.glow} ${cleared ? styles.goldGlow : styles.grayGlow}`);
+    star.before(glow);
   });
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", `${chapter.sign} 별자리`);

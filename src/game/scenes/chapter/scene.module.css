@@ -67,6 +67,16 @@
   stroke-linecap: round;
   stroke-width: 3;
 }
+.glow {
+  filter: blur(7px);
+  pointer-events: none;
+}
+.goldGlow {
+  opacity: 0.45;
+}
+.grayGlow {
+  opacity: 0.35;
+}
 .name {
   fill: #ffd866;
   font-family: "온글잎 박다현체", monospace;

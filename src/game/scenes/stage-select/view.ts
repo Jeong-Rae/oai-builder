@@ -5,13 +5,13 @@ import { createMoonDecor } from "../shared/moonDecor";
 import { createBackgroundStars } from "../shared/backgroundStars";
 import { createSceneTitle, createTitleStar } from "../shared/title";
 import styles from "./scene.module.css";
-import { backgroundUrl, stageSelectAssets as assets } from "../../assets";
+import { backgroundUrl, stageSelectAssets as assets, starNodeAssets } from "../../assets";
 
 const nodeImageByStatus = {
-  cleared: assets.clearedStarNode,
-  current: assets.inProgressStarNode,
-  available: assets.inProgressStarNode,
-  locked: assets.lockedStarNode,
+  cleared: starNodeAssets.gold,
+  current: starNodeAssets.white,
+  available: starNodeAssets.white,
+  locked: starNodeAssets.black,
 } as const;
 
 function createHeader(chapter: ChapterDefinition, chapterIndex: number): HTMLElement {
@@ -74,6 +74,11 @@ function createNode(
   star.className = styles.star;
   star.src = nodeImageByStatus[status];
   star.alt = "";
+  if (status === "cleared") {
+    const glow = star.cloneNode() as HTMLImageElement;
+    glow.className = styles.glow;
+    node.append(glow);
+  }
   node.append(star);
   if (status === "current") {
     const ring = document.createElement("span");
@@ -83,13 +88,6 @@ function createNode(
     bubble.textContent = "NEXT";
     bubble.style.backgroundImage = `url(${assets.bubbleNext})`;
     node.append(ring, bubble);
-  }
-  if (status === "locked") {
-    const lock = document.createElement("img");
-    lock.className = styles.lock;
-    lock.src = assets.lock;
-    lock.alt = "";
-    node.append(lock);
   }
   const label = document.createElement("span");
   label.className = styles.num;
