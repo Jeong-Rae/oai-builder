@@ -28,7 +28,7 @@ describe("게임 SFX", () => {
     expect(
       players.every((player) => player.preload === "auto" && player.load.mock.calls.length === 1),
     ).toBe(true);
-    const move = players.find((player) => player.src.includes("trimmed.mp3"));
+    const move = players.find((player) => player.src.includes("sfx.move.mp3"));
     expect(move?.currentTime).toBe(0);
     expect(move?.play).toHaveBeenCalledOnce();
   });

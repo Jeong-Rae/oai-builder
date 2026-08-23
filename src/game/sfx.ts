@@ -1,7 +1,7 @@
-import buttonUrl from "@/assets/sfx/button/dragon-studio-button-press-2-386176.mp3";
-import clearUrl from "@/assets/sfx/clear/benkirb-shine-9-268911.mp3";
-import clickUrl from "@/assets/sfx/click/soundreality-sound-of-mouse-click-4-478760.mp3";
-import moveUrl from "@/assets/sfx/move/eaglaxle-tiles-footsteps-2-455126.trimmed.mp3";
+import buttonUrl from "@/assets/sfx/button/sfx.button.mp3";
+import clearUrl from "@/assets/sfx/clear/sfx.clear.mp3";
+import clickUrl from "@/assets/sfx/click/sfx.click.mp3";
+import moveUrl from "@/assets/sfx/move/sfx.move.mp3";
 
 const urls = { button: buttonUrl, clear: clearUrl, click: clickUrl, move: moveUrl } as const;
 const players = new Map<string, HTMLAudioElement>();
