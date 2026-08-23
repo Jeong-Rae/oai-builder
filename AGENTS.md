@@ -1,7 +1,7 @@
 # Assets
 
 - Whenever an image asset is first introduced, replaced, or downloaded again, trim its transparent padding using an alpha threshold of 1 before using it.
-- After trimming, convert PNG assets to WebP and use the WebP output in the project.
+- After trimming, convert PNG assets to WebP or SVG and use the converted output in the project.
 - When applying visual effects such as outlines, glows, or shadows to PNG, WebP, or other image assets that may contain transparent padding, do not use the asset's rectangular display box as the effect boundary. Instead, create a separate effect object that shares the same center as the asset, and size or shape it to match the asset's actual visible content. Effects must visually follow the rendered artwork rather than the transparent bounds of the source image.
 
 # Commands
