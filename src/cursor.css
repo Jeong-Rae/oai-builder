@@ -1,0 +1,23 @@
+:root {
+  --cursor-closed: url("../assets/cursor/hand.state-closed.webp") 9 9, grabbing;
+  --cursor-open: url("../assets/cursor/hand.state-open.webp") 10 11, grab;
+  --cursor-point: url("../assets/cursor/hand.state-point.webp") 4 3, pointer;
+}
+
+html,
+body,
+#app,
+#app * {
+  cursor: var(--cursor-open);
+}
+
+#app :is(button, input, select, .file-button):not(:disabled):not(.disabled) {
+  cursor: var(--cursor-point);
+}
+
+body:active,
+body:active *,
+#app:active,
+#app:active * {
+  cursor: var(--cursor-closed) !important;
+}

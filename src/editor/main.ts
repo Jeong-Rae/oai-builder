@@ -1,11 +1,12 @@
-import { mountEditor } from './editorApp';
-import './style.css';
+import { mountEditor } from "./editorApp";
+import "./style.css";
+import "@/src/cursor.css";
 
-const app = document.querySelector<HTMLElement>('#app');
+const app = document.querySelector<HTMLElement>("#app");
 
 if (!app) {
-  throw new Error('Map Editor root element was not found.');
+  throw new Error("Map Editor root element was not found.");
 }
 
 const unmount = mountEditor(app);
-window.addEventListener('pagehide', unmount, { once: true });
+window.addEventListener("pagehide", unmount, { once: true });
