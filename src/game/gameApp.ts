@@ -106,7 +106,9 @@ export class GameApp {
     this.root.addEventListener("dragstart", (event) => event.preventDefault());
     this.root.addEventListener("click", this.handleButtonSound);
     preloadSfx();
-    if (import.meta.env.DEV) document.addEventListener("keydown", this.handleDevShortcut);
+    // TODO: 배포 확인이 끝나면 개발 환경에서만 단축키를 등록하도록 되돌립니다.
+    // if (import.meta.env.DEV)
+    document.addEventListener("keydown", this.handleDevShortcut);
     this.transitionLayer = createSceneTransition();
     this.initialStartScene = this.createIntroScene(false);
     this.mount(this.initialStartScene);
