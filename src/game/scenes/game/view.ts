@@ -115,8 +115,8 @@ export function createGameView(): GameView {
         entityNodes.set(entity.id, image);
       }
       image.src = assetUrls[textureForEntity(entity)];
-      cells.get(key(entity.position))!.append(image);
       image.parentElement?.querySelectorAll(`.${styles.control}`).forEach((node) => node.remove());
+      cells.get(key(entity.position))!.append(image);
       entity.controls.forEach((direction, index) => {
         const control = document.createElement("img");
         control.className = styles.control;
