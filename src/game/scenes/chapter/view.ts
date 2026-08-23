@@ -20,6 +20,12 @@ import {
 } from "@/src/game/stages";
 
 const svgNamespace = "http://www.w3.org/2000/svg";
+const cardGap = 0.26615;
+
+export function chapterMoveFromDrag(distance: number, width: number): -1 | 0 | 1 {
+  if (Math.abs(distance) < width * cardGap * 0.5) return 0;
+  return distance > 0 ? -1 : 1;
+}
 
 export function createChapterView(
   onMove: (offset: -1 | 1) => void,
@@ -42,6 +48,7 @@ export function createChapterView(
   carousel.className = styles.carousel;
   const cards = Array.from({ length: 5 }, () => createCard());
   carousel.append(...cards);
+  attachDrag(carousel, () => activeIndex, onMove);
   const left = arrow("이전 챕터", chapterAssets.arrowLeft, () => onMove(-1), styles.left);
   const right = arrow("다음 챕터", chapterAssets.arrowRight, () => onMove(1), styles.right);
   root.append(createBackgroundStars(), header, carousel, left, right, createMoonDecor());
@@ -84,6 +91,67 @@ export function createChapterView(
   };
   setActive(0);
   return { root, setActive };
+}
+
+function attachDrag(
+  carousel: HTMLElement,
+  activeIndex: () => number,
+  onMove: (offset: -1 | 1) => void,
+): void {
+  let pointerId: number | undefined;
+  let startX = 0;
+  let distance = 0;
+  let dragged = false;
+  let suppressClick = false;
+
+  carousel.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    pointerId = event.pointerId;
+    startX = event.clientX;
+    distance = 0;
+    dragged = false;
+    carousel.classList.add(styles.dragging);
+  });
+  carousel.addEventListener("pointermove", (event) => {
+    if (event.pointerId !== pointerId) return;
+    const limit = carousel.clientWidth * cardGap;
+    distance = Math.max(-limit, Math.min(limit, event.clientX - startX));
+    if (!dragged && Math.abs(distance) > 5) {
+      dragged = true;
+      carousel.setPointerCapture(pointerId);
+    }
+    carousel.style.setProperty("--drag-x", `${distance}px`);
+  });
+  carousel.addEventListener("pointerup", (event) => {
+    if (event.pointerId !== pointerId) return;
+    pointerId = undefined;
+    carousel.classList.remove(styles.dragging);
+    const offset = chapterMoveFromDrag(distance, carousel.clientWidth);
+    if (
+      offset !== 0 &&
+      ((offset < 0 && activeIndex() > 0) ||
+        (offset > 0 && activeIndex() < visibleChapters.length - 1))
+    )
+      onMove(offset);
+    carousel.style.removeProperty("--drag-x");
+    suppressClick = dragged;
+  });
+  carousel.addEventListener("pointercancel", (event) => {
+    if (event.pointerId !== pointerId) return;
+    pointerId = undefined;
+    carousel.classList.remove(styles.dragging);
+    carousel.style.removeProperty("--drag-x");
+  });
+  carousel.addEventListener(
+    "click",
+    (event) => {
+      if (!suppressClick) return;
+      suppressClick = false;
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    true,
+  );
 }
 
 function arrow(
