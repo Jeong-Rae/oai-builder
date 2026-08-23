@@ -11,17 +11,47 @@ import { stageFor, type PlaySelection } from "@/src/game/stages";
 export function createGameScene(
   selection: PlaySelection,
   onComplete: () => void,
-): { view: HTMLElement; dispose(): void } {
+): { view: HTMLElement; ready: Promise<void>; activate(): void; dispose(): void } {
   const view = createGameView();
   const abort = new AbortController();
+  let active = false;
+  let listening = false;
+  let completesOnActivate = false;
+  let store: ReturnType<typeof createGameStoreFromMap> | undefined;
   let unsubscribe: (() => void) | undefined;
   let completeTimer: number | undefined;
   const timers = new Map<string, number[]>();
+  const keydown = (event: KeyboardEvent) => {
+    if (!store || store.getState().game.status === "completed") return;
+    if (isUndoShortcut(event)) {
+      event.preventDefault();
+      store.getState().undo();
+      return;
+    }
+    const direction = directionFromKey(event.key);
+    if (!direction) return;
+    event.preventDefault();
+    const game = store.getState().game;
+    const decision = store.getState().dispatch({ type: "player/move", direction });
+    if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
+    if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");
+    view.setPlayerTexture(playerTextureForMove(game, direction, decision));
+  };
+  const activateInput = () => {
+    if (!active || !store || listening) return;
+    window.addEventListener("keydown", keydown);
+    listening = true;
+  };
+  const activateCompletion = () => {
+    if (!active || !completesOnActivate || completeTimer !== undefined) return;
+    completeTimer = window.setTimeout(onComplete, 0);
+  };
   const load = async () => {
     try {
       const mapUrl = stageFor(selection).mapUrl;
       if (!mapUrl) {
-        completeTimer = window.setTimeout(onComplete, 0);
+        completesOnActivate = true;
+        activateCompletion();
         return;
       }
       const response = await fetch(mapUrl, { signal: abort.signal });
@@ -29,7 +59,7 @@ export function createGameScene(
       if (!response.ok) throw new Error("map fetch failed");
       const parsed = parseMap(source);
       if (!parsed.ok) throw new Error("invalid map");
-      const store = createGameStoreFromMap(parsed.map);
+      store = createGameStoreFromMap(parsed.map);
       view.sync(store.getState().game);
       unsubscribe = store.subscribe((state, previous) => {
         view.sync(state.game);
@@ -41,29 +71,11 @@ export function createGameScene(
         if (state.game.status === "completed" && previous.game.status !== "completed")
           completeTimer = window.setTimeout(onComplete, motionDuration(700));
       });
-      const keydown = (event: KeyboardEvent) => {
-        if (store.getState().game.status === "completed") return;
-        if (isUndoShortcut(event)) {
-          event.preventDefault();
-          store.getState().undo();
-          return;
-        }
-        const direction = directionFromKey(event.key);
-        if (!direction) return;
-        event.preventDefault();
-        const game = store.getState().game;
-        const decision = store.getState().dispatch({ type: "player/move", direction });
-        if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
-        if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");
-        view.setPlayerTexture(playerTextureForMove(game, direction, decision));
-      };
-      window.addEventListener("keydown", keydown);
-      disposeKeydown = () => window.removeEventListener("keydown", keydown);
+      activateInput();
     } catch (error) {
       if ((error as DOMException).name !== "AbortError") view.showError(load);
     }
   };
-  let disposeKeydown = () => {};
   const playPlate = (position: Position) => {
     const id = `${position.x},${position.y}`;
     timers.get(id)?.forEach(window.clearTimeout);
@@ -80,13 +92,21 @@ export function createGameScene(
         ),
     );
   };
-  void load();
+  const ready = load();
   return {
     view: view.root,
+    ready,
+    activate: () => {
+      active = true;
+      activateInput();
+      activateCompletion();
+    },
     dispose: () => {
+      active = false;
       abort.abort();
       unsubscribe?.();
-      disposeKeydown();
+      if (listening) window.removeEventListener("keydown", keydown);
+      listening = false;
       if (completeTimer) window.clearTimeout(completeTimer);
       timers.forEach((entries) => entries.forEach(window.clearTimeout));
     },

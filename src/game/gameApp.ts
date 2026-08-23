@@ -18,14 +18,27 @@ import { nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 import { playSfx, preloadSfx } from "@/src/game/sfx";
 
+interface Scene {
+  view: HTMLElement;
+  ready?: Promise<void>;
+  activate?(): void;
+  dispose(): void;
+}
+
 export class GameApp {
   private disposeScene?: () => void;
   private frame?: HTMLElement;
   private preloadPromise?: Promise<void>;
+  private transitionId = 0;
   private authGateway?: AuthGateway;
   private storage?: BrowserStorage;
   private readonly initialStartScene: StartScene;
   private session?: GameSession;
+
+  private blockTransitionKeydown = (event: KeyboardEvent): void => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  };
 
   constructor(private readonly root: HTMLElement) {
     this.root.addEventListener("dragstart", (event) => event.preventDefault());
@@ -115,12 +128,37 @@ export class GameApp {
     showScreen();
   };
 
-  private async show(scene: { view: HTMLElement; dispose(): void }): Promise<void> {
-    await this.preloadPromise;
-    this.mount(scene);
+  private async show(scene: Scene): Promise<void> {
+    const transitionId = ++this.transitionId;
+    const previousFrame = this.frame;
+    this.blockTransitionInput(previousFrame);
+    try {
+      await this.preloadPromise;
+      await scene.ready;
+      if (transitionId !== this.transitionId) {
+        scene.dispose();
+        return;
+      }
+      this.mount(scene);
+      this.releaseTransitionInput();
+    } catch (error) {
+      scene.dispose();
+      if (transitionId === this.transitionId) this.releaseTransitionInput(previousFrame);
+      throw error;
+    }
   }
 
-  private mount(scene: { view: HTMLElement; dispose(): void }): void {
+  private blockTransitionInput(frame?: HTMLElement): void {
+    if (frame) frame.inert = true;
+    window.addEventListener("keydown", this.blockTransitionKeydown, true);
+  }
+
+  private releaseTransitionInput(frame?: HTMLElement): void {
+    if (frame?.isConnected) frame.inert = false;
+    window.removeEventListener("keydown", this.blockTransitionKeydown, true);
+  }
+
+  private mount(scene: Scene): void {
     this.disposeScene?.();
     this.disposeScene = scene.dispose;
     this.root.replaceChildren();
@@ -130,10 +168,20 @@ export class GameApp {
     frame.append(scene.view);
     this.frame = frame;
     this.root.append(frame);
+    scene.activate?.();
   }
 
-  private showOverlay = (scene: { view: HTMLElement; dispose(): void }): Promise<void> =>
-    (this.preloadPromise ?? Promise.resolve()).then(() => {
+  private showOverlay = async (scene: Scene): Promise<void> => {
+    const transitionId = ++this.transitionId;
+    const frame = this.frame;
+    this.blockTransitionInput(frame);
+    try {
+      await this.preloadPromise;
+      await scene.ready;
+      if (transitionId !== this.transitionId) {
+        scene.dispose();
+        return;
+      }
       const previousDispose = this.disposeScene;
       this.disposeScene = () => {
         scene.dispose();
@@ -142,8 +190,15 @@ export class GameApp {
       const overlay = document.createElement("div");
       overlay.className = "game-overlay";
       overlay.append(scene.view);
-      this.frame?.append(overlay);
-    });
+      frame?.append(overlay);
+      scene.activate?.();
+      this.releaseTransitionInput(frame);
+    } catch (error) {
+      scene.dispose();
+      if (transitionId === this.transitionId) this.releaseTransitionInput(frame);
+      throw error;
+    }
+  };
 
   showGameStart = (): void => {
     this.show(this.createIntroScene(true));
@@ -163,19 +218,47 @@ export class GameApp {
         () => this.showChapter(chapterIndex),
       ),
     );
+  private prepareGame(selection: PlaySelection): ReturnType<typeof createGameScene> {
+    return createGameScene(selection, () => this.showClear(selection));
+  }
+
   private showGame = (selection: PlaySelection): Promise<void> =>
-    this.show(createGameScene(selection, () => this.showClear(selection)));
+    this.show(this.prepareGame(selection));
   private showClear = async (selection: PlaySelection): Promise<void> => {
+    const next = nextSelection(selection);
+    const preparedNext = this.prepareGame(next);
+    let nextClaimed = false;
+    let nextDisposed = false;
+    const disposeNext = () => {
+      if (nextClaimed || nextDisposed) return;
+      nextDisposed = true;
+      preparedNext.dispose();
+    };
     try {
       await progressStore.markCleared(selection.chapterIndex, selection.stageIndex);
-      await this.showOverlay(
-        createClearScene(
-          () => this.showGame(nextSelection(selection)),
-          () => this.showGame(selection),
-          () => this.showStageSelect(selection.chapterIndex),
-        ),
+      const clear = createClearScene(
+        () => {
+          nextClaimed = true;
+          void this.show(preparedNext);
+        },
+        () => {
+          disposeNext();
+          void this.showGame(selection);
+        },
+        () => {
+          disposeNext();
+          void this.showStageSelect(selection.chapterIndex);
+        },
       );
+      await this.showOverlay({
+        ...clear,
+        dispose: () => {
+          clear.dispose();
+          disposeNext();
+        },
+      });
     } catch {
+      disposeNext();
       window.alert("진행 상태를 저장하지 못했습니다. 브라우저 저장소를 확인해 주세요.");
     }
   };
