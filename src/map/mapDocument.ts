@@ -166,7 +166,7 @@ export function validateMap(value: unknown): MapResult {
         pairIds.add(Number(id));
       }
 
-      if (!Number.isInteger(variant) || Number(variant) < 1 || Number(variant) > 15) {
+      if (!Number.isInteger(variant) || Number(variant) < 1 || Number(variant) > 5) {
         errors.push({
           code: "wormhole-variant",
           message: `${index + 1}번째 웜홀 이미지 번호가 올바르지 않습니다.`,
@@ -222,7 +222,7 @@ export function validateMap(value: unknown): MapResult {
         Number(id) > 0 &&
         Number.isInteger(variant) &&
         Number(variant) >= 1 &&
-        Number(variant) <= 15
+        Number(variant) <= 5
       ) {
         normalizedPairs.push({
           id: Number(id),

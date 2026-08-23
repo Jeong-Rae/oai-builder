@@ -1,5 +1,4 @@
 import type { GameState, Position } from "@/src/game/domain/types";
-import { findExit } from "@/src/game/features/fields/exit/rules";
 import { gateOrientationFor, gateVisualFor } from "@/src/game/features/fields/gate/presentation";
 import {
   assetForDirection,
@@ -8,7 +7,7 @@ import {
   textureForEntity,
   textureForField,
 } from "@/src/game/features/presentation";
-import { backgroundUrl, goalStarUrl, stageSelectAssets } from "@/src/game/assets";
+import { backgroundUrl, stageSelectAssets } from "@/src/game/assets";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/game/scene.module.css";
 
@@ -117,10 +116,7 @@ export function createGameView(
           }
           base.src = assetUrls[texture];
         } else base?.remove();
-        const overlayTexture =
-          game.tiles[y]![x] === "exit"
-            ? undefined
-            : overlayForField(game.tiles[y]![x]!, game, key(position));
+        const overlayTexture = overlayForField(game.tiles[y]![x]!, game, key(position));
         const old = overlays.get(key(position));
         if (overlayTexture) {
           const overlay = old ?? document.createElement("img");
@@ -130,8 +126,10 @@ export function createGameView(
               ? `${styles.overlay} ${styles.plate}`
               : overlayKind === "wormhole"
                 ? `${styles.overlay} ${styles.wormhole}`
-                : styles.overlay;
-          overlay.alt = "";
+                : overlayKind === "exit"
+                  ? `${styles.overlay} ${styles.goal}`
+                  : styles.overlay;
+          overlay.alt = overlayKind === "exit" ? "목표" : "";
           overlay.src = assetUrls[overlayTexture];
           if (!old) {
             cell.append(overlay);
@@ -144,14 +142,6 @@ export function createGameView(
         if (game.tiles[y]![x] === "gate") renderGate(cell, game, position);
         else cell.querySelector(`.${styles.gate}`)?.remove();
       }
-    const exit = cells.get(key(findExit(game)));
-    if (exit && !exit.querySelector(`.${styles.goal}`)) {
-      const image = document.createElement("img");
-      image.className = styles.goal;
-      image.src = goalStarUrl;
-      image.alt = "목표";
-      exit.append(image);
-    }
     const present = new Set<string>();
     Object.values(game.entities).forEach((entity) => {
       present.add(entity.id);
@@ -159,7 +149,10 @@ export function createGameView(
       let layer = entityLayers.get(entity.id);
       if (!image) {
         layer = document.createElement("div");
-        layer.className = styles.entityLayer;
+        layer.className =
+          entity.kind === "normal"
+            ? `${styles.entityLayer} ${styles.normalLayer}`
+            : styles.entityLayer;
         image = document.createElement("img");
         image.className =
           entity.kind === "normal" ? `${styles.entity} ${styles.normal}` : styles.entity;
@@ -168,7 +161,7 @@ export function createGameView(
         entityNodes.set(entity.id, image);
         entityLayers.set(entity.id, layer);
       }
-      image.src = assetUrls[textureForEntity(entity)];
+      image.src = assetUrls[textureForEntity(entity, game)];
       layer!.querySelectorAll(`.${styles.control}`).forEach((node) => node.remove());
       cells.get(key(entity.position))!.append(layer!);
       entity.controls.forEach((direction) => {
@@ -240,10 +233,12 @@ export function createGameView(
           { duration: 400, easing: "cubic-bezier(.55, 0, 1, .45)", fill: "both" },
         ),
       );
-      const entryPulse = overlays.get(key(entry))?.animate(
-        [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
-        { duration: 400, easing: "ease-in-out" },
-      );
+      const entryPulse = overlays
+        .get(key(entry))
+        ?.animate(
+          [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
+          { duration: 400, easing: "ease-in-out" },
+        );
       if (entryPulse) track(entryPulse);
       await Promise.all([finish(disappear), ...(entryPulse ? [finish(entryPulse)] : [])]);
       if (generation !== animationGeneration) return;
@@ -262,10 +257,12 @@ export function createGameView(
           { duration: 400, easing: "cubic-bezier(0, .55, .45, 1)", fill: "both" },
         ),
       );
-      const exitPulse = overlays.get(key(destination))?.animate(
-        [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
-        { duration: 400, easing: "ease-in-out" },
-      );
+      const exitPulse = overlays
+        .get(key(destination))
+        ?.animate(
+          [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
+          { duration: 400, easing: "ease-in-out" },
+        );
       if (exitPulse) track(exitPulse);
       stop(disappear);
       if (entryPulse) stop(entryPulse);
@@ -304,26 +301,17 @@ export function createGameView(
 function renderGate(cell: HTMLElement, game: GameState, position: Position): void {
   const visual = gateVisualFor(game);
   const orientation = gateOrientationFor(game, position);
-  const signature = `${visual.device}:${visual.laser ?? ""}:${orientation}`;
+  const signature = `${visual}:${orientation}`;
   const current = cell.querySelector<HTMLElement>(`.${styles.gate}`);
   if (current?.dataset.signature === signature) return;
   current?.remove();
   const gate = document.createElement("div");
   gate.className = styles.gate;
   gate.dataset.signature = signature;
-  if (visual.laser) {
-    const laser = document.createElement("img");
-    laser.className = `${styles.laser} ${orientation === "vertical" ? styles.vertical : ""}`;
-    laser.src = assetUrls[visual.laser];
-    laser.alt = "";
-    gate.append(laser);
-  }
-  for (const side of ["first", "second"]) {
-    const device = document.createElement("img");
-    device.className = `${styles.device} ${orientation === "vertical" ? styles.vertical : ""} ${side === "second" ? styles.second : ""}`;
-    device.src = assetUrls[visual.device];
-    device.alt = "";
-    gate.append(device);
-  }
+  const image = document.createElement("img");
+  image.className = `${styles.gateAsset} ${orientation === "vertical" ? styles.vertical : ""}`;
+  image.src = assetUrls[visual];
+  image.alt = "";
+  gate.append(image);
   cell.append(gate);
 }

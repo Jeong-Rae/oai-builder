@@ -58,7 +58,7 @@ function nextWormholePairId(map: MapDocument): number {
 }
 
 function randomWormholeVariant(map: MapDocument, random: () => number): number {
-  const all = Array.from({ length: 15 }, (_, index) => index + 1);
+  const all = Array.from({ length: 5 }, (_, index) => index + 1);
   const used = new Set(map.wormholePairs.map((pair) => pair.variant));
   const candidates = all.filter((variant) => !used.has(variant));
   const pool = candidates.length > 0 ? candidates : all;

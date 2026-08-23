@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { createEditorStore, resizeWouldDiscard } from "../../src/editor/editorStore";
-import { createGameStoreFromMap } from "../../src/game/store/gameStore";
-import { createBlankMap } from "../../src/map/mapDocument";
+import { createEditorStore, resizeWouldDiscard } from "@/src/editor/editorStore";
+import { createGameStoreFromMap } from "@/src/game/store/gameStore";
+import { createBlankMap } from "@/src/map/mapDocument";
 
 describe("맵 에디터 저장소", () => {
   it("웜홀을 배치 순서대로 두 개씩 연결한다", () => {
@@ -38,7 +38,7 @@ describe("맵 에디터 저장소", () => {
     const store = createEditorStore(undefined, () => 0.999);
     for (let x = 0; x < 4; x += 1) store.getState().setTile({ x, y: 0 }, "wormhole");
 
-    expect(store.getState().draft.wormholePairs.map((pair) => pair.variant)).toEqual([15, 14]);
+    expect(store.getState().draft.wormholePairs.map((pair) => pair.variant)).toEqual([5, 4]);
   });
 
   it("웜홀 쌍의 한쪽을 덮어쓰면 쌍 전체를 제거한다", () => {

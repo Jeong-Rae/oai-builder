@@ -6,7 +6,7 @@ import {
   serializeMap,
   validateMap,
   type MapDocument,
-} from "../../src/map/mapDocument";
+} from "@/src/map/mapDocument";
 
 function validMap(): MapDocument {
   const map = createBlankMap(3, 2);
@@ -76,7 +76,7 @@ describe("맵 문서", () => {
     });
     map.wormholePairs = [
       { id: 1, variant: 5, positions: positions.slice(0, 2) },
-      { id: 2, variant: 12, positions: positions.slice(2, 4) },
+      { id: 2, variant: 4, positions: positions.slice(2, 4) },
     ];
 
     expect(parseMap(serializeMap(map))).toEqual({ ok: true, map });
@@ -115,7 +115,7 @@ describe("맵 문서", () => {
     };
 
     const compatible = validateMap({ ...map, wormholePairs: [pair] });
-    const invalid = validateMap({ ...map, wormholePairs: [{ ...pair, variant: 16 }] });
+    const invalid = validateMap({ ...map, wormholePairs: [{ ...pair, variant: 6 }] });
 
     expect(compatible.ok).toBe(true);
     if (compatible.ok) expect(compatible.map.wormholePairs[0].variant).toBe(1);

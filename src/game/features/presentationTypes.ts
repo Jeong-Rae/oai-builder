@@ -1,4 +1,4 @@
-import type { GameState, ObjectKind, TileKind } from "../domain/types";
+import type { Entity, GameState, ObjectKind, TileKind } from "../domain/types";
 
 export type AssetSlot =
   | "floor"
@@ -11,20 +11,10 @@ export type AssetSlot =
   | "wormhole03"
   | "wormhole04"
   | "wormhole05"
-  | "wormhole06"
-  | "wormhole07"
-  | "wormhole08"
-  | "wormhole09"
-  | "wormhole10"
-  | "wormhole11"
-  | "wormhole12"
-  | "wormhole13"
-  | "wormhole14"
-  | "wormhole15"
-  | "gateDeviceWarn"
-  | "gateLaserWarn"
-  | "gateDeviceSafe"
-  | "normal"
+  | "gateWarn"
+  | "gateSafe"
+  | "normalInactive"
+  | "normalActive"
   | "anchor"
   | "swapper"
   | "playerDefault"
@@ -32,7 +22,8 @@ export type AssetSlot =
   | "playerDown"
   | "playerLeft"
   | "playerRight"
-  | "goalStar"
+  | "goalInactive"
+  | "goalActive"
   | "up"
   | "down"
   | "left"
@@ -66,5 +57,5 @@ export interface ObjectPresentation {
   toolAsset: AssetSlot;
   gameTextures: readonly AssetSlot[];
   editorAsset: AssetSlot;
-  gameTexture: AssetSlot;
+  gameTexture: AssetSlot | ((game: GameState, entity: Entity) => AssetSlot);
 }

@@ -1,6 +1,5 @@
 import backgroundUrl from "@/assets/background/background.space.webp";
 import plateButtonUrl from "@/assets/button/button.plate.webp";
-import goalStarUrl from "@/assets/goal/goal.star.webp";
 import startTitleUrl from "@/assets/title/title.point.webp";
 import startLunarUrl from "@/assets/moon/moon.eclipse.trimmed.webp";
 import startMascot1Url from "@/assets/mascot/mascot.happy.frame-01.webp";
@@ -24,7 +23,7 @@ import decorMascotUrl from "@/assets/mascot/mascot.angle-135.webp";
 import { assetUrls } from "@/src/game/features/presentation";
 import { chapters, type ZodiacSign } from "@/src/game/stages";
 
-export { backgroundUrl, plateButtonUrl, goalStarUrl };
+export { backgroundUrl, plateButtonUrl };
 
 export const startAssets = {
   title: startTitleUrl,
@@ -84,7 +83,6 @@ export function allGameAssetUrls(): string[] {
     new Set([
       backgroundUrl,
       plateButtonUrl,
-      goalStarUrl,
       startAssets.title,
       ...startAssets.mascots,
       startAssets.lunar,

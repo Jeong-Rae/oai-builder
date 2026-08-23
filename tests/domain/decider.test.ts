@@ -222,7 +222,7 @@ describe("웜홀", () => {
         },
         {
           id: 2,
-          variant: 8,
+          variant: 4,
           positions: [
             { x: 2, y: 1 },
             { x: 6, y: 4 },

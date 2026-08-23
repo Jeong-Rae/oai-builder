@@ -1,26 +1,26 @@
-import type { Direction, Entity, GameState, ObjectKind, TileKind } from '../domain/types';
-import { controlAssets, controlAssetSlots } from './controls/presentation';
-import { blankPresentation } from './fields/blank/presentation';
-import { exitPresentation } from './fields/exit/presentation';
-import { floorPresentation } from './fields/floor/presentation';
-import { gatePresentation } from './fields/gate/presentation';
-import { platePresentation } from './fields/plate/presentation';
-import { wallPresentation } from './fields/wall/presentation';
-import { wormholePresentation } from './fields/wormhole/presentation';
-import { anchorPresentation } from './objects/anchor/presentation';
-import { normalPresentation } from './objects/normal/presentation';
-import { playerPresentation } from './objects/player/presentation';
-import { swapperPresentation } from './objects/swapper/presentation';
+import type { Direction, Entity, GameState, ObjectKind, TileKind } from "../domain/types";
+import { controlAssets, controlAssetSlots } from "./controls/presentation";
+import { blankPresentation } from "./fields/blank/presentation";
+import { exitPresentation } from "./fields/exit/presentation";
+import { floorPresentation } from "./fields/floor/presentation";
+import { gatePresentation } from "./fields/gate/presentation";
+import { platePresentation } from "./fields/plate/presentation";
+import { wallPresentation } from "./fields/wall/presentation";
+import { wormholePresentation } from "./fields/wormhole/presentation";
+import { anchorPresentation } from "./objects/anchor/presentation";
+import { normalPresentation } from "./objects/normal/presentation";
+import { playerPresentation } from "./objects/player/presentation";
+import { swapperPresentation } from "./objects/swapper/presentation";
 import type {
   AssetDefinition,
   AssetGroup,
   AssetSlot,
   FieldPresentation,
   ObjectPresentation,
-} from './presentationTypes';
+} from "./presentationTypes";
 
-export { playerTextureForMove, playerTextureKeys } from './objects/player/presentation';
-export type { AssetSlot } from './presentationTypes';
+export { playerTextureForMove, playerTextureKeys } from "./objects/player/presentation";
+export type { AssetSlot } from "./presentationTypes";
 
 export const fieldPresentations: Record<TileKind, FieldPresentation> = {
   blank: blankPresentation,
@@ -58,33 +58,52 @@ export const assetUrls = Object.fromEntries(
 ) as Record<AssetSlot, string>;
 
 const groupLabels: Record<AssetGroup, string> = {
-  field: '필드', object: '오브젝트', goal: '골', control: '방향 표시',
+  field: "필드",
+  object: "오브젝트",
+  goal: "골",
+  control: "방향 표시",
 };
 
 export const assetGroups = (Object.keys(groupLabels) as AssetGroup[]).map((group) => ({
   label: groupLabels[group],
-  keys: (Object.keys(assetDefinitions) as AssetSlot[]).filter((key) => assetDefinitions[key].group === group),
+  keys: (Object.keys(assetDefinitions) as AssetSlot[]).filter(
+    (key) => assetDefinitions[key].group === group,
+  ),
 }));
 
-export const gameTextureSlots = Array.from(new Set<AssetSlot>([
-  ...Object.values(fieldPresentations).flatMap((presentation) => presentation.gameTextures),
-  ...Object.values(objectPresentations).flatMap((presentation) => presentation.gameTextures),
-  ...Object.values(controlAssetSlots),
-]));
+export const gameTextureSlots = Array.from(
+  new Set<AssetSlot>([
+    ...Object.values(fieldPresentations).flatMap((presentation) => presentation.gameTextures),
+    ...Object.values(objectPresentations).flatMap((presentation) => presentation.gameTextures),
+    ...Object.values(controlAssetSlots),
+  ]),
+);
 
-export function assetForField(field: TileKind, game: GameState | undefined, positionKey: string): AssetSlot | undefined {
+export function assetForField(
+  field: TileKind,
+  game: GameState | undefined,
+  positionKey: string,
+): AssetSlot | undefined {
   return fieldPresentations[field].editorAsset(game, positionKey);
 }
 
 export function baseAssetForField(field: TileKind): AssetSlot | undefined {
-  return field === 'blank' ? undefined : field === 'wall' ? 'wall' : 'floor';
+  return field === "blank" ? undefined : field === "wall" ? "wall" : "floor";
 }
 
-export function textureForField(field: TileKind, game: GameState, positionKey: string): AssetSlot | undefined {
+export function textureForField(
+  field: TileKind,
+  game: GameState,
+  positionKey: string,
+): AssetSlot | undefined {
   return fieldPresentations[field].gameTexture(game, positionKey);
 }
 
-export function overlayForField(field: TileKind, game: GameState | undefined, positionKey: string): AssetSlot | undefined {
+export function overlayForField(
+  field: TileKind,
+  game: GameState | undefined,
+  positionKey: string,
+): AssetSlot | undefined {
   return fieldPresentations[field].overlayAsset?.(game, positionKey);
 }
 
@@ -92,8 +111,9 @@ export function assetForObject(kind: ObjectKind): AssetSlot {
   return objectPresentations[kind].editorAsset;
 }
 
-export function textureForEntity(entity: Entity): AssetSlot {
-  return objectPresentations[entity.kind].gameTexture;
+export function textureForEntity(entity: Entity, game: GameState): AssetSlot {
+  const texture = objectPresentations[entity.kind].gameTexture;
+  return typeof texture === "function" ? texture(game, entity) : texture;
 }
 
 export function assetForDirection(direction: Direction): AssetSlot {

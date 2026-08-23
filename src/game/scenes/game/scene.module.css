@@ -103,13 +103,18 @@
 .goal {
   z-index: 1;
 }
-.plate,
-.wormhole,
-.normal {
+.plate {
   height: 66%;
   left: 17%;
   top: 17%;
   width: 66%;
+}
+.wormhole,
+.goal {
+  height: 78%;
+  left: 11%;
+  top: 11%;
+  width: 78%;
 }
 .entity {
   z-index: 2;
@@ -119,6 +124,15 @@
   pointer-events: none;
   position: absolute;
   z-index: 2;
+}
+.normalLayer {
+  inset: 9% 10%;
+}
+.normalLayer .normal {
+  height: 100%;
+  left: 0;
+  top: 0;
+  width: 100%;
 }
 .entityLayer .entity {
   z-index: 0;
@@ -158,36 +172,16 @@
   position: absolute;
   z-index: 1;
 }
-.device {
-  height: 64%;
-  left: 8%;
+.gateAsset {
+  height: auto;
+  left: 50%;
   position: absolute;
-  top: 18%;
-  width: 64%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 116%;
 }
-.device.second {
-  left: 28%;
-  transform: scaleX(-1);
-}
-.device.vertical {
-  left: 18%;
-  top: 8%;
-  transform: rotate(90deg);
-}
-.device.vertical.second {
-  left: 18%;
-  top: 28%;
-  transform: rotate(-90deg);
-}
-.laser {
-  height: 38%;
-  left: 0;
-  position: absolute;
-  top: 31%;
-  width: 100%;
-}
-.laser.vertical {
-  transform: rotate(90deg);
+.gateAsset.vertical {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 .error {
   color: #fff;

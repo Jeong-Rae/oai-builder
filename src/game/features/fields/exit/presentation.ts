@@ -1,14 +1,23 @@
-import type { FieldPresentation } from '@/src/game/features/presentationTypes';
+import type { FieldPresentation } from "@/src/game/features/presentationTypes";
 
 export const exitPresentation = {
-  kind: 'exit',
-  label: '골',
+  kind: "exit",
+  label: "골",
   assets: {
-    goalStar: { label: '골', url: new URL('@/assets/goal/goal.star.webp', import.meta.url).href, group: 'goal' },
+    goalInactive: {
+      label: "골·닫힘",
+      url: new URL("@/assets/goal/goal.star.state-inactive.webp", import.meta.url).href,
+      group: "goal",
+    },
+    goalActive: {
+      label: "골·열림",
+      url: new URL("@/assets/goal/goal.star.state-active.webp", import.meta.url).href,
+      group: "goal",
+    },
   },
-  toolAsset: 'goalStar',
-  gameTextures: ['goalStar'],
+  toolAsset: "goalInactive",
+  gameTextures: ["goalInactive", "goalActive"],
   editorAsset: () => undefined,
-  gameTexture: () => 'floor',
-  overlayAsset: () => 'goalStar',
+  gameTexture: () => "floor",
+  overlayAsset: (game) => (game?.goalOpened ? "goalActive" : "goalInactive"),
 } satisfies FieldPresentation;

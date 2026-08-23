@@ -1,11 +1,9 @@
 import type { GameState, Position, TileKind } from "@/src/game/domain/types";
-import { isGateOpen } from "./rules";
 import type { FieldPresentation } from "@/src/game/features/presentationTypes";
+import { isGateOpen } from "@/src/game/features/fields/gate/rules";
 
 export function gateVisualFor(game: GameState | undefined) {
-  return game && isGateOpen(game)
-    ? { device: "gateDeviceSafe" as const, laser: undefined }
-    : { device: "gateDeviceWarn" as const, laser: "gateLaserWarn" as const };
+  return game && isGateOpen(game) ? ("gateSafe" as const) : ("gateWarn" as const);
 }
 
 export type GateOrientation = "horizontal" | "vertical";
@@ -30,24 +28,19 @@ export const gatePresentation = {
   kind: "gate",
   label: "게이트",
   assets: {
-    gateDeviceWarn: {
-      label: "게이트·경고 장치",
-      url: new URL("@/assets/gate/gate.device.state-warn.webp", import.meta.url).href,
-      group: "field",
-    },
-    gateLaserWarn: {
-      label: "게이트·경고 레이저",
+    gateWarn: {
+      label: "게이트·위험",
       url: new URL("@/assets/gate/gate.razer.state-warn.webp", import.meta.url).href,
       group: "field",
     },
-    gateDeviceSafe: {
-      label: "게이트·안전 장치",
-      url: new URL("@/assets/gate/gate.device.state-safe.webp", import.meta.url).href,
+    gateSafe: {
+      label: "게이트·안전",
+      url: new URL("@/assets/gate/gate.razer.state-safe.webp", import.meta.url).href,
       group: "field",
     },
   },
-  toolAsset: "gateDeviceWarn",
-  gameTextures: ["gateDeviceWarn", "gateLaserWarn", "gateDeviceSafe"],
-  editorAsset: (game) => gateVisualFor(game).device,
+  toolAsset: "gateWarn",
+  gameTextures: ["gateWarn", "gateSafe"],
+  editorAsset: (game) => gateVisualFor(game),
   gameTexture: () => "floor",
 } satisfies FieldPresentation;

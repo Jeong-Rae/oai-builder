@@ -14,6 +14,7 @@ import {
   overlayForField,
   playerTextureForMove,
   playerTextureKeys,
+  textureForEntity,
   type AssetSlot,
 } from "../game/features/presentation";
 import { fieldRules } from "../game/features/rules";
@@ -351,11 +352,11 @@ export function mountEditor(
         const gateVisual = field === "gate" ? gateVisualFor(game) : undefined;
         const gateOrientation = field === "gate" ? gateOrientationFor(game, { x, y }) : undefined;
         const gate = gateVisual
-          ? `<span class="gate-assets gate-assets--${gateOrientation}">${gateVisual.laser ? `<img class="gate-laser" src="${resolveAsset(gateVisual.laser)}" alt="" />` : ""}<img class="gate-device gate-device-left" src="${resolveAsset(gateVisual.device)}" alt="" /><img class="gate-device gate-device-right" src="${resolveAsset(gateVisual.device)}" alt="" /></span>`
+          ? `<span class="gate-assets gate-assets--${gateOrientation}"><img class="gate-asset" src="${resolveAsset(gateVisual)}" alt="" /></span>`
           : "";
         const objectAsset =
           object && !(object.kind === "player" && retainedPlayer)
-            ? `<span class="object-asset object-${object.kind}"><img src="${resolveAsset(object.kind === "player" ? playerAsset : assetForObject(object.kind))}" alt="" /></span>`
+            ? `<span class="object-asset object-${object.kind}"><img src="${resolveAsset(object.kind === "player" ? playerAsset : game ? textureForEntity(game.entities[object.id]!, game) : assetForObject(object.kind))}" alt="" /></span>`
             : "";
         const controls =
           object?.controls
