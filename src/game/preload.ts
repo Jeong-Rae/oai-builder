@@ -7,6 +7,16 @@ function preloadImage(url: string): Promise<void> {
   });
 }
 
-export function preloadAssets(urls: readonly string[]): Promise<void> {
-  return Promise.all(urls.map(preloadImage)).then(() => undefined);
+export async function preloadAssets(
+  urls: readonly string[],
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<void> {
+  let loaded = 0;
+  onProgress?.(loaded, urls.length);
+  await Promise.all(
+    urls.map(async (url) => {
+      await preloadImage(url);
+      onProgress?.(++loaded, urls.length);
+    }),
+  );
 }
