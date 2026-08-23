@@ -48,11 +48,12 @@ button {
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 0.5cqw;
+  gap: 0.833cqw;
   left: 50%;
   position: absolute;
-  top: 4.2%;
-  transform: translateX(-50%);
+  top: 6.111%;
+  transform: translateX(-50%) scale(0.7);
+  transform-origin: top center;
   width: max-content;
   z-index: 3;
 }

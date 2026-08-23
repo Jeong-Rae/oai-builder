@@ -6,15 +6,17 @@
   width: 100%;
 }
 .chapterLabel {
-  color: rgb(131 144 154 / 55%);
+  color: #7e8185;
   font-family: "온글잎 박다현체", monospace;
-  font-size: 1.042cqw;
-  letter-spacing: 0.35em;
+  font-size: 1.563cqw;
+  font-weight: 400;
+  letter-spacing: 0.156cqw;
+  line-height: 1.2;
   margin: 0;
-  text-indent: 0.35em;
+  white-space: pre;
 }
 .titleText {
-  gap: 2ch;
+  text-transform: uppercase;
 }
 .constellation {
   aspect-ratio: 1000 / 670;

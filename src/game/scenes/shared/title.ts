@@ -1,27 +1,33 @@
-import styles from "./title.module.css";
+import { titleAssets } from "@/src/game/assets";
+import styles from "@/src/game/scenes/shared/title.module.css";
 
-export function createTitleStar(): HTMLSpanElement {
-  const star = document.createElement("span");
+export function createTitleStar(): HTMLImageElement {
+  const star = document.createElement("img");
   star.setAttribute("aria-hidden", "true");
-  star.textContent = "★";
+  star.src = titleAssets.starCross;
+  star.alt = "";
   return star;
 }
 
 export function createSceneTitle(
+  variant: "chapter" | "stage",
   leadingStar: HTMLElement,
   titleText: HTMLElement,
   trailingStar: HTMLElement,
+  dividerCenter?: HTMLElement,
 ): HTMLHeadingElement {
   const title = document.createElement("h1");
-  title.className = styles.title;
+  title.className = `${styles.title} ${styles[variant]}`;
   leadingStar.classList.add(styles.star);
   trailingStar.classList.add(styles.star);
   titleText.classList.add(styles.text);
-  const content = document.createElement("span");
-  content.className = styles.content;
   const divider = document.createElement("span");
   divider.className = styles.divider;
-  content.append(titleText, divider);
-  title.append(leadingStar, content, trailingStar);
+  divider.setAttribute("aria-hidden", "true");
+  title.append(leadingStar, titleText, trailingStar, divider);
+  if (dividerCenter) {
+    dividerCenter.classList.add(styles.dividerCenter);
+    title.append(dividerCenter);
+  }
   return title;
 }

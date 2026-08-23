@@ -32,7 +32,12 @@ export function createChapterView(
   header.className = "scene-header";
   const titleText = document.createElement("span");
   titleText.textContent = "CHAPTER SELECT";
-  header.append(createSceneTitle(createTitleStar(), titleText, createTitleStar()));
+  const dividerStar = document.createElement("img");
+  dividerStar.src = starNodeAssets.black;
+  dividerStar.alt = "";
+  header.append(
+    createSceneTitle("chapter", createTitleStar(), titleText, createTitleStar(), dividerStar),
+  );
   const carousel = document.createElement("div");
   carousel.className = styles.carousel;
   const cards = Array.from({ length: 5 }, () => createCard());
