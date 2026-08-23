@@ -22,11 +22,9 @@ function createStarCluster(): HTMLElement {
   image.className = styles.star;
   image.src = clearAssets.star;
   image.alt = "";
-  for (let index = 0; index < 10; index += 1) {
-    const angle = (index * 36 * Math.PI) / 180;
-    cluster.append(
-      createSpark(angle, 15.5 + (index % 3) * 3.5, (index % 3) * 90, 5 + (index % 3) * 2),
-    );
+  for (let index = 0; index < 4; index += 1) {
+    const angle = ((index * 90 + 45) * Math.PI) / 180;
+    cluster.append(createSpark(angle, 38 + (index % 2) * 7, index * 110, 4 + (index % 3)));
   }
   cluster.append(glow, image);
   return cluster;
@@ -37,7 +35,7 @@ function createHeader(): HTMLElement {
   header.className = styles.header;
   const title = document.createElement("h1");
   title.className = styles.title;
-  title.textContent = "STAGE CLEAR!";
+  title.textContent = "LEVEL CLEAR!";
   const leadingSpark = createSpark(0, 0, 0);
   const trailingSpark = createSpark(0, 0, 120);
   leadingSpark.className = styles.titleSpark;
@@ -59,11 +57,12 @@ export function createClearView(
     ["NEXT", onNext],
     ["RETRY", onRetry],
     ["HOME", onHome],
-  ].forEach(([label, action]) => {
+  ].forEach(([label, action], index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = styles.button;
     button.style.backgroundImage = `url(${plateButtonUrl})`;
+    button.style.setProperty("--button-delay", `${500 + index * 70}ms`);
     button.textContent = label as string;
     button.addEventListener("click", action as () => void);
     actions.append(button);

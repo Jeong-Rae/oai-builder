@@ -6,7 +6,6 @@ import startLunarUrl from "@/assets/moon/moon.eclepse.trimmed.webp";
 import startMascot1Url from "@/assets/mascot/mascot.happy.1.webp";
 import startMascot2Url from "@/assets/mascot/mascot.happy.2.webp";
 import clearSparkUrl from "@/assets/star/star_plus_gold_s.webp";
-import clearStarUrl from "@/assets/star/star.webp";
 import chapterStarUrl from "@/assets/star/star_stell_gold_m.webp";
 import chapterArrowLeftUrl from "@/assets/arrow/arrow_carousel_left.webp";
 import chapterArrowRightUrl from "@/assets/arrow/arrow_carousel_right.webp";
@@ -34,7 +33,7 @@ export const startAssets = {
   mascots: [startMascot1Url, startMascot2Url],
 } as const;
 
-export const clearAssets = { spark: clearSparkUrl, star: clearStarUrl } as const;
+export const clearAssets = { spark: clearSparkUrl, star: stageSelectClearedUrl } as const;
 
 export const chapterAssets = {
   constellationStar: chapterStarUrl,
