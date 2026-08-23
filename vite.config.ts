@@ -1,6 +1,8 @@
 import { defineConfig } from "vite-plus";
+import { aliases } from "./vite.aliases";
 
 export default defineConfig({
+  resolve: { alias: aliases },
   staged: {
     "*": "vp check --fix",
   },

@@ -1,13 +1,9 @@
 import type { ConstellationDefinition } from "../constellation/model";
+import type { GameDataStore } from "@/src/game/dataStore";
 
 export type StageStatus = "cleared" | "current" | "available" | "locked";
 
-export interface KeyValueStorage {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-}
-
-const STORAGE_KEY = "stage-progress";
+const STORAGE_KEY = "progress";
 
 function storageKey(chapterIndex: number, stageIndex: number): string {
   return `${chapterIndex}:${stageIndex}`;
@@ -16,26 +12,30 @@ function storageKey(chapterIndex: number, stageIndex: number): string {
 export interface ProgressStore {
   isCleared(chapterIndex: number, stageIndex: number): boolean;
   clearedStages(chapterIndex: number, stageCount: number): ReadonlySet<number>;
-  markCleared(chapterIndex: number, stageIndex: number): void;
-  reset(): void;
+  markCleared(chapterIndex: number, stageIndex: number): Promise<void>;
+  reset(): Promise<void>;
 }
 
-export function createProgressStore(storage?: KeyValueStorage): ProgressStore {
+export async function createProgressStore(storage?: GameDataStore): Promise<ProgressStore> {
   let cleared = new Set<string>();
   if (storage) {
-    try {
-      const raw = storage.getItem(STORAGE_KEY);
-      const parsed: unknown = raw === null ? undefined : JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        cleared = new Set(parsed.filter((entry): entry is string => typeof entry === "string"));
+    const raw = await storage.get(STORAGE_KEY);
+    if (raw !== null) {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        throw new Error("저장된 진행 상태를 읽을 수 없습니다.");
       }
-    } catch {
-      cleared = new Set();
+      if (!Array.isArray(parsed) || !parsed.every((entry) => typeof entry === "string")) {
+        throw new Error("저장된 진행 상태를 읽을 수 없습니다.");
+      }
+      cleared = new Set(parsed);
     }
   }
 
-  const persist = (): void => {
-    storage?.setItem(STORAGE_KEY, JSON.stringify([...cleared]));
+  const persist = async (next: ReadonlySet<string>): Promise<void> => {
+    await storage?.set(STORAGE_KEY, JSON.stringify([...next]));
   };
 
   return {
@@ -49,15 +49,17 @@ export function createProgressStore(storage?: KeyValueStorage): ProgressStore {
       }
       return indices;
     },
-    markCleared(chapterIndex, stageIndex) {
+    async markCleared(chapterIndex, stageIndex) {
       const key = storageKey(chapterIndex, stageIndex);
       if (cleared.has(key)) return;
-      cleared.add(key);
-      persist();
+      const next = new Set(cleared).add(key);
+      await persist(next);
+      cleared = next;
     },
-    reset() {
-      cleared = new Set();
-      persist();
+    async reset() {
+      const next = new Set<string>();
+      await persist(next);
+      cleared = next;
     },
   };
 }
@@ -98,6 +100,8 @@ export function deriveStageStatuses(
   });
 }
 
-export const progressStore = createProgressStore(
-  typeof localStorage !== "undefined" ? localStorage : undefined,
-);
+export let progressStore = await createProgressStore();
+
+export async function initializeProgressStore(storage: GameDataStore): Promise<void> {
+  progressStore = await createProgressStore(storage);
+}

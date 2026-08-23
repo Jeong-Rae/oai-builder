@@ -1,20 +1,21 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { parseConstellation } from "../../src/game/constellation/parse";
-import ariesData from "../../src/game/data/constellations/aries.json";
+import { parseConstellation } from "@/src/game/constellation/parse";
+import ariesData from "@/src/game/data/constellations/aries.json";
 import {
   createProgressStore,
   deriveStageStatuses,
   prerequisiteIndices,
-  type KeyValueStorage,
-} from "../../src/game/store/progressStore";
+} from "@/src/game/store/progressStore";
+import type { GameDataStore } from "@/src/game/dataStore";
 
-function memoryStorage(): KeyValueStorage & { data: Map<string, string> } {
+function memoryStorage(): GameDataStore & { data: Map<string, string> } {
   const data = new Map<string, string>();
   return {
     data,
-    getItem: (key) => data.get(key) ?? null,
-    setItem: (key, value) => void data.set(key, value),
+    get: async (key) => data.get(key) ?? null,
+    set: async (key, value) => void data.set(key, value),
+    remove: async (key) => void data.delete(key),
   };
 }
 
@@ -46,17 +47,35 @@ describe("스테이지 진행 상태", () => {
     expect(statuses).toEqual(["cleared", "cleared", "cleared", "current", "available"]);
   });
 
-  it("진행 상태를 저장소에 영구 저장한다", () => {
+  it("진행 상태를 저장소에 영구 저장한다", async () => {
     const storage = memoryStorage();
-    const store = createProgressStore(storage);
+    const store = await createProgressStore(storage);
     expect(store.isCleared(0, 0)).toBe(false);
-    store.markCleared(0, 0);
-    store.markCleared(0, 1);
+    await store.markCleared(0, 0);
+    await store.markCleared(0, 1);
     expect(store.isCleared(0, 0)).toBe(true);
     expect(store.clearedStages(0, 4)).toEqual(new Set([0, 1]));
 
-    const restored = createProgressStore(storage);
+    const restored = await createProgressStore(storage);
     expect(restored.clearedStages(0, 4)).toEqual(new Set([0, 1]));
     expect(restored.clearedStages(1, 4)).toEqual(new Set());
+  });
+
+  it("손상된 진행 상태를 정상 데이터로 사용하지 않는다", async () => {
+    const storage = memoryStorage();
+    storage.data.set("progress", "not-json");
+    await expect(createProgressStore(storage)).rejects.toThrow(
+      "저장된 진행 상태를 읽을 수 없습니다.",
+    );
+  });
+
+  it("저장에 실패하면 메모리에서도 클리어로 처리하지 않는다", async () => {
+    const storage = memoryStorage();
+    storage.set = async () => {
+      throw new Error("quota exceeded");
+    };
+    const store = await createProgressStore(storage);
+    await expect(store.markCleared(0, 0)).rejects.toThrow("quota exceeded");
+    expect(store.isCleared(0, 0)).toBe(false);
   });
 });
