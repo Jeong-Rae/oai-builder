@@ -368,58 +368,29 @@ export function createGameView(
       const disappear = track(
         layer.animate(
           [
-            { clipPath: "inset(0 0 0 0)", opacity: 1, transform: "translateY(0) scale(1)" },
-            {
-              clipPath: "inset(0 0 0 0)",
-              opacity: 1,
-              transform: "translateY(0) scale(1)",
-              offset: 0.18,
-            },
-            {
-              clipPath: "inset(0 0 100% 0)",
-              opacity: 0.15,
-              transform: "translateY(18%) scale(0.88)",
-            },
+            { clipPath: "inset(0 0 0 0)", opacity: 1 },
+            { clipPath: "inset(0 0 0 0)", opacity: 1, offset: 0.18 },
+            { clipPath: "inset(0 0 100% 0)", opacity: 0.15 },
           ],
           { duration: 400, easing: "cubic-bezier(.55, 0, 1, .45)", fill: "both" },
         ),
       );
-      const entryPulse = overlays
-        .get(key(entry))
-        ?.animate(
-          [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
-          { duration: 400, easing: "ease-in-out" },
-        );
-      if (entryPulse) track(entryPulse);
-      await Promise.all([finish(disappear), ...(entryPulse ? [finish(entryPulse)] : [])]);
+      await finish(disappear);
       if (generation !== animationGeneration) return;
 
       destinationCell.append(layer);
       const appear = track(
         layer.animate(
           [
-            {
-              clipPath: "inset(100% 0 0 0)",
-              opacity: 0.15,
-              transform: "translateY(18%) scale(0.88)",
-            },
-            { clipPath: "inset(0 0 0 0)", opacity: 1, transform: "translateY(0) scale(1)" },
+            { clipPath: "inset(100% 0 0 0)", opacity: 0.15 },
+            { clipPath: "inset(0 0 0 0)", opacity: 1 },
           ],
           { duration: 400, easing: "cubic-bezier(0, .55, .45, 1)", fill: "both" },
         ),
       );
-      const exitPulse = overlays
-        .get(key(destination))
-        ?.animate(
-          [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
-          { duration: 400, easing: "ease-in-out" },
-        );
-      if (exitPulse) track(exitPulse);
       stop(disappear);
-      if (entryPulse) stop(entryPulse);
-      await Promise.all([finish(appear), ...(exitPulse ? [finish(exitPulse)] : [])]);
+      await finish(appear);
       stop(appear);
-      if (exitPulse) stop(exitPulse);
     },
     cancelAnimations,
     setActionAvailability: (undoEnabled, navigationEnabled) => {
