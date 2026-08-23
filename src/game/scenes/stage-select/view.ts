@@ -1,4 +1,5 @@
 import { backgroundUrl, stageSelectAssets as assets, starNodeAssets } from "@/src/game/assets";
+import { createBackButton } from "@/src/game/components/BackButton";
 import { computeLayout } from "@/src/game/constellation/layout";
 import { renderConstellationSvg } from "@/src/game/constellation/render";
 import { signVisuals, type StageSignVisual } from "@/src/game/data/signVisuals";
@@ -33,18 +34,60 @@ function createHeader(chapter: ChapterDefinition, chapterIndex: number): HTMLEle
   return header;
 }
 
-function createBackButton(onBack: () => void): HTMLButtonElement {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = styles.back;
-  button.setAttribute("aria-label", "챕터 선택으로 돌아가기");
-  button.style.backgroundImage = `url(${assets.backFrame})`;
-  const icon = document.createElement("img");
-  icon.src = assets.arrowBack;
-  icon.alt = "";
-  button.append(icon);
-  button.addEventListener("click", onBack);
-  return button;
+type StageStatus = ReturnType<typeof stageStatuses>[number];
+
+function createStageNode(
+  stageIndex: number,
+  status: StageStatus,
+  onStage: (index: number) => void,
+  className = styles.node,
+): HTMLButtonElement {
+  const node = document.createElement("button");
+  const number = stageIndex + 1;
+  node.type = "button";
+  node.className = className;
+  node.dataset.status = status;
+  node.disabled = status === "locked";
+  node.setAttribute(
+    "aria-label",
+    status === "locked"
+      ? `${number} 스테이지 잠김`
+      : status === "cleared"
+        ? `${number} 스테이지 다시 플레이`
+        : `${number} 스테이지 시작`,
+  );
+  appendNodeStatusAssets(node, status);
+  if (status !== "locked") node.addEventListener("click", () => onStage(stageIndex));
+  return node;
+}
+
+function appendNodeStatusAssets(node: HTMLElement, status: StageStatus): void {
+  const star = document.createElement("img");
+  star.className = styles.star;
+  star.src = nodeImageByStatus[status];
+  star.alt = "";
+  if (status === "cleared") {
+    const glow = star.cloneNode() as HTMLImageElement;
+    glow.className = styles.glow;
+    node.append(glow);
+  }
+  node.append(star);
+  if (status !== "current") return;
+  const ring = document.createElement("span");
+  ring.className = styles.ring;
+  const bubble = document.createElement("span");
+  bubble.className = styles.bubble;
+  bubble.textContent = "NEXT";
+  bubble.style.backgroundImage = `url(${assets.bubbleNext})`;
+  node.append(ring, bubble);
+}
+
+function appendNodeLabel(node: HTMLElement, stageIndex: number): HTMLSpanElement {
+  const label = document.createElement("span");
+  label.className = styles.num;
+  label.textContent = String(stageIndex + 1).padStart(2, "0");
+  node.append(label);
+  return label;
 }
 
 function createNode(
@@ -52,101 +95,29 @@ function createNode(
   point: { x: number; y: number },
   layoutWidth: number,
   layoutHeight: number,
-  status: ReturnType<typeof stageStatuses>[number],
+  status: StageStatus,
   onStage: (index: number) => void,
 ): HTMLButtonElement {
-  const node = document.createElement("button");
-  node.type = "button";
-  node.className = styles.node;
-  node.dataset.status = status;
+  const node = createStageNode(stageIndex, status, onStage);
   node.style.setProperty("--x", `${(point.x / layoutWidth) * 100}%`);
   node.style.setProperty("--y", `${(point.y / layoutHeight) * 100}%`);
-  node.disabled = status === "locked";
-  const number = stageIndex + 1;
-  node.setAttribute(
-    "aria-label",
-    status === "locked"
-      ? `${number} 스테이지 잠김`
-      : status === "cleared"
-        ? `${number} 스테이지 다시 플레이`
-        : `${number} 스테이지 시작`,
-  );
-  const star = document.createElement("img");
-  star.className = styles.star;
-  star.src = nodeImageByStatus[status];
-  star.alt = "";
-  if (status === "cleared") {
-    const glow = star.cloneNode() as HTMLImageElement;
-    glow.className = styles.glow;
-    node.append(glow);
-  }
-  node.append(star);
-  if (status === "current") {
-    const ring = document.createElement("span");
-    ring.className = styles.ring;
-    const bubble = document.createElement("span");
-    bubble.className = styles.bubble;
-    bubble.textContent = "NEXT";
-    bubble.style.backgroundImage = `url(${assets.bubbleNext})`;
-    node.append(ring, bubble);
-  }
-  const label = document.createElement("span");
-  label.className = styles.num;
-  label.textContent = String(number).padStart(2, "0");
-  node.append(label);
-  if (status !== "locked") node.addEventListener("click", () => onStage(stageIndex));
+  appendNodeLabel(node, stageIndex);
   return node;
 }
 
 function createFigmaNode(
   stageIndex: number,
   point: StageSignVisual["stars"][number],
-  status: ReturnType<typeof stageStatuses>[number],
+  status: StageStatus,
   onStage: (index: number) => void,
 ): HTMLButtonElement {
-  const node = document.createElement("button");
-  node.type = "button";
-  node.className = `${styles.node} ${styles.exactNode}`;
-  node.dataset.status = status;
+  const node = createStageNode(stageIndex, status, onStage, `${styles.node} ${styles.exactNode}`);
   node.style.left = `${(point.x / 1920) * 100}%`;
   node.style.top = `${(point.y / 1080) * 100}%`;
   node.style.width = `${(point.size / 1920) * 100}%`;
-  node.disabled = status === "locked";
-  const number = stageIndex + 1;
-  node.setAttribute(
-    "aria-label",
-    status === "locked"
-      ? `${number} 스테이지 잠김`
-      : status === "cleared"
-        ? `${number} 스테이지 다시 플레이`
-        : `${number} 스테이지 시작`,
-  );
-  const star = document.createElement("img");
-  star.className = styles.star;
-  star.src = nodeImageByStatus[status];
-  star.alt = "";
-  if (status === "cleared") {
-    const glow = star.cloneNode() as HTMLImageElement;
-    glow.className = styles.glow;
-    node.append(glow);
-  }
-  node.append(star);
-  if (status === "current") {
-    const ring = document.createElement("span");
-    ring.className = styles.ring;
-    const bubble = document.createElement("span");
-    bubble.className = styles.bubble;
-    bubble.textContent = "NEXT";
-    bubble.style.backgroundImage = `url(${assets.bubbleNext})`;
-    node.append(ring, bubble);
-  }
-  const label = document.createElement("span");
-  label.className = styles.num;
+  const label = appendNodeLabel(node, stageIndex);
   label.style.left = `${((point.labelX - point.x) / point.size) * 100}%`;
   label.style.top = `${((point.labelY - point.y) / point.size) * 100}%`;
-  label.textContent = String(number).padStart(2, "0");
-  node.append(label);
-  if (status !== "locked") node.addEventListener("click", () => onStage(stageIndex));
   return node;
 }
 
@@ -186,7 +157,7 @@ export function createStageSelectView(
     createHeader(chapter, chapterIndex),
     constellation,
     nodes,
-    createBackButton(onBack),
+    createBackButton("챕터 선택으로 돌아가기", onBack, styles.back),
     decor,
   );
   return root;

@@ -8,6 +8,7 @@ import {
   textureForField,
 } from "@/src/game/features/presentation";
 import { backgroundUrl, clearAssets, stageSelectAssets } from "@/src/game/assets";
+import { createBackButton } from "@/src/game/components/BackButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/game/scene.module.css";
 
@@ -26,21 +27,26 @@ function createGoalEffect(): HTMLElement {
   const effect = document.createElement("span");
   effect.className = styles.goalEffect;
   effect.setAttribute("aria-hidden", "true");
+  effect.append(createGoalGlow(), ...goalSparks.map(createGoalSpark));
+  return effect;
+}
+
+function createGoalGlow(): HTMLElement {
   const glow = document.createElement("span");
   glow.className = styles.goalGlow;
-  effect.append(glow);
-  goalSparks.forEach(([x, y, delay, size]) => {
-    const spark = document.createElement("img");
-    spark.className = styles.goalSpark;
-    spark.src = clearAssets.spark;
-    spark.alt = "";
-    spark.style.setProperty("--x", `${x}%`);
-    spark.style.setProperty("--y", `${y}%`);
-    spark.style.setProperty("--delay", `${delay}ms`);
-    spark.style.setProperty("--size", `${size}%`);
-    effect.append(spark);
-  });
-  return effect;
+  return glow;
+}
+
+function createGoalSpark([x, y, delay, size]: (typeof goalSparks)[number]): HTMLImageElement {
+  const spark = document.createElement("img");
+  spark.className = styles.goalSpark;
+  spark.src = clearAssets.spark;
+  spark.alt = "";
+  spark.style.setProperty("--x", `${x}%`);
+  spark.style.setProperty("--y", `${y}%`);
+  spark.style.setProperty("--delay", `${delay}ms`);
+  spark.style.setProperty("--size", `${size}%`);
+  return spark;
 }
 
 export interface GameView {
@@ -66,16 +72,7 @@ export function createGameView(
   const navigation = document.createElement("nav");
   navigation.className = styles.navigation;
   navigation.setAttribute("aria-label", "게임 조작");
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = styles.navigationButton;
-  back.setAttribute("aria-label", "스테이지 선택으로 돌아가기");
-  back.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
-  const backIcon = document.createElement("img");
-  backIcon.src = stageSelectAssets.arrowBack;
-  backIcon.alt = "";
-  back.append(backIcon);
-  back.addEventListener("click", onBack);
+  const back = createBackButton("스테이지 선택으로 돌아가기", onBack, styles.navigationButton);
   const undo = document.createElement("button");
   undo.type = "button";
   undo.className = styles.navigationButton;
@@ -129,54 +126,80 @@ export function createGameView(
         board.append(cell);
       }
   };
-  const sync = (game: GameState) => {
-    if (dimensions !== `${game.columns}x${game.rows}`) build(game);
+  const syncBaseTexture = (cell: HTMLElement, texture: ReturnType<typeof textureForField>) => {
+    let base = cell.querySelector<HTMLImageElement>(`.${styles.base}`);
+    if (!texture) {
+      base?.remove();
+      return;
+    }
+    if (!base) {
+      base = document.createElement("img");
+      base.className = styles.base;
+      base.alt = "";
+      cell.prepend(base);
+    }
+    base.src = assetUrls[texture];
+  };
+  const syncFieldOverlay = (cell: HTMLElement, game: GameState, position: Position) => {
+    const positionKey = key(position);
+    const overlayTexture = overlayForField(game.tiles[position.y]![position.x]!, game, positionKey);
+    const old = overlays.get(positionKey);
+    if (!overlayTexture) {
+      old?.remove();
+      overlays.delete(positionKey);
+      return;
+    }
+    const overlay = old ?? document.createElement("img");
+    const overlayKind = game.tiles[position.y]![position.x];
+    overlay.className =
+      overlayKind === "plate"
+        ? `${styles.overlay} ${styles.plate}`
+        : overlayKind === "wormhole"
+          ? `${styles.overlay} ${styles.wormhole}`
+          : overlayKind === "exit"
+            ? `${styles.overlay} ${styles.goal}`
+            : styles.overlay;
+    overlay.alt = overlayKind === "exit" ? "목표" : "";
+    overlay.src = assetUrls[overlayTexture];
+    if (!old) {
+      cell.append(overlay);
+      overlays.set(positionKey, overlay);
+    }
+  };
+  const syncGoalEffect = (cell: HTMLElement, active: boolean) => {
+    cell.classList.toggle(styles.goalActive, active);
+    const goalEffect = cell.querySelector(`.${styles.goalEffect}`);
+    if (active && !goalEffect) cell.append(createGoalEffect());
+    else if (!active) goalEffect?.remove();
+  };
+  const syncCell = (cell: HTMLElement, game: GameState, position: Position) => {
+    const field = game.tiles[position.y]![position.x]!;
+    syncBaseTexture(cell, textureForField(field, game, key(position)));
+    syncFieldOverlay(cell, game, position);
+    syncGoalEffect(cell, field === "exit" && game.goalOpened);
+    if (field === "gate") renderGate(cell, game, position);
+    else cell.querySelector(`.${styles.gate}`)?.remove();
+  };
+  const syncBoardCells = (game: GameState) => {
     for (let y = 0; y < game.rows; y += 1)
       for (let x = 0; x < game.columns; x += 1) {
         const position = { x, y };
         const cell = cells.get(key(position))!;
-        const texture = textureForField(game.tiles[y]![x]!, game, key(position));
-        let base = cell.querySelector<HTMLImageElement>(`.${styles.base}`);
-        if (texture) {
-          if (!base) {
-            base = document.createElement("img");
-            base.className = styles.base;
-            base.alt = "";
-            cell.prepend(base);
-          }
-          base.src = assetUrls[texture];
-        } else base?.remove();
-        const overlayTexture = overlayForField(game.tiles[y]![x]!, game, key(position));
-        const old = overlays.get(key(position));
-        if (overlayTexture) {
-          const overlay = old ?? document.createElement("img");
-          const overlayKind = game.tiles[y]![x];
-          overlay.className =
-            overlayKind === "plate"
-              ? `${styles.overlay} ${styles.plate}`
-              : overlayKind === "wormhole"
-                ? `${styles.overlay} ${styles.wormhole}`
-                : overlayKind === "exit"
-                  ? `${styles.overlay} ${styles.goal}`
-                  : styles.overlay;
-          overlay.alt = overlayKind === "exit" ? "목표" : "";
-          overlay.src = assetUrls[overlayTexture];
-          if (!old) {
-            cell.append(overlay);
-            overlays.set(key(position), overlay);
-          }
-        } else {
-          old?.remove();
-          overlays.delete(key(position));
-        }
-        const activeGoal = game.tiles[y]![x] === "exit" && game.goalOpened;
-        cell.classList.toggle(styles.goalActive, activeGoal);
-        const goalEffect = cell.querySelector(`.${styles.goalEffect}`);
-        if (activeGoal && !goalEffect) cell.append(createGoalEffect());
-        else if (!activeGoal) goalEffect?.remove();
-        if (game.tiles[y]![x] === "gate") renderGate(cell, game, position);
-        else cell.querySelector(`.${styles.gate}`)?.remove();
+        syncCell(cell, game, position);
       }
+  };
+  const syncEntityControls = (layer: HTMLElement, entity: GameState["entities"][string]) => {
+    layer.querySelectorAll(`.${styles.control}`).forEach((node) => node.remove());
+    entity.controls.forEach((direction) => {
+      const control = document.createElement("img");
+      control.className = styles.control;
+      control.dataset.direction = direction;
+      control.src = assetUrls[assetForDirection(direction)];
+      control.alt = "";
+      layer.append(control);
+    });
+  };
+  const syncEntities = (game: GameState) => {
     const present = new Set<string>();
     Object.values(game.entities).forEach((entity) => {
       present.add(entity.id);
@@ -197,16 +220,8 @@ export function createGameView(
         entityLayers.set(entity.id, layer);
       }
       image.src = assetUrls[textureForEntity(entity, game)];
-      layer!.querySelectorAll(`.${styles.control}`).forEach((node) => node.remove());
+      syncEntityControls(layer!, entity);
       cells.get(key(entity.position))!.append(layer!);
-      entity.controls.forEach((direction) => {
-        const control = document.createElement("img");
-        control.className = styles.control;
-        control.dataset.direction = direction;
-        control.src = assetUrls[assetForDirection(direction)];
-        control.alt = "";
-        layer!.append(control);
-      });
     });
     entityNodes.forEach((image, id) => {
       if (!present.has(id)) {
@@ -215,6 +230,11 @@ export function createGameView(
         entityLayers.delete(id);
       }
     });
+  };
+  const sync = (game: GameState) => {
+    if (dimensions !== `${game.columns}x${game.rows}`) build(game);
+    syncBoardCells(game);
+    syncEntities(game);
   };
   const track = (animation: Animation): Animation => {
     animations.add(animation);
