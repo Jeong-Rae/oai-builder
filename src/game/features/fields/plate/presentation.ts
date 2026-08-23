@@ -8,17 +8,17 @@ export const platePresentation = {
   assets: {
     platePawHigh: {
       label: "플레이트·높음",
-      url: new URL("@/assets/plate/plate.paw.high.webp", import.meta.url).href,
+      url: new URL("@/assets/plate/plate.paw.level-high.webp", import.meta.url).href,
       group: "field",
     },
     platePawMid: {
       label: "플레이트·중간",
-      url: new URL("@/assets/plate/plate.paw.mid.webp", import.meta.url).href,
+      url: new URL("@/assets/plate/plate.paw.level-mid.webp", import.meta.url).href,
       group: "field",
     },
     platePawLow: {
       label: "플레이트·눌림",
-      url: new URL("@/assets/plate/plate.paw.low.webp", import.meta.url).href,
+      url: new URL("@/assets/plate/plate.paw.level-low.webp", import.meta.url).href,
       group: "field",
     },
   },

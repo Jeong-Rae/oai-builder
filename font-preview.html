@@ -1,40 +1,127 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>START font preview</title>
     <style>
-      @font-face { font-family: Bitram; src: url("assets/fonts/Bitram/Bitram.ttf") format("truetype"); }
-      @font-face { font-family: PixeloidMono; src: url("assets/fonts/PixeloidMono/PixeloidMono.ttf") format("truetype"); }
-      @font-face { font-family: Edunline; src: url("assets/fonts/Edunline/edunline.ttf") format("truetype"); }
-      @font-face { font-family: EdunDot; src: url("assets/fonts/EdunDot/edundot.ttf") format("truetype"); }
-      @font-face { font-family: PixelifySans; src: url("assets/fonts/PixelifySans/PixelifySans-VariableFont_wght.ttf") format("truetype"); }
-      @font-face { font-family: PixeloidSans; src: url("assets/fonts/PixeloidSans/PixeloidSans.ttf") format("truetype"); }
-      @font-face { font-family: Editundo; src: url("assets/fonts/Editundo/editundo.ttf") format("truetype"); }
-      @font-face { font-family: GamePaused; src: url("assets/fonts/GamePaused/Game Paused DEMO.otf") format("opentype"); }
-      @font-face { font-family: Jersey10; src: url("assets/fonts/Jersey/Jersey10-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Jersey10Charted; src: url("assets/fonts/Jersey/Jersey10Charted-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Jersey15; src: url("assets/fonts/Jersey/Jersey15-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Jersey15Charted; src: url("assets/fonts/Jersey/Jersey15Charted-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Jersey20; src: url("assets/fonts/Jersey/Jersey20-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Jersey20Charted; src: url("assets/fonts/Jersey/Jersey20Charted-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Jersey25; src: url("assets/fonts/Jersey/Jersey25-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Jersey25Charted; src: url("assets/fonts/Jersey/Jersey25Charted-Regular.ttf") format("truetype"); }
-      @font-face { font-family: Neopixel; src: url("assets/fonts/Neopixel/neopixel-regular.otf") format("opentype"); }
-      @font-face { font-family: Born2BeSporty; src: url("assets/fonts/Born2BeSporty/born2bsporty-fs.otf") format("opentype"); }
+      @font-face {
+        font-family: Bitram;
+        src: url("assets/fonts/Bitram/Bitram.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: PixeloidMono;
+        src: url("assets/fonts/PixeloidMono/PixeloidMono.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Edunline;
+        src: url("assets/fonts/Edunline/edunline.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: EdunDot;
+        src: url("assets/fonts/EdunDot/edundot.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: PixelifySans;
+        src: url("assets/fonts/PixelifySans/PixelifySans-VariableFont_wght.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: PixeloidSans;
+        src: url("assets/fonts/PixeloidSans/PixeloidSans.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Editundo;
+        src: url("assets/fonts/Editundo/editundo.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: GamePaused;
+        src: url("assets/fonts/GamePaused/Game Paused DEMO.otf") format("opentype");
+      }
+      @font-face {
+        font-family: Jersey10;
+        src: url("assets/fonts/Jersey/Jersey10-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Jersey10Charted;
+        src: url("assets/fonts/Jersey/Jersey10Charted-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Jersey15;
+        src: url("assets/fonts/Jersey/Jersey15-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Jersey15Charted;
+        src: url("assets/fonts/Jersey/Jersey15Charted-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Jersey20;
+        src: url("assets/fonts/Jersey/Jersey20-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Jersey20Charted;
+        src: url("assets/fonts/Jersey/Jersey20Charted-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Jersey25;
+        src: url("assets/fonts/Jersey/Jersey25-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Jersey25Charted;
+        src: url("assets/fonts/Jersey/Jersey25Charted-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: Neopixel;
+        src: url("assets/fonts/Neopixel/neopixel-regular.otf") format("opentype");
+      }
+      @font-face {
+        font-family: Born2BeSporty;
+        src: url("assets/fonts/Born2BeSporty/born2bsporty-fs.otf") format("opentype");
+      }
 
-      :root { background: #080e14; color: #d7f9ff; font: 16px/1.4 system-ui, sans-serif; }
-      body { margin: 0; padding: 2rem; }
-      h1 { margin: 0 0 .35rem; font-size: clamp(1.5rem, 4vw, 2.5rem); }
-      p { color: #8faab5; margin: 0 0 1.5rem; }
-      main { margin: auto; max-width: 1100px; }
-      .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-      .sample { background: #101d27; border: 1px solid #263947; border-radius: 10px; padding: 1rem; }
-      .name { color: #81f0c5; font: 700 .8rem/1.2 ui-monospace, monospace; margin-bottom: .75rem; }
+      :root {
+        background: #080e14;
+        color: #d7f9ff;
+        font:
+          16px/1.4 system-ui,
+          sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 2rem;
+      }
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+      }
+      p {
+        color: #8faab5;
+        margin: 0 0 1.5rem;
+      }
+      main {
+        margin: auto;
+        max-width: 1100px;
+      }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+      .sample {
+        background: #101d27;
+        border: 1px solid #263947;
+        border-radius: 10px;
+        padding: 1rem;
+      }
+      .name {
+        color: #81f0c5;
+        font:
+          700 0.8rem/1.2 ui-monospace,
+          monospace;
+        margin-bottom: 0.75rem;
+      }
       .plate-button {
         aspect-ratio: 1899 / 613;
-        background: url("assets/button/button_plate.png") center / contain no-repeat;
+        background: url("assets/button/button.plate.webp") center / contain no-repeat;
         border: 0;
         color: #15171d;
         cursor: pointer;
@@ -42,37 +129,98 @@
         font-family: var(--font);
         font-size: clamp(1.4rem, 5vw, 2.3rem);
         font-weight: 700;
-        letter-spacing: .08em;
+        letter-spacing: 0.08em;
         padding: 0 14%;
         text-shadow: 0 1px rgb(255 255 255 / 60%);
         width: 100%;
       }
-      .plate-button:hover, .plate-button:focus-visible { filter: brightness(1.08) drop-shadow(0 0 .7rem rgb(255 255 255 / 34%)); outline: none; }
+      .plate-button:hover,
+      .plate-button:focus-visible {
+        filter: brightness(1.08) drop-shadow(0 0 0.7rem rgb(255 255 255 / 34%));
+        outline: none;
+      }
     </style>
   </head>
   <body>
     <main>
       <h1>PlateButton — START font preview</h1>
-      <p>Each sample uses the same button image and text style as <code>src/game/components/PlateButton.ts</code>.</p>
+      <p>
+        Each sample uses the same button image and text style as
+        <code>src/game/components/PlateButton.ts</code>.
+      </p>
       <section class="grid" aria-label="Font samples">
-        <article class="sample"><div class="name">Bitram</div><button class="plate-button" style="--font: Bitram">START</button></article>
-        <article class="sample"><div class="name">Pixeloid Mono</div><button class="plate-button" style="--font: PixeloidMono">START</button></article>
-        <article class="sample"><div class="name">Edunline</div><button class="plate-button" style="--font: Edunline">START</button></article>
-        <article class="sample"><div class="name">EdunDot</div><button class="plate-button" style="--font: EdunDot">START</button></article>
-        <article class="sample"><div class="name">Pixelify Sans</div><button class="plate-button" style="--font: PixelifySans">START</button></article>
-        <article class="sample"><div class="name">Pixeloid Sans</div><button class="plate-button" style="--font: PixeloidSans">START</button></article>
-        <article class="sample"><div class="name">Editundo</div><button class="plate-button" style="--font: Editundo">START</button></article>
-        <article class="sample"><div class="name">Game Paused</div><button class="plate-button" style="--font: GamePaused">START</button></article>
-        <article class="sample"><div class="name">Jersey 10</div><button class="plate-button" style="--font: Jersey10">START</button></article>
-        <article class="sample"><div class="name">Jersey 10 Charted</div><button class="plate-button" style="--font: Jersey10Charted">START</button></article>
-        <article class="sample"><div class="name">Jersey 15</div><button class="plate-button" style="--font: Jersey15">START</button></article>
-        <article class="sample"><div class="name">Jersey 15 Charted</div><button class="plate-button" style="--font: Jersey15Charted">START</button></article>
-        <article class="sample"><div class="name">Jersey 20</div><button class="plate-button" style="--font: Jersey20">START</button></article>
-        <article class="sample"><div class="name">Jersey 20 Charted</div><button class="plate-button" style="--font: Jersey20Charted">START</button></article>
-        <article class="sample"><div class="name">Jersey 25</div><button class="plate-button" style="--font: Jersey25">START</button></article>
-        <article class="sample"><div class="name">Jersey 25 Charted</div><button class="plate-button" style="--font: Jersey25Charted">START</button></article>
-        <article class="sample"><div class="name">Neopixel</div><button class="plate-button" style="--font: Neopixel">START</button></article>
-        <article class="sample"><div class="name">Born2BeSporty</div><button class="plate-button" style="--font: Born2BeSporty">START</button></article>
+        <article class="sample">
+          <div class="name">Bitram</div>
+          <button class="plate-button" style="--font: Bitram">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Pixeloid Mono</div>
+          <button class="plate-button" style="--font: PixeloidMono">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Edunline</div>
+          <button class="plate-button" style="--font: Edunline">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">EdunDot</div>
+          <button class="plate-button" style="--font: EdunDot">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Pixelify Sans</div>
+          <button class="plate-button" style="--font: PixelifySans">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Pixeloid Sans</div>
+          <button class="plate-button" style="--font: PixeloidSans">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Editundo</div>
+          <button class="plate-button" style="--font: Editundo">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Game Paused</div>
+          <button class="plate-button" style="--font: GamePaused">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 10</div>
+          <button class="plate-button" style="--font: Jersey10">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 10 Charted</div>
+          <button class="plate-button" style="--font: Jersey10Charted">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 15</div>
+          <button class="plate-button" style="--font: Jersey15">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 15 Charted</div>
+          <button class="plate-button" style="--font: Jersey15Charted">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 20</div>
+          <button class="plate-button" style="--font: Jersey20">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 20 Charted</div>
+          <button class="plate-button" style="--font: Jersey20Charted">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 25</div>
+          <button class="plate-button" style="--font: Jersey25">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Jersey 25 Charted</div>
+          <button class="plate-button" style="--font: Jersey25Charted">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Neopixel</div>
+          <button class="plate-button" style="--font: Neopixel">START</button>
+        </article>
+        <article class="sample">
+          <div class="name">Born2BeSporty</div>
+          <button class="plate-button" style="--font: Born2BeSporty">START</button>
+        </article>
       </section>
     </main>
   </body>

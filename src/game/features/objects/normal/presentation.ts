@@ -6,7 +6,7 @@ export const normalPresentation = {
   assets: {
     normal: {
       label: "일반 오브젝트",
-      url: new URL("@/assets/box/nomal.blue.webp", import.meta.url).href,
+      url: new URL("@/assets/box/box.normal.color-blue.webp", import.meta.url).href,
       group: "object",
     },
   },

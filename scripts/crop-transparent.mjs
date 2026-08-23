@@ -1,15 +1,17 @@
 import { access, rename } from "node:fs/promises";
-import { join, parse, resolve } from "node:path";
+import { basename, extname, join, parse, resolve } from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+import { assertAssetName } from "./validate-asset-names.mjs";
 
 function usage() {
-  return "사용법: npm run asset:trim -- <입력 PNG> [출력 PNG] [--replace] [--force] [--inspect] [--alpha-threshold N]";
+  return "사용법: pnpm run asset:trim -- <입력 이미지> [출력 WebP] [--replace] [--force] [--inspect] [--alpha-threshold N]";
 }
 
 function defaultOutputPath(inputPath) {
   const source = parse(inputPath);
-  return join(source.dir, `${source.name}.trimmed.png`);
+  return join(source.dir, `${source.name}.trimmed.webp`);
 }
 
 async function fileExists(filePath) {
@@ -21,7 +23,7 @@ async function fileExists(filePath) {
   }
 }
 
-function boundsOfAlpha(data, width, height, channels, alphaThreshold = 0) {
+export function boundsOfAlpha(data, width, height, channels, alphaThreshold = 1) {
   let left = width;
   let top = height;
   let right = -1;
@@ -67,7 +69,7 @@ async function main() {
   const inspect = args.includes("--inspect");
 
   const thresholdIndex = args.indexOf("--alpha-threshold");
-  const alphaThreshold = thresholdIndex >= 0 ? Number(args[thresholdIndex + 1]) : 0;
+  const alphaThreshold = thresholdIndex >= 0 ? Number(args[thresholdIndex + 1]) : 1;
 
   if (
     !input ||
@@ -81,11 +83,20 @@ async function main() {
     throw new Error("--replace 사용 시 출력 파일을 지정할 수 없습니다.");
   }
 
+  if (replace && extname(input).toLowerCase() !== ".webp") {
+    throw new Error("--replace는 WebP 입력에만 사용할 수 있습니다.");
+  }
+
   const inputPath = resolve(input);
 
   // --replace: 원본을 최종 출력으로 사용
-  // 일반적인 경우: 지정된 output 또는 .trimmed.png
+  // 일반적인 경우: 지정된 output 또는 .trimmed.webp
   const outputPath = resolve(replace ? inputPath : (output ?? defaultOutputPath(inputPath)));
+
+  if (extname(outputPath) !== ".webp") {
+    throw new Error("출력 파일의 확장자는 .webp여야 합니다.");
+  }
+  assertAssetName(basename(outputPath));
 
   if (!replace && inputPath === outputPath) {
     throw new Error("원본과 출력 파일 경로는 달라야 합니다.");
@@ -114,10 +125,10 @@ async function main() {
   if (replace) {
     // 원본 파일을 직접 읽으면서 같은 파일에 쓰지 않도록 임시 파일에 생성
     const source = parse(inputPath);
-    const tempPath = join(source.dir, `.${source.name}.${process.pid}.trimmed.tmp.png`);
+    const tempPath = join(source.dir, `.${source.name}.${process.pid}.trimmed.tmp.webp`);
 
     try {
-      await sharp(inputPath).extract(bounds).png().toFile(tempPath);
+      await sharp(inputPath).extract(bounds).webp({ lossless: true }).toFile(tempPath);
 
       await rename(tempPath, inputPath);
     } catch (error) {
@@ -133,7 +144,7 @@ async function main() {
       throw error;
     }
   } else {
-    await sharp(inputPath).extract(bounds).png().toFile(outputPath);
+    await sharp(inputPath).extract(bounds).webp({ lossless: true }).toFile(outputPath);
   }
 
   console.log(
@@ -143,7 +154,9 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}

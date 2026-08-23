@@ -37,27 +37,27 @@ export const playerPresentation = {
   assets: {
     playerDefault: {
       label: "플레이어·기본",
-      url: new URL("@/assets/playable/player_default.webp", import.meta.url).href,
+      url: new URL("@/assets/playable/player.direction-front.webp", import.meta.url).href,
       group: "object",
     },
     playerUp: {
       label: "플레이어 위 방향",
-      url: new URL("@/assets/playable/player_up.webp", import.meta.url).href,
+      url: new URL("@/assets/playable/player.direction-up.webp", import.meta.url).href,
       group: "object",
     },
     playerDown: {
       label: "플레이어 아래 방향",
-      url: new URL("@/assets/playable/player_down.webp", import.meta.url).href,
+      url: new URL("@/assets/playable/player.direction-down.webp", import.meta.url).href,
       group: "object",
     },
     playerLeft: {
       label: "플레이어 왼쪽 방향",
-      url: new URL("@/assets/playable/player_left.webp", import.meta.url).href,
+      url: new URL("@/assets/playable/player.direction-left.webp", import.meta.url).href,
       group: "object",
     },
     playerRight: {
       label: "플레이어 오른쪽 방향",
-      url: new URL("@/assets/playable/player_right.webp", import.meta.url).href,
+      url: new URL("@/assets/playable/player.direction-right.webp", import.meta.url).href,
       group: "object",
     },
   },

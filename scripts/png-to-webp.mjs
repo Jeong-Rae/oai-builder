@@ -1,10 +1,12 @@
 import { mkdir, readdir, stat } from "node:fs/promises";
-import { extname, join, parse, resolve } from "node:path";
+import { basename, extname, join, parse, resolve } from "node:path";
 import process from "node:process";
 import sharp from "sharp";
+import { boundsOfAlpha } from "./crop-transparent.mjs";
+import { assertAssetName } from "./validate-asset-names.mjs";
 
 function usage() {
-  return "사용법: npm run asset:webp -- <입력 PNG 또는 디렉터리> [출력 경로] [--lossy] [--quality N]";
+  return "사용법: pnpm run asset:webp -- <입력 PNG 또는 디렉터리> [출력 경로] [--lossy] [--quality N]";
 }
 
 function defaultOutputPath(inputPath) {
@@ -13,8 +15,14 @@ function defaultOutputPath(inputPath) {
 }
 
 async function convertFile(inputPath, outputPath, { lossy, quality }) {
+  assertAssetName(basename(outputPath));
   const options = lossy ? { quality } : { lossless: true };
-  const info = await sharp(inputPath).webp(options).toFile(outputPath);
+  const { data, info: sourceInfo } = await sharp(inputPath)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const bounds = boundsOfAlpha(data, sourceInfo.width, sourceInfo.height, sourceInfo.channels);
+  const info = await sharp(inputPath).extract(bounds).webp(options).toFile(outputPath);
   console.log(
     `${inputPath} → ${outputPath} (${lossy ? `손실, quality=${quality}` : "무손실"}, ${info.size} bytes)`,
   );

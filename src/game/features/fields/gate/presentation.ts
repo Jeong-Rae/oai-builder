@@ -32,17 +32,17 @@ export const gatePresentation = {
   assets: {
     gateDeviceWarn: {
       label: "게이트·경고 장치",
-      url: new URL("@/assets/gate/gate.device.warn.webp", import.meta.url).href,
+      url: new URL("@/assets/gate/gate.device.state-warn.webp", import.meta.url).href,
       group: "field",
     },
     gateLaserWarn: {
       label: "게이트·경고 레이저",
-      url: new URL("@/assets/gate/gate.razer.warn.webp", import.meta.url).href,
+      url: new URL("@/assets/gate/gate.razer.state-warn.webp", import.meta.url).href,
       group: "field",
     },
     gateDeviceSafe: {
       label: "게이트·안전 장치",
-      url: new URL("@/assets/gate/gate.device.safe.webp", import.meta.url).href,
+      url: new URL("@/assets/gate/gate.device.state-safe.webp", import.meta.url).href,
       group: "field",
     },
   },

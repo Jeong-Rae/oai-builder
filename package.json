@@ -3,6 +3,7 @@
   "scripts": {
     "asset:resize": "node scripts/resize-game-asset.mjs",
     "asset:trim": "node scripts/crop-transparent.mjs",
+    "asset:validate": "node scripts/validate-asset-names.mjs",
     "asset:webp": "node scripts/png-to-webp.mjs",
     "dev": "pnpm run dev:live",
     "dev:live": "vp dev --config vite.game.config.ts",
@@ -16,7 +17,7 @@
     "deploy:editor": "pnpm run build:editor && vercel deploy dist/editor --prod --yes --project game-editor --scope jeong-raes-projects",
     "test": "vp test",
     "test:run": "vp test run",
-    "prepare": "vp config"
+    "prepare": "pnpm run asset:validate && vp config"
   },
   "dependencies": {
     "zustand": "^5.0.15"
