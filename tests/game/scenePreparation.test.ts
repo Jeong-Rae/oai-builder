@@ -6,12 +6,23 @@ const mocked = vi.hoisted(() => ({
   direction: undefined as "up" | "down" | "left" | "right" | undefined,
   dispatch: vi.fn(() => ({ events: [] as Array<{ type: string; [key: string]: unknown }> })),
   mapUrl: "/stage.map" as string | undefined,
+  nextHint: {
+    type: "entity",
+    entityId: "normal-1",
+    position: { x: 2, y: 1 },
+  } as
+    | { type: "entity"; entityId: string; position: { x: number; y: number } }
+    | {
+        type: "field";
+        field: "wormhole" | "plate" | "exit";
+        position: { x: number; y: number };
+      },
   onHint: undefined as (() => void) | undefined,
   playWormhole: vi.fn(() => Promise.resolve()),
   removeEventListener: vi.fn(),
   setActionAvailability: vi.fn(),
   setElapsedMs: vi.fn(),
-  setHintPosition: vi.fn(),
+  setHintTarget: vi.fn(),
   setPlateFrame: vi.fn(),
   showError: vi.fn(),
   subscribe: vi.fn((_listener: (state: any, previous: any) => void) => vi.fn()),
@@ -33,7 +44,7 @@ vi.mock("@/src/game/scenes/game/view", () => ({
       cancelAnimations: mocked.cancelAnimations,
       setActionAvailability: mocked.setActionAvailability,
       setElapsedMs: mocked.setElapsedMs,
-      setHintPosition: mocked.setHintPosition,
+      setHintTarget: mocked.setHintTarget,
       setPlayerTexture: vi.fn(),
       setPlateFrame: mocked.setPlateFrame,
       showError: mocked.showError,
@@ -62,7 +73,7 @@ vi.mock("@/src/game/store/gameStore", () => ({
   }),
 }));
 vi.mock("@/src/game/domain/pathfinder", () => ({
-  findNextInteraction: () => ({ x: 2, y: 1 }),
+  findNextHint: () => mocked.nextHint,
 }));
 vi.mock("@/src/game/stages", () => ({
   stageFor: () => ({ mapUrl: mocked.mapUrl }),
@@ -84,6 +95,11 @@ import { createChallengeGameScene, createGameScene } from "@/src/game/scenes/gam
 describe("게임 장면 사전 준비", () => {
   afterEach(() => {
     mocked.mapUrl = "/stage.map";
+    mocked.nextHint = {
+      type: "entity",
+      entityId: "normal-1",
+      position: { x: 2, y: 1 },
+    };
     mocked.direction = undefined;
     mocked.onHint = undefined;
     mocked.dispatch.mockReturnValue({ events: [] });
@@ -252,13 +268,13 @@ describe("게임 장면 사전 준비", () => {
     scene.activate();
     await scene.ready;
     mocked.onHint?.();
-    expect(mocked.setHintPosition).toHaveBeenCalledWith({ x: 2, y: 1 });
+    expect(mocked.setHintTarget).toHaveBeenCalledWith(mocked.nextHint);
 
     const keydown = mocked.addEventListener.mock.calls.find(
       ([type]) => type === "keydown",
     )?.[1] as (event: KeyboardEvent) => void;
     const event = { key: "ArrowRight", preventDefault: vi.fn() } as unknown as KeyboardEvent;
-    mocked.setHintPosition.mockClear();
+    mocked.setHintTarget.mockClear();
 
     mocked.dispatch.mockReturnValueOnce({
       events: [{ type: "entity/moved", entityId: "player" }],
@@ -274,7 +290,7 @@ describe("게임 장면 사전 준비", () => {
       ],
     });
     keydown(event);
-    expect(mocked.setHintPosition).not.toHaveBeenCalled();
+    expect(mocked.setHintTarget).not.toHaveBeenCalled();
 
     mocked.dispatch.mockReturnValueOnce({
       events: [
@@ -286,7 +302,59 @@ describe("게임 장면 사전 준비", () => {
       ],
     });
     keydown(event);
-    expect(mocked.setHintPosition).toHaveBeenCalledWith();
+    expect(mocked.setHintTarget).toHaveBeenCalledWith();
+    scene.dispose();
+  });
+
+  it.each([
+    [
+      "웜홀",
+      { type: "field", field: "wormhole", position: { x: 2, y: 1 } },
+      {
+        type: "entity/moved",
+        entityId: "player",
+        wormhole: { x: 2, y: 1 },
+        to: { x: 4, y: 1 },
+      },
+    ],
+    [
+      "플레이트",
+      { type: "field", field: "plate", position: { x: 2, y: 1 } },
+      { type: "plate/activated", position: { x: 2, y: 1 } },
+    ],
+    [
+      "출구",
+      { type: "field", field: "exit", position: { x: 2, y: 1 } },
+      { type: "game/completed" },
+    ],
+  ] as const)("%s 힌트는 대상 이벤트가 발생하면 제거한다", async (_name, target, hintEvent) => {
+    mocked.direction = "right";
+    mocked.nextHint = target;
+    mocked.dispatch.mockReturnValue({ events: [hintEvent] });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
+    scene.activate();
+    await scene.ready;
+    mocked.onHint?.();
+    mocked.setHintTarget.mockClear();
+
+    const keydown = mocked.addEventListener.mock.calls.find(
+      ([type]) => type === "keydown",
+    )?.[1] as (event: KeyboardEvent) => void;
+    keydown({ key: "ArrowRight", preventDefault: vi.fn() } as unknown as KeyboardEvent);
+
+    expect(mocked.setHintTarget).toHaveBeenCalledWith();
     scene.dispose();
   });
 

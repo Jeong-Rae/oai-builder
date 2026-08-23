@@ -217,6 +217,13 @@
   width: 136%;
   z-index: 4;
 }
+.plateHintRing {
+  width: 90%;
+}
+.wormholeHintRing,
+.exitHintRing {
+  width: 106%;
+}
 .normalLayer {
   inset: 9% 10%;
 }

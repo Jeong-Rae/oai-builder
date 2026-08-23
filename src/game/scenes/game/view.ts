@@ -1,4 +1,5 @@
 import type { GameState, Position } from "@/src/game/domain/types";
+import type { HintTarget } from "@/src/game/domain/pathfinder";
 import { gateOrientationFor, gateVisualFor } from "@/src/game/features/fields/gate/presentation";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import {
@@ -97,7 +98,7 @@ export interface GameView {
   playWormhole(entityId: string, entry: Position, destination: Position): Promise<void>;
   cancelAnimations(): void;
   setActionAvailability(undoEnabled: boolean, navigationEnabled: boolean): void;
-  setHintPosition(position?: Position): void;
+  setHintTarget(target?: HintTarget): void;
   setElapsedMs(durationMs: number): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
@@ -399,10 +400,22 @@ export function createGameView(
       reset.disabled = !navigationEnabled;
       hint.disabled = !navigationEnabled;
     },
-    setHintPosition: (position) => {
+    setHintTarget: (target) => {
       hintRing.remove();
-      const cell = position && cells.get(key(position));
-      [...entityLayers.values()].find((layer) => layer.parentElement === cell)?.append(hintRing);
+      hintRing.className = styles.hintRing;
+      if (!target) return;
+      if (target.type === "entity") {
+        entityLayers.get(target.entityId)?.append(hintRing);
+        return;
+      }
+      hintRing.classList.add(
+        target.field === "plate"
+          ? styles.plateHintRing
+          : target.field === "wormhole"
+            ? styles.wormholeHintRing
+            : styles.exitHintRing,
+      );
+      cells.get(key(target.position))?.append(hintRing);
     },
     setElapsedMs: (durationMs) => {
       timer.value = formatDuration(durationMs);
