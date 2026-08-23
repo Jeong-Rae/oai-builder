@@ -171,6 +171,7 @@
   cursor: pointer;
   display: grid;
   left: 2.5%;
+  padding: 0;
   place-items: center;
   position: absolute;
   top: 4%;
@@ -178,7 +179,7 @@
   z-index: 3;
 }
 .back img {
-  width: 46%;
+  width: 25%;
 }
 .back:hover img,
 .back:focus-visible img {
