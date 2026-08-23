@@ -12,15 +12,9 @@ import { createChapterScene } from "@/src/game/scenes/chapter/controller";
 import { createClearScene } from "@/src/game/scenes/clear/controller";
 import { createGameScene } from "@/src/game/scenes/game/controller";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
-import {
-  createStartScene,
-  type StartScene,
-} from "@/src/game/scenes/start/controller";
+import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
 import { nextSelection, type PlaySelection } from "@/src/game/stages";
-import {
-  initializeProgressStore,
-  progressStore,
-} from "@/src/game/store/progressStore";
+import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 
 export class GameApp {
   private disposeScene?: () => void;
@@ -32,13 +26,11 @@ export class GameApp {
   private session?: GameSession;
 
   constructor(private readonly root: HTMLElement) {
+    this.root.addEventListener("dragstart", (event) => event.preventDefault());
     if (import.meta.env.DEV) document.addEventListener("keydown", this.handleDevShortcut);
     this.initialStartScene = this.createIntroScene(false);
     this.mount(this.initialStartScene);
-    this.preloadPromise = preloadAssets(
-      allGameAssetUrls(),
-      this.initialStartScene.updateLoading,
-    );
+    this.preloadPromise = preloadAssets(allGameAssetUrls(), this.initialStartScene.updateLoading);
     try {
       this.storage = window.localStorage;
       this.authGateway = new LocalAuthAdapter(this.storage);
@@ -53,11 +45,7 @@ export class GameApp {
 
   private createIntroScene(loaded: boolean): StartScene {
     let scene: StartScene;
-    scene = createStartScene(
-      () => this.startFromIntro(scene),
-      loaded,
-      Boolean(this.session),
-    );
+    scene = createStartScene(() => this.startFromIntro(scene), loaded, Boolean(this.session));
     return scene;
   }
 

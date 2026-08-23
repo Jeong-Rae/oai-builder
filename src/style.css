@@ -31,6 +31,7 @@ button {
   height: min(100vh, 56.25vw);
   overflow: hidden;
   position: relative;
+  user-select: none;
   width: min(100vw, 177.778vh);
 }
 
