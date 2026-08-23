@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "columns": 9,
+  "rows": 9,
+  "tiles": [
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "wall",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "wormhole",
+      "floor",
+      "floor",
+      "plate",
+      "wall",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "wall",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "gate",
+      "wall",
+      "floor",
+      "floor",
+      "wall",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "floor",
+      "wall",
+      "floor",
+      "floor",
+      "wall",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "exit",
+      "wall",
+      "wormhole",
+      "wall",
+      "wall",
+      "blank",
+      "blank",
+      "blank"
+    ],
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ]
+  ],
+  "objects": [
+    {
+      "id": "player",
+      "kind": "player",
+      "position": {
+        "x": 1,
+        "y": 4
+      }
+    },
+    {
+      "id": "normal-1",
+      "kind": "normal",
+      "position": {
+        "x": 3,
+        "y": 6
+      }
+    }
+  ]
+}
