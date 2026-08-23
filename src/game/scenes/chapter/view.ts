@@ -80,10 +80,7 @@ export function createChapterView(
       } else if (offset === 3) {
         card.onclick = () => onMove(1);
       } else if (offset === 2) {
-        card.onclick =
-          choiceIndex === 0 || isChapterUnlocked(choiceIndex - 1)
-            ? () => onSelect(choiceIndex)
-            : null;
+        card.onclick = () => onSelect(choiceIndex);
       } else {
         card.onclick = null;
       }
@@ -192,8 +189,8 @@ function renderCard(
   const chapterIndex = choiceIndex - 1;
   const unlocked = challenge || (chapter ? isChapterUnlocked(chapterIndex) : false);
   const cleared = chapter ? isChapterCleared(chapterIndex) : false;
-  card.tabIndex = enabled && unlocked ? 0 : -1;
-  card.setAttribute("aria-disabled", String(enabled && !unlocked));
+  card.tabIndex = enabled ? 0 : -1;
+  card.setAttribute("aria-disabled", "false");
   card.setAttribute(
     "aria-label",
     challenge ? "오늘의 챌린지 선택" : chapter ? `${chapter.sign} 챕터 선택` : "",

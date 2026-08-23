@@ -129,6 +129,7 @@ export const visibleChapters = chapters.slice(0, 4);
 
 export function stageStatuses(chapterIndex: number): StageStatus[] {
   const chapter = chapters[chapterIndex]!;
+  if (!isChapterUnlocked(chapterIndex)) return Array(chapter.stages.length).fill("locked");
   return deriveStageStatuses(
     chapter.stages.length,
     prerequisiteIndices(chapter.constellation),
