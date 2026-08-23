@@ -197,6 +197,7 @@
   z-index: 2;
 }
 .hintRing {
+  animation: hint-ring-rotate 8s linear infinite;
   aspect-ratio: 1;
   border: 2px dashed rgb(215 249 255 / 75%);
   border-radius: 50%;
@@ -301,10 +302,19 @@
     transform: translate(-50%, -50%) rotate(8deg) scale(1.08);
   }
 }
+@keyframes hint-ring-rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .goalActive .goal,
   .goalGlow,
-  .goalSpark {
+  .goalSpark,
+  .hintRing {
     animation: none;
   }
   .goalGlow {
