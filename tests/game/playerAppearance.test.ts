@@ -23,6 +23,16 @@ describe("플레이어 방향 스프라이트", () => {
         { position: { x: 0, y: 7 }, kind: "wormhole" },
         { position: { x: 2, y: 2 }, kind: "wormhole" },
       ],
+      wormholePairs: [
+        {
+          id: 1,
+          variant: 1,
+          positions: [
+            { x: 0, y: 7 },
+            { x: 2, y: 2 },
+          ],
+        },
+      ],
     });
 
     expect(

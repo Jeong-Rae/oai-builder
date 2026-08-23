@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "columns": 6,
   "rows": 3,
   "tiles": [
@@ -27,6 +27,22 @@
       "blank",
       "blank"
     ]
+  ],
+  "wormholePairs": [
+    {
+      "id": 1,
+      "variant": 1,
+      "positions": [
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 2
+        }
+      ]
+    }
   ],
   "objects": [
     {

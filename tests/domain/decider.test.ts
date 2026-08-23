@@ -206,8 +206,28 @@ describe("웜홀", () => {
     const state = createInitialState({
       boxCount: 0,
       tileOverrides: [
+        { position: { x: 0, y: 0 }, kind: "wormhole" },
+        { position: { x: 8, y: 8 }, kind: "wormhole" },
         { position: { x: 2, y: 1 }, kind: "wormhole" },
         { position: { x: 6, y: 4 }, kind: "wormhole" },
+      ],
+      wormholePairs: [
+        {
+          id: 1,
+          variant: 3,
+          positions: [
+            { x: 0, y: 0 },
+            { x: 8, y: 8 },
+          ],
+        },
+        {
+          id: 2,
+          variant: 8,
+          positions: [
+            { x: 2, y: 1 },
+            { x: 6, y: 4 },
+          ],
+        },
       ],
     });
     const prepared = {
@@ -233,6 +253,16 @@ describe("웜홀", () => {
     const state = createStateWithNormals({ x: 1, y: 1 }, [normal("normal-1", { x: 6, y: 4 })]);
     state.tiles[1][2] = "wormhole";
     state.tiles[4][6] = "wormhole";
+    state.wormholePairs = [
+      {
+        id: 1,
+        variant: 2,
+        positions: [
+          { x: 2, y: 1 },
+          { x: 6, y: 4 },
+        ],
+      },
+    ];
     const decision = decide(state, { type: "player/move", direction: "right" });
 
     expect(decision).toEqual({ events: [], rejectedBy: "occupied" });

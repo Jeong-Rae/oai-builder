@@ -6,8 +6,41 @@ import {
   gateOrientationFor,
   gateVisualFor,
 } from "../../src/game/features/fields/gate/presentation";
+import {
+  wormholeAsset,
+  wormholeAssetSlots,
+} from "../../src/game/features/fields/wormhole/presentation";
 
 describe("에디터 에셋 슬롯", () => {
+  it("15개 웜홀 이미지 번호를 에셋 슬롯으로 변환한다", () => {
+    expect(wormholeAssetSlots).toHaveLength(15);
+    expect(wormholeAsset(1)).toBe("wormhole01");
+    expect(wormholeAsset(15)).toBe("wormhole15");
+  });
+
+  it("라이브 상태에서 웜홀 쌍에 저장된 이미지를 선택한다", () => {
+    const game = createInitialState({
+      boxCount: 0,
+      tileOverrides: [
+        { position: { x: 0, y: 0 }, kind: "wormhole" },
+        { position: { x: 1, y: 0 }, kind: "wormhole" },
+      ],
+      wormholePairs: [
+        {
+          id: 1,
+          variant: 15,
+          positions: [
+            { x: 0, y: 0 },
+            { x: 1, y: 0 },
+          ],
+        },
+      ],
+    });
+
+    expect(overlayForField("wormhole", game, "0,0")).toBe("wormhole15");
+    expect(overlayForField("wormhole", game, "1,0")).toBe("wormhole15");
+  });
+
   it("필드 종류와 상태에 맞는 독립 에셋 슬롯을 선택한다", () => {
     const inactive = createInitialState({ boxCount: 0 });
     const active = { ...inactive, plateStates: { "1,1": "active" as const } };

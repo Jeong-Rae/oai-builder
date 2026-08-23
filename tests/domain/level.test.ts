@@ -8,6 +8,18 @@ describe("맵 기반 게임 상태", () => {
     const map = createBlankMap(4, 3);
     map.tiles[0][3] = "exit";
     map.tiles[1][2] = "plate";
+    map.tiles[0][0] = "wormhole";
+    map.tiles[2][3] = "wormhole";
+    map.wormholePairs = [
+      {
+        id: 1,
+        variant: 4,
+        positions: [
+          { x: 0, y: 0 },
+          { x: 3, y: 2 },
+        ],
+      },
+    ];
     map.objects.push(
       { id: "player", kind: "player", position: { x: 0, y: 2 } },
       { id: "normal-7", kind: "normal", position: { x: 2, y: 1 } },
@@ -17,7 +29,12 @@ describe("맵 기반 게임 상태", () => {
 
     const game = createGameStateFromMap(map);
 
-    expect(game).toMatchObject({ columns: 4, rows: 3, tiles: map.tiles });
+    expect(game).toMatchObject({
+      columns: 4,
+      rows: 3,
+      tiles: map.tiles,
+      wormholePairs: map.wormholePairs,
+    });
     expect(game.entities.player.controls).toEqual(["up", "down", "left", "right"]);
     expect(game.entities["normal-7"]).toMatchObject({
       kind: "normal",
@@ -36,9 +53,11 @@ describe("맵 기반 게임 상태", () => {
 
     const game = createGameStateFromMap(map);
     game.tiles[0][0] = "wall";
+    game.wormholePairs.push({ id: 1, variant: 1, positions: [] });
     game.entities.player.position.x = 1;
 
     expect(map.tiles[0][0]).toBe("floor");
+    expect(map.wormholePairs).toEqual([]);
     expect(map.objects[0].position.x).toBe(0);
   });
 });

@@ -5,13 +5,23 @@ import { findBalancedPath, findPath } from "../../src/game/domain/pathfinder";
 import type { MapDocument } from "../../src/map/mapDocument";
 
 const map: MapDocument = {
-  version: 1,
+  version: 2,
   columns: 6,
   rows: 3,
   tiles: [
     ["wall", "wall", "wormhole", "wall", "wall", "wall"],
     ["exit", "gate", "floor", "floor", "plate", "wall"],
     ["wall", "wall", "wormhole", "floor", "wall", "wall"],
+  ],
+  wormholePairs: [
+    {
+      id: 1,
+      variant: 1,
+      positions: [
+        { x: 2, y: 0 },
+        { x: 2, y: 2 },
+      ],
+    },
   ],
   objects: [
     { id: "player", kind: "player", position: { x: 3, y: 2 } },

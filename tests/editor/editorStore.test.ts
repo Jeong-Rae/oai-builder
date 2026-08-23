@@ -5,15 +5,59 @@ import { createGameStoreFromMap } from "../../src/game/store/gameStore";
 import { createBlankMap } from "../../src/map/mapDocument";
 
 describe("맵 에디터 저장소", () => {
-  it("웜홀을 두 개까지만 배치한다", () => {
-    const store = createEditorStore();
+  it("웜홀을 배치 순서대로 두 개씩 연결한다", () => {
+    const store = createEditorStore(undefined, () => 0);
 
     expect(store.getState().setTile({ x: 0, y: 0 }, "wormhole")).toBe(true);
     expect(store.getState().setTile({ x: 1, y: 0 }, "wormhole")).toBe(true);
-    expect(store.getState().setTile({ x: 2, y: 0 }, "wormhole")).toBe(false);
+    expect(store.getState().setTile({ x: 2, y: 0 }, "wormhole")).toBe(true);
+    expect(store.getState().setTile({ x: 3, y: 0 }, "wormhole")).toBe(true);
 
-    expect(store.getState().draft.tiles[0].filter((tile) => tile === "wormhole")).toHaveLength(2);
-    expect(store.getState().draft.tiles[0][2]).toBe("floor");
+    expect(store.getState().draft.tiles[0].filter((tile) => tile === "wormhole")).toHaveLength(4);
+    expect(store.getState().draft.wormholePairs).toEqual([
+      {
+        id: 1,
+        variant: 1,
+        positions: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+        ],
+      },
+      {
+        id: 2,
+        variant: 2,
+        positions: [
+          { x: 2, y: 0 },
+          { x: 3, y: 0 },
+        ],
+      },
+    ]);
+  });
+
+  it("새 웜홀 쌍에는 사용하지 않은 이미지를 무작위로 선택한다", () => {
+    const store = createEditorStore(undefined, () => 0.999);
+    for (let x = 0; x < 4; x += 1) store.getState().setTile({ x, y: 0 }, "wormhole");
+
+    expect(store.getState().draft.wormholePairs.map((pair) => pair.variant)).toEqual([15, 14]);
+  });
+
+  it("웜홀 쌍의 한쪽을 덮어쓰면 쌍 전체를 제거한다", () => {
+    const store = createEditorStore();
+    store.getState().setTile({ x: 0, y: 0 }, "wormhole");
+    store.getState().setTile({ x: 1, y: 0 }, "wormhole");
+
+    store.getState().setTile({ x: 0, y: 0 }, "wall");
+
+    expect(store.getState().draft.tiles[0].slice(0, 2)).toEqual(["wall", "floor"]);
+    expect(store.getState().draft.wormholePairs).toEqual([]);
+  });
+
+  it("완성되지 않은 마지막 웜홀 쌍을 오류로 표시한다", () => {
+    const store = createEditorStore();
+
+    store.getState().setTile({ x: 0, y: 0 }, "wormhole");
+
+    expect(store.getState().errors.map((error) => error.code)).toContain("wormhole-pair-count");
   });
 
   it("게이트를 하나만 배치한다", () => {
@@ -60,7 +104,18 @@ describe("맵 에디터 저장소", () => {
 
   it("맵 축소 시 범위 밖 필드와 오브젝트 제거 여부를 판정한다", () => {
     const map = createBlankMap(4, 4);
-    map.tiles[3][3] = "plate";
+    map.tiles[2][2] = "wormhole";
+    map.tiles[3][3] = "wormhole";
+    map.wormholePairs = [
+      {
+        id: 1,
+        variant: 1,
+        positions: [
+          { x: 2, y: 2 },
+          { x: 3, y: 3 },
+        ],
+      },
+    ];
     map.objects.push({ id: "normal-1", kind: "normal", position: { x: 3, y: 2 } });
 
     expect(resizeWouldDiscard(map, 3, 3)).toBe(true);
@@ -69,6 +124,8 @@ describe("맵 에디터 저장소", () => {
     store.getState().resize(3, 3);
     expect(store.getState().draft.objects).toEqual([]);
     expect(store.getState().draft.tiles).toHaveLength(3);
+    expect(store.getState().draft.tiles[2][2]).toBe("floor");
+    expect(store.getState().draft.wormholePairs).toEqual([]);
   });
 
   it("골과 플레이어를 새 좌표로 옮겨 하나만 유지한다", () => {

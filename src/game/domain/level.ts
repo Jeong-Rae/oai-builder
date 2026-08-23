@@ -1,7 +1,7 @@
-import type { MapDocument } from '@/src/map/mapDocument';
-import type { Entity, GameState, Normal, Position, TileKind } from './types';
-import { createPlateStates } from '../features/fields/plate/rules';
-import { objectRules } from '../features/rules';
+import type { MapDocument } from "@/src/map/mapDocument";
+import type { Entity, GameState, Normal, Position, TileKind, WormholePair } from "./types";
+import { createPlateStates } from "../features/fields/plate/rules";
+import { objectRules } from "../features/rules";
 
 export const BOARD_COLUMNS = 9;
 export const BOARD_ROWS = 9;
@@ -12,12 +12,13 @@ export interface InitialStateOptions {
   boxCount?: number;
   random?: () => number;
   tileOverrides?: Array<{ position: Position; kind: TileKind }>;
+  wormholePairs?: WormholePair[];
 }
 
-function createTiles(tileOverrides: InitialStateOptions['tileOverrides'] = []): TileKind[][] {
+function createTiles(tileOverrides: InitialStateOptions["tileOverrides"] = []): TileKind[][] {
   const tiles: TileKind[][] = Array.from({ length: BOARD_ROWS }, (_, y) =>
     Array.from({ length: BOARD_COLUMNS }, (_, x) =>
-      x === BOARD_COLUMNS - 1 && y === 0 ? 'exit' : 'floor',
+      x === BOARD_COLUMNS - 1 && y === 0 ? "exit" : "floor",
     ),
   );
 
@@ -51,7 +52,12 @@ function createNormals(boxCount: number, random: () => number): Record<string, N
     [available[index], available[selected]] = [available[selected], available[index]];
 
     const id = `normal-${index + 1}`;
-    normals[id] = { id, kind: 'normal', position: available[index], controls: [...objectRules.normal.initialControls] };
+    normals[id] = {
+      id,
+      kind: "normal",
+      position: available[index],
+      controls: [...objectRules.normal.initialControls],
+    };
   }
 
   return normals;
@@ -61,6 +67,7 @@ export function createInitialState({
   boxCount = DEFAULT_BOX_COUNT,
   random = Math.random,
   tileOverrides,
+  wormholePairs = [],
 }: InitialStateOptions = {}): GameState {
   const tiles = createTiles(tileOverrides);
 
@@ -68,19 +75,24 @@ export function createInitialState({
     columns: BOARD_COLUMNS,
     rows: BOARD_ROWS,
     tiles,
+    wormholePairs: wormholePairs.map((pair) => ({
+      id: pair.id,
+      variant: pair.variant,
+      positions: pair.positions.map((position) => ({ ...position })),
+    })),
     entities: {
       player: {
-        id: 'player',
-        kind: 'player',
+        id: "player",
+        kind: "player",
         position: { x: 0, y: BOARD_ROWS - 1 },
         controls: [...objectRules.player.initialControls],
       },
       ...createNormals(boxCount, random),
     },
-    playerId: 'player',
+    playerId: "player",
     plateStates: createPlateStates(tiles),
     goalOpened: false,
-    status: 'playing',
+    status: "playing",
   };
 }
 
@@ -103,10 +115,15 @@ export function createGameStateFromMap(map: MapDocument): GameState {
     columns: map.columns,
     rows: map.rows,
     tiles: map.tiles.map((row) => [...row]),
+    wormholePairs: map.wormholePairs.map((pair) => ({
+      id: pair.id,
+      variant: pair.variant,
+      positions: pair.positions.map((position) => ({ ...position })),
+    })),
     entities,
-    playerId: 'player',
+    playerId: "player",
     plateStates: createPlateStates(map.tiles),
     goalOpened: false,
-    status: 'playing',
+    status: "playing",
   };
 }

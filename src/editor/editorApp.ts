@@ -18,6 +18,8 @@ import {
 } from "../game/features/presentation";
 import { fieldRules } from "../game/features/rules";
 import { gateOrientationFor, gateVisualFor } from "../game/features/fields/gate/presentation";
+import { wormholeAsset } from "../game/features/fields/wormhole/presentation";
+import { wormholePairAt } from "../game/features/fields/wormhole/rules";
 import { directionFromKey, isUndoShortcut } from "../game/input";
 import { createGameStoreFromMap, type GameStoreApi } from "../game/store/gameStore";
 import { serializeMap, type MapObjectKind } from "../map/mapDocument";
@@ -232,9 +234,7 @@ export function mountEditor(
         !window.confirm(`${object.id}이 제거됩니다. 필드를 변경할까요?`)
       )
         return;
-      if (!state.setTile(position, state.tool as TileKind)) {
-        showNotice("웜홀은 두 개까지만 배치할 수 있습니다.");
-      }
+      state.setTile(position, state.tool as TileKind);
       return;
     }
 
@@ -339,11 +339,15 @@ export function mountEditor(
         const object = objectsByPosition.get(key);
         const selected = state.selected?.x === x && state.selected.y === y ? " selected" : "";
         const field = draft.tiles[y][x];
-        const label = object ? `${field}, ${object.kind}` : field;
+        const wormholePair =
+          field === "wormhole" ? wormholePairAt(draft.wormholePairs, { x, y }) : undefined;
+        const fieldLabel = wormholePair ? `${field}, 쌍 ${wormholePair.id}` : field;
+        const label = object ? `${fieldLabel}, ${object.kind}` : fieldLabel;
         const overlayAsset = overlayForField(field, game, key);
-        const goal = field === "exit" && overlayAsset
-          ? `<img class="goal-asset" src="${resolveAsset(overlayAsset)}" alt="" />`
-          : "";
+        const goal =
+          field === "exit" && overlayAsset
+            ? `<img class="goal-asset" src="${resolveAsset(overlayAsset)}" alt="" />`
+            : "";
         const gateVisual = field === "gate" ? gateVisualFor(game) : undefined;
         const gateOrientation = field === "gate" ? gateOrientationFor(game, { x, y }) : undefined;
         const gate = gateVisual
@@ -361,7 +365,9 @@ export function mountEditor(
             )
             .join("") ?? "";
         const baseAsset = baseAssetForField(field);
-        const asset = assetForField(field, game, key);
+        const asset = wormholePair
+          ? wormholeAsset(wormholePair.variant)
+          : assetForField(field, game, key);
         const tileAsset = baseAsset
           ? `<img class="tile-asset" src="${resolveAsset(baseAsset)}" alt="" />`
           : "";
@@ -392,7 +398,8 @@ export function mountEditor(
     } else {
       const { x, y } = state.selected;
       const object = objectsByPosition.get(`${x},${y}`);
-      inspector.innerHTML = `<dl><dt>좌표</dt><dd>${x}, ${y}</dd><dt>필드</dt><dd>${draft.tiles[y][x]}</dd><dt>오브젝트</dt><dd>${object ? `${object.kind} / ${escapeHtml(object.id)}` : "없음"}</dd></dl>`;
+      const pair = wormholePairAt(draft.wormholePairs, { x, y });
+      inspector.innerHTML = `<dl><dt>좌표</dt><dd>${x}, ${y}</dd><dt>필드</dt><dd>${draft.tiles[y][x]}</dd>${pair ? `<dt>웜홀 쌍</dt><dd>${pair.id}</dd>` : ""}<dt>오브젝트</dt><dd>${object ? `${object.kind} / ${escapeHtml(object.id)}` : "없음"}</dd></dl>`;
     }
 
     const validation = root.querySelector<HTMLElement>("[data-validation]")!;
