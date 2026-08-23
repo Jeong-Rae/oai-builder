@@ -385,12 +385,11 @@ h1 {
   z-index: -1;
   object-fit: contain;
 }
+.field-asset-plate,
 .field-asset-wormhole {
-  left: 50%;
-  right: auto;
-  width: auto;
-  max-width: none;
-  transform: translateX(-50%);
+  inset: 17%;
+  width: 66%;
+  height: 66%;
 }
 .gate-assets {
   position: absolute;
@@ -445,6 +444,11 @@ h1 {
   inset: 9%;
   width: 82%;
   height: 82%;
+}
+.object-asset.object-normal {
+  inset: 23%;
+  width: 54%;
+  height: 54%;
 }
 .object-asset img {
   width: 100%;

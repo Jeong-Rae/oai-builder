@@ -84,7 +84,12 @@ export function createGameView(selection: PlaySelection, onHome: () => void): Ga
         const old = overlays.get(key(position));
         if (overlayTexture) {
           const overlay = old ?? document.createElement("img");
-          overlay.className = styles.overlay;
+          const overlayKind = game.tiles[y]![x];
+          overlay.className = overlayKind === "plate"
+            ? `${styles.overlay} ${styles.plate}`
+            : overlayKind === "wormhole"
+              ? `${styles.overlay} ${styles.wormhole}`
+              : styles.overlay;
           overlay.alt = "";
           overlay.src = assetUrls[overlayTexture];
           if (!old) {
@@ -112,7 +117,9 @@ export function createGameView(selection: PlaySelection, onHome: () => void): Ga
       let image = entityNodes.get(entity.id);
       if (!image) {
         image = document.createElement("img");
-        image.className = styles.entity;
+        image.className = entity.kind === "normal"
+          ? `${styles.entity} ${styles.normal}`
+          : styles.entity;
         image.alt = entity.kind === "player" ? "플레이어" : entity.kind;
         entityNodes.set(entity.id, image);
       }

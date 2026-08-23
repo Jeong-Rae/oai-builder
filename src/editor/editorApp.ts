@@ -341,7 +341,7 @@ export function mountEditor(
         const field = draft.tiles[y][x];
         const label = object ? `${field}, ${object.kind}` : field;
         const overlayAsset = overlayForField(field, game, key);
-        const goal = overlayAsset
+        const goal = field === "exit" && overlayAsset
           ? `<img class="goal-asset" src="${resolveAsset(overlayAsset)}" alt="" />`
           : "";
         const gateVisual = field === "gate" ? gateVisualFor(game) : undefined;

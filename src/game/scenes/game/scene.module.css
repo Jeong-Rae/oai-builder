@@ -73,6 +73,14 @@
 .goal {
   z-index: 1;
 }
+.plate,
+.wormhole,
+.normal {
+  height: 66%;
+  left: 17%;
+  top: 17%;
+  width: 66%;
+}
 .entity {
   z-index: 2;
 }
