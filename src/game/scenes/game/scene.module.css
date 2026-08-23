@@ -53,6 +53,18 @@
   cursor: default;
   opacity: 0.35;
 }
+.timer {
+  color: #ffd866;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 2.1cqw;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  position: absolute;
+  right: 3.2%;
+  text-shadow: 0 0 0.8cqw rgb(255 216 102 / 55%);
+  top: 5%;
+  z-index: 4;
+}
 .error button {
   background: #d7f9ff;
   border: 0;

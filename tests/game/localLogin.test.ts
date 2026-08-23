@@ -35,6 +35,7 @@ describe("Local Login", () => {
     expect(JSON.parse(storage.data.get(PLAYER_REGISTRY_KEY)!)).toEqual({
       installationId: "installation-id",
       playerId: "local:player-id",
+      displayName: "도전자-ERID",
       createdAt: "2026-08-23T06:30:00Z",
     });
     expect(restored).toEqual(signedIn);
@@ -48,6 +49,23 @@ describe("Local Login", () => {
     await expect(new LocalAuthAdapter(storage).restore()).rejects.toThrow(
       "Local Player 정보가 손상되었습니다.",
     );
+  });
+
+  it("기존 Player Registry에는 익명 표시 이름을 보완한다", async () => {
+    const storage = memoryStorage();
+    storage.data.set(INSTALLATION_ID_KEY, "installation-id");
+    storage.data.set(
+      PLAYER_REGISTRY_KEY,
+      JSON.stringify({
+        installationId: "installation-id",
+        playerId: "local:legacy-player",
+        createdAt: "2026-08-23T06:30:00Z",
+      }),
+    );
+
+    await expect(new LocalAuthAdapter(storage).restore()).resolves.toMatchObject({
+      displayName: "도전자-AYER",
+    });
   });
 
   it("PlayerId별로 게임 데이터를 격리한다", async () => {

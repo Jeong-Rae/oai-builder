@@ -12,7 +12,31 @@ export function createGameScene(
   selection: PlaySelection,
   onComplete: () => void,
   onBack: () => void,
-): { view: HTMLElement; ready: Promise<void>; activate(): void; dispose(): void } {
+): GameScene {
+  return createMapGameScene(stageFor(selection).mapUrl, onComplete, onBack, false);
+}
+
+export function createChallengeGameScene(
+  mapUrl: string,
+  onComplete: (durationMs: number) => void,
+  onBack: () => void,
+): GameScene {
+  return createMapGameScene(mapUrl, onComplete, onBack, true);
+}
+
+export interface GameScene {
+  view: HTMLElement;
+  ready: Promise<void>;
+  activate(): void;
+  dispose(): void;
+}
+
+function createMapGameScene(
+  mapUrl: string | undefined,
+  onComplete: (durationMs: number) => void,
+  onBack: () => void,
+  timed: boolean,
+): GameScene {
   const timers = new Map<string, number[]>();
   const clearPlateTimers = () => {
     timers.forEach((entries) => entries.forEach(window.clearTimeout));
@@ -29,13 +53,39 @@ export function createGameScene(
     clearPlateTimers();
     store.getState().reset();
   };
-  const view = createGameView(onBack, undo, reset);
+  const view = createGameView(onBack, undo, reset, timed);
   const abort = new AbortController();
   let active = false;
   let listening = false;
   let completesOnActivate = false;
   let unsubscribe: (() => void) | undefined;
   let completeTimer: number | undefined;
+  let timerFrame: number | undefined;
+  let startedAt: number | undefined;
+  let elapsedMs = 0;
+  const updateTimer = () => {
+    if (startedAt === undefined) return;
+    elapsedMs = performance.now() - startedAt;
+    view.setElapsedMs(elapsedMs);
+    timerFrame = window.requestAnimationFrame(updateTimer);
+  };
+  const activateTimer = () => {
+    if (!timed || !active || !store || startedAt !== undefined) return;
+    startedAt = performance.now();
+    view.setElapsedMs(0);
+    timerFrame = window.requestAnimationFrame(updateTimer);
+  };
+  const stopTimer = () => {
+    if (!timed) return;
+    if (startedAt !== undefined) elapsedMs = performance.now() - startedAt;
+    if (timerFrame !== undefined) window.cancelAnimationFrame(timerFrame);
+    timerFrame = undefined;
+    view.setElapsedMs(elapsedMs);
+  };
+  const scheduleCompletion = (delay: number) => {
+    stopTimer();
+    completeTimer = window.setTimeout(() => onComplete(elapsedMs), delay);
+  };
   const keydown = (event: KeyboardEvent) => {
     if (!store || store.getState().game.status === "completed") return;
     const undoRequested = isUndoShortcut(event);
@@ -62,31 +112,29 @@ export function createGameScene(
     if (teleport?.type === "entity/moved" && teleport.wormhole) {
       motionLocked = true;
       view.setActionAvailability(false, false);
-      void view
-        .playWormhole(teleport.entityId, teleport.wormhole, teleport.to)
-        .finally(() => {
-          motionLocked = false;
-          const state = store?.getState();
-          if (state)
-            view.setActionAvailability(
-              state.game.status === "playing" && state.eventStream.length > 0,
-              state.game.status === "playing",
-            );
-        });
+      void view.playWormhole(teleport.entityId, teleport.wormhole, teleport.to).finally(() => {
+        motionLocked = false;
+        const state = store?.getState();
+        if (state)
+          view.setActionAvailability(
+            state.game.status === "playing" && state.eventStream.length > 0,
+            state.game.status === "playing",
+          );
+      });
     }
   };
   const activateInput = () => {
     if (!active || !store || listening) return;
     window.addEventListener("keydown", keydown);
     listening = true;
+    activateTimer();
   };
   const activateCompletion = () => {
     if (!active || !completesOnActivate || completeTimer !== undefined) return;
-    completeTimer = window.setTimeout(onComplete, 0);
+    scheduleCompletion(0);
   };
   const load = async () => {
     try {
-      const mapUrl = stageFor(selection).mapUrl;
       if (!mapUrl) {
         completesOnActivate = true;
         activateCompletion();
@@ -113,7 +161,7 @@ export function createGameScene(
           playPlate({ x: x!, y: y! });
         });
         if (state.game.status === "completed" && previous.game.status !== "completed")
-          completeTimer = window.setTimeout(onComplete, motionDuration(700));
+          scheduleCompletion(motionDuration(700));
       });
       activateInput();
     } catch (error) {
@@ -152,6 +200,7 @@ export function createGameScene(
       if (listening) window.removeEventListener("keydown", keydown);
       listening = false;
       if (completeTimer) window.clearTimeout(completeTimer);
+      if (timerFrame !== undefined) window.cancelAnimationFrame(timerFrame);
       clearPlateTimers();
       view.cancelAnimations();
     },

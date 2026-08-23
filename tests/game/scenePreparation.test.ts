@@ -9,8 +9,9 @@ const mocked = vi.hoisted(() => ({
   playWormhole: vi.fn(() => Promise.resolve()),
   removeEventListener: vi.fn(),
   setActionAvailability: vi.fn(),
+  setElapsedMs: vi.fn(),
   showError: vi.fn(),
-  subscribe: vi.fn(() => vi.fn()),
+  subscribe: vi.fn((_listener: (state: any, previous: any) => void) => vi.fn()),
   sync: vi.fn(),
 }));
 
@@ -21,6 +22,7 @@ vi.mock("@/src/game/scenes/game/view", () => ({
     playWormhole: mocked.playWormhole,
     cancelAnimations: mocked.cancelAnimations,
     setActionAvailability: mocked.setActionAvailability,
+    setElapsedMs: mocked.setElapsedMs,
     setPlayerTexture: vi.fn(),
     setPlateFrame: vi.fn(),
     showError: mocked.showError,
@@ -56,7 +58,7 @@ vi.mock("@/src/game/input", () => ({
 }));
 vi.mock("@/src/game/sfx", () => ({ playSfx: vi.fn() }));
 
-import { createGameScene } from "@/src/game/scenes/game/controller";
+import { createChallengeGameScene, createGameScene } from "@/src/game/scenes/game/controller";
 
 describe("게임 장면 사전 준비", () => {
   afterEach(() => {
@@ -148,9 +150,7 @@ describe("게임 장면 사전 준비", () => {
     );
     vi.stubGlobal(
       "fetch",
-      vi.fn(() =>
-        Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response),
-      ),
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
     );
     vi.stubGlobal("window", {
       addEventListener: mocked.addEventListener,
@@ -163,24 +163,57 @@ describe("게임 장면 사전 준비", () => {
     const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
     scene.activate();
     await scene.ready;
-    const keydown = mocked.addEventListener.mock.calls.find(([type]) => type === "keydown")?.[1] as (
-      event: KeyboardEvent,
-    ) => void;
+    const keydown = mocked.addEventListener.mock.calls.find(
+      ([type]) => type === "keydown",
+    )?.[1] as (event: KeyboardEvent) => void;
     const event = { key: "ArrowRight", preventDefault: vi.fn() } as unknown as KeyboardEvent;
 
     keydown(event);
     keydown(event);
     expect(mocked.dispatch).toHaveBeenCalledOnce();
-    expect(mocked.playWormhole).toHaveBeenCalledWith(
-      "player",
-      { x: 2, y: 1 },
-      { x: 6, y: 4 },
-    );
+    expect(mocked.playWormhole).toHaveBeenCalledWith("player", { x: 2, y: 1 }, { x: 6, y: 4 });
 
     finishWormhole();
     await Promise.resolve();
     keydown(event);
     expect(mocked.dispatch).toHaveBeenCalledTimes(2);
+    scene.dispose();
+  });
+
+  it("챌린지 입력이 준비되면 시간을 재고 완료 순간의 기록을 전달한다", async () => {
+    const now = vi.fn().mockReturnValueOnce(100).mockReturnValueOnce(350);
+    vi.stubGlobal("performance", { now });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      cancelAnimationFrame: vi.fn(),
+      clearTimeout,
+      matchMedia: () => ({ matches: true }),
+      requestAnimationFrame: vi.fn(() => 1),
+      setTimeout,
+    });
+    const onComplete = vi.fn();
+    const scene = createChallengeGameScene("/challenge.map", onComplete, vi.fn());
+
+    scene.activate();
+    await scene.ready;
+    expect(mocked.setElapsedMs).toHaveBeenCalledWith(0);
+
+    const listener = mocked.subscribe.mock.calls.at(-1)?.[0] as (
+      state: { game: { status: string; eventStream: never[]; plateStates: object } },
+      previous: { game: { status: string; eventStream: never[]; plateStates: object } },
+    ) => void;
+    listener(
+      { game: { status: "completed", eventStream: [], plateStates: {} } },
+      { game: { status: "playing", eventStream: [], plateStates: {} } },
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(onComplete).toHaveBeenCalledWith(250);
     scene.dispose();
   });
 });

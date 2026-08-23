@@ -6,11 +6,18 @@ import {
   type AuthSession,
   type GameSession,
 } from "@/src/game/auth";
+import {
+  dailyChallenge,
+  FakeChallengeServer,
+  type ChallengeGateway,
+  type DailyChallenge,
+} from "@/src/game/challenge";
 import { LocalGameDataStore } from "@/src/game/dataStore";
 import { preloadAssets } from "@/src/game/preload";
 import { createChapterScene } from "@/src/game/scenes/chapter/controller";
+import { createChallengeResultScene } from "@/src/game/scenes/challenge-result/controller";
 import { createClearScene } from "@/src/game/scenes/clear/controller";
-import { createGameScene } from "@/src/game/scenes/game/controller";
+import { createChallengeGameScene, createGameScene } from "@/src/game/scenes/game/controller";
 import { attachClickStars } from "@/src/game/scenes/shared/backgroundStars";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
@@ -83,6 +90,7 @@ export class GameApp {
   private preloadPromise?: Promise<void>;
   private transitionId = 0;
   private authGateway?: AuthGateway;
+  private challengeGateway?: ChallengeGateway;
   private storage?: BrowserStorage;
   private readonly initialStartScene: StartScene;
   private readonly transitionLayer: HTMLElement;
@@ -109,6 +117,7 @@ export class GameApp {
     try {
       this.storage = window.localStorage;
       this.authGateway = new LocalAuthAdapter(this.storage);
+      this.challengeGateway = new FakeChallengeServer(this.storage);
     } catch {
       this.initialStartScene.setError(
         "브라우저 저장소에 접근할 수 없습니다. 저장소 설정을 확인해 주세요.",
@@ -147,7 +156,10 @@ export class GameApp {
 
   private async establishSession(authSession: AuthSession): Promise<void> {
     if (!this.storage) throw new Error("브라우저 저장소를 사용할 수 없습니다.");
-    const session: GameSession = { playerId: authSession.playerId };
+    const session: GameSession = {
+      playerId: authSession.playerId,
+      displayName: authSession.displayName,
+    };
     await initializeProgressStore(new LocalGameDataStore(this.storage, session.playerId));
     this.session = session;
   }
@@ -293,10 +305,12 @@ export class GameApp {
     this.showChapter(0);
   };
 
-  private showChapter = (chapterIndex: number): Promise<void> =>
+  private showChapter = (selectionIndex: number): Promise<void> =>
     this.show(
-      createChapterScene(chapterIndex, (selectedChapter) =>
-        this.showStageSelect(selectedChapter, true),
+      createChapterScene(
+        selectionIndex,
+        (selectedChapter) => this.showStageSelect(selectedChapter, true),
+        this.showChallenge,
       ),
     );
   private showStageSelect = (chapterIndex: number, wave = false): Promise<void> =>
@@ -304,7 +318,7 @@ export class GameApp {
       createStageSelectScene(
         chapterIndex,
         (stageIndex) => this.showGame({ chapterIndex, stageIndex }, true),
-        () => this.showChapter(chapterIndex),
+        () => this.showChapter(chapterIndex + 1),
       ),
       wave,
     );
@@ -318,6 +332,39 @@ export class GameApp {
 
   private showGame = (selection: PlaySelection, wave = false): Promise<void> =>
     this.show(this.prepareGame(selection), wave);
+  private showChallenge = (): void => {
+    const challenge = dailyChallenge();
+    void this.show(
+      createChallengeGameScene(
+        challenge.mapUrl,
+        (durationMs) => void this.showChallengeResult(challenge, durationMs),
+        () => this.showChapter(0),
+      ),
+      true,
+    );
+  };
+  private showChallengeResult = async (
+    challenge: DailyChallenge,
+    durationMs: number,
+  ): Promise<void> => {
+    let leaderboard;
+    try {
+      if (!this.challengeGateway || !this.session)
+        throw new Error("챌린지 세션을 사용할 수 없습니다.");
+      leaderboard = await this.challengeGateway.submitResult(
+        challenge.id,
+        this.session,
+        durationMs,
+      );
+    } catch {
+      leaderboard = undefined;
+    }
+    await this.showOverlay(
+      createChallengeResultScene(challenge.date, this.session?.playerId ?? "", leaderboard, () =>
+        this.showChapter(0),
+      ),
+    );
+  };
   private showClear = async (selection: PlaySelection): Promise<void> => {
     const next = nextSelection(selection);
     const preparedNext = this.prepareGame(next);

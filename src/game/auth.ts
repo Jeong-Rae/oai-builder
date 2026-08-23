@@ -4,12 +4,14 @@ export type AuthEnvironment = "LOCAL_DEMO" | "HIVE";
 
 export interface AuthSession {
   playerId: PlayerId;
+  displayName: string;
   provider: AuthProvider;
   environment: AuthEnvironment;
 }
 
 export interface GameSession {
   playerId: PlayerId;
+  displayName: string;
 }
 
 export interface AuthGateway {
@@ -27,11 +29,21 @@ export interface BrowserStorage {
 interface PlayerRegistry {
   installationId: string;
   playerId: PlayerId;
+  displayName?: string;
   createdAt: string;
 }
 
 export const INSTALLATION_ID_KEY = "game.installation-id";
 export const PLAYER_REGISTRY_KEY = "game.player-registry";
+
+export function anonymousDisplayName(playerId: PlayerId): string {
+  const suffix = playerId
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(-4)
+    .toUpperCase()
+    .padStart(4, "0");
+  return `도전자-${suffix}`;
+}
 
 function parseRegistry(raw: string): PlayerRegistry {
   let value: unknown;
@@ -80,6 +92,7 @@ export class LocalAuthAdapter implements AuthGateway {
         playerId: `local:${this.createId()}`,
         createdAt: this.now(),
       };
+      registry.displayName = anonymousDisplayName(registry.playerId);
       this.storage.setItem(PLAYER_REGISTRY_KEY, JSON.stringify(registry));
     } else {
       registry = parseRegistry(rawRegistry);
@@ -88,7 +101,12 @@ export class LocalAuthAdapter implements AuthGateway {
       }
     }
 
-    return { playerId: registry.playerId, provider, environment: "LOCAL_DEMO" };
+    return {
+      playerId: registry.playerId,
+      displayName: registry.displayName ?? anonymousDisplayName(registry.playerId),
+      provider,
+      environment: "LOCAL_DEMO",
+    };
   }
 
   async restore(): Promise<AuthSession | null> {
@@ -105,6 +123,7 @@ export class LocalAuthAdapter implements AuthGateway {
 
     return {
       playerId: registry.playerId,
+      displayName: registry.displayName ?? anonymousDisplayName(registry.playerId),
       provider: "GOOGLE",
       environment: "LOCAL_DEMO",
     };

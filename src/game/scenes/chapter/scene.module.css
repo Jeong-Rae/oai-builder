@@ -76,6 +76,31 @@
   filter: none;
   stroke: #aeb9c2;
 }
+.challengeLine {
+  fill: none;
+  filter: drop-shadow(0 0 8px rgb(255 216 102 / 48%));
+  stroke: #ffd866;
+  stroke-dasharray: 5 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+.challengeTitle,
+.challengeSubtitle {
+  fill: #fff;
+  font-family: "온글잎 박다현체", monospace;
+  text-anchor: middle;
+}
+.challengeTitle {
+  fill: #ffd866;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 4px;
+}
+.challengeSubtitle {
+  fill: #d7f9ff;
+  font-size: 22px;
+}
 .glow {
   filter: blur(7px);
   pointer-events: none;

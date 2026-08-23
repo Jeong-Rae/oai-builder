@@ -29,7 +29,7 @@ export function chapterMoveFromDrag(distance: number, width: number): -1 | 0 | 1
 
 export function createChapterView(
   onMove: (offset: -1 | 1) => void,
-  onSelect: () => void,
+  onSelect: (index: number) => void,
 ): { root: HTMLElement; setActive(index: number): void } {
   const root = document.createElement("main");
   root.className = styles.root;
@@ -70,22 +70,27 @@ export function createChapterView(
     const roles = ["outLeft", "previous", "current", "next", "outRight"] as const;
     slots.forEach((card, offset) => {
       card.className = `${styles.card} ${styles[roles[offset]]}`;
-      const chapter = visibleChapters[index + offset - 2];
-      if (!chapter) {
+      const choiceIndex = index + offset - 2;
+      const chapter = visibleChapters[choiceIndex - 1];
+      const valid = choiceIndex >= 0 && choiceIndex <= visibleChapters.length;
+      if (!valid) {
         card.onclick = null;
       } else if (offset === 1) {
         card.onclick = () => onMove(-1);
       } else if (offset === 3) {
         card.onclick = () => onMove(1);
       } else if (offset === 2) {
-        card.onclick = isChapterUnlocked(index) ? onSelect : null;
+        card.onclick =
+          choiceIndex === 0 || isChapterUnlocked(choiceIndex - 1)
+            ? () => onSelect(choiceIndex)
+            : null;
       } else {
         card.onclick = null;
       }
-      renderCard(card, chapter, index + offset - 2, offset === 2);
+      renderCard(card, choiceIndex, chapter, offset === 2);
     });
     left.disabled = index === 0;
-    right.disabled = index === visibleChapters.length - 1;
+    right.disabled = index === visibleChapters.length;
     activeIndex = index;
     hasRendered = true;
   };
@@ -129,8 +134,7 @@ function attachDrag(
     const offset = chapterMoveFromDrag(distance, carousel.clientWidth);
     if (
       offset !== 0 &&
-      ((offset < 0 && activeIndex() > 0) ||
-        (offset > 0 && activeIndex() < visibleChapters.length - 1))
+      ((offset < 0 && activeIndex() > 0) || (offset > 0 && activeIndex() < visibleChapters.length))
     )
       onMove(offset);
     carousel.style.removeProperty("--drag-x");
@@ -178,18 +182,60 @@ function createCard(): HTMLButtonElement {
 }
 function renderCard(
   card: HTMLButtonElement,
+  choiceIndex: number,
   chapter: ChapterDefinition | undefined,
-  chapterIndex: number,
   enabled: boolean,
 ): void {
   card.replaceChildren();
-  card.disabled = !chapter;
-  const unlocked = chapter ? isChapterUnlocked(chapterIndex) : false;
+  const challenge = choiceIndex === 0;
+  card.disabled = !challenge && !chapter;
+  const chapterIndex = choiceIndex - 1;
+  const unlocked = challenge || (chapter ? isChapterUnlocked(chapterIndex) : false);
   const cleared = chapter ? isChapterCleared(chapterIndex) : false;
   card.tabIndex = enabled && unlocked ? 0 : -1;
   card.setAttribute("aria-disabled", String(enabled && !unlocked));
-  card.setAttribute("aria-label", chapter ? `${chapter.sign} 챕터 선택` : "");
-  if (chapter) card.append(constellation(chapter, chapterIndex, enabled, unlocked, cleared));
+  card.setAttribute(
+    "aria-label",
+    challenge ? "오늘의 챌린지 선택" : chapter ? `${chapter.sign} 챕터 선택` : "",
+  );
+  if (challenge) card.append(challengeConstellation());
+  else if (chapter) card.append(constellation(chapter, chapterIndex, enabled, unlocked, cleared));
+}
+
+function challengeConstellation(): SVGSVGElement {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.setAttribute("viewBox", "0 0 478 560");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "모래시계 모양의 오늘의 챌린지 별자리");
+  const line = document.createElementNS(svgNamespace, "path");
+  line.setAttribute("class", styles.challengeLine);
+  line.setAttribute("d", "M125 100 H353 L145 338 H333 L125 100 M353 100 L145 338");
+  svg.append(line);
+  [
+    [100, 75],
+    [328, 75],
+    [120, 313],
+    [308, 313],
+    [214, 194],
+  ].forEach(([x, y], index) => {
+    const star = document.createElementNS(svgNamespace, "image");
+    setImageBox(star, index === 4 ? starNodeAssets.gold : starNodeAssets.white, x!, y!, 50, 50);
+    const glow = star.cloneNode() as SVGImageElement;
+    glow.setAttribute("class", `${styles.glow} ${styles.goldGlow}`);
+    svg.append(glow, star);
+  });
+  const title = document.createElementNS(svgNamespace, "text");
+  title.setAttribute("class", styles.challengeTitle);
+  title.setAttribute("x", "239");
+  title.setAttribute("y", "430");
+  title.textContent = "DAILY CHALLENGE";
+  const subtitle = document.createElementNS(svgNamespace, "text");
+  subtitle.setAttribute("class", styles.challengeSubtitle);
+  subtitle.setAttribute("x", "239");
+  subtitle.setAttribute("y", "468");
+  subtitle.textContent = "오늘의 기록에 도전하세요";
+  svg.append(title, subtitle);
+  return svg;
 }
 function constellation(
   chapter: ChapterDefinition,
