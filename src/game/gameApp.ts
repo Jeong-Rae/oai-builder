@@ -11,6 +11,7 @@ import { preloadAssets } from "@/src/game/preload";
 import { createChapterScene } from "@/src/game/scenes/chapter/controller";
 import { createClearScene } from "@/src/game/scenes/clear/controller";
 import { createGameScene } from "@/src/game/scenes/game/controller";
+import { attachClickStars } from "@/src/game/scenes/shared/backgroundStars";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
 import { nextSelection, type PlaySelection } from "@/src/game/stages";
@@ -125,6 +126,7 @@ export class GameApp {
     this.root.replaceChildren();
     const frame = document.createElement("div");
     frame.className = "game-frame";
+    attachClickStars(frame);
     frame.append(scene.view);
     this.frame = frame;
     this.root.append(frame);
