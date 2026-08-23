@@ -13,6 +13,7 @@ import { createSceneTitle, createTitleStar } from "@/src/game/scenes/shared/titl
 import styles from "@/src/game/scenes/chapter/scene.module.css";
 import {
   chapters,
+  isChapterCleared,
   isChapterUnlocked,
   stageStatuses,
   type ChapterDefinition,
@@ -111,19 +112,21 @@ function renderCard(
   card.replaceChildren();
   card.disabled = !chapter;
   const unlocked = chapter ? isChapterUnlocked(chapterIndex) : false;
+  const cleared = chapter ? isChapterCleared(chapterIndex) : false;
   card.tabIndex = enabled && unlocked ? 0 : -1;
   card.setAttribute("aria-disabled", String(enabled && !unlocked));
   card.setAttribute("aria-label", chapter ? `${chapter.sign} 챕터 선택` : "");
-  if (chapter) card.append(constellation(chapter, chapterIndex, enabled, unlocked));
+  if (chapter) card.append(constellation(chapter, chapterIndex, enabled, unlocked, cleared));
 }
 function constellation(
   chapter: ChapterDefinition,
   chapterIndex: number,
   active: boolean,
   unlocked: boolean,
+  cleared: boolean,
 ): SVGSVGElement {
   const visual = signVisuals[chapter.sign]?.chapter[active ? "large" : "small"];
-  if (visual) return renderFigmaConstellation(chapter, chapterIndex, visual, unlocked);
+  if (visual) return renderFigmaConstellation(chapter, chapterIndex, visual, unlocked, cleared);
 
   const layout = computeLayout(chapter.constellation, {
     width: 478,
@@ -150,7 +153,7 @@ function constellation(
   const emblem = document.createElementNS("http://www.w3.org/2000/svg", "image");
   emblem.setAttribute(
     "href",
-    active ? chapter.zodiacUrl : chapterZodiacInactiveAssets[chapter.sign],
+    cleared ? chapter.zodiacUrl : chapterZodiacInactiveAssets[chapter.sign],
   );
   emblem.setAttribute("x", String(layout.emblemAnchor.x));
   emblem.setAttribute("y", String(layout.emblemAnchor.y));
@@ -165,6 +168,7 @@ function renderFigmaConstellation(
   chapterIndex: number,
   visual: NonNullable<(typeof signVisuals)[keyof typeof signVisuals]>["chapter"]["large"],
   unlocked: boolean,
+  cleared: boolean,
 ): SVGSVGElement {
   const svg = document.createElementNS(svgNamespace, "svg");
   svg.setAttribute("viewBox", `0 0 ${visual.width} ${visual.height}`);
@@ -201,7 +205,7 @@ function renderFigmaConstellation(
   const emblem = document.createElementNS(svgNamespace, "image");
   setImageBox(
     emblem,
-    unlocked ? chapter.zodiacUrl : chapterZodiacInactiveAssets[chapter.sign],
+    cleared ? chapter.zodiacUrl : chapterZodiacInactiveAssets[chapter.sign],
     visual.emblem.x,
     visual.emblem.y,
     visual.emblem.width,

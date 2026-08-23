@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   chapters,
+  isChapterCleared,
   isChapterUnlocked,
   nextSelection,
   nextStage,
@@ -60,9 +61,15 @@ describe("스테이지 선택", () => {
 
   it("바로 이전 챕터의 모든 스테이지를 완료해야 다음 챕터가 열린다", () => {
     progressStore.reset();
+    expect(isChapterCleared(0)).toBe(false);
     expect(isChapterUnlocked(0)).toBe(true);
     expect(isChapterUnlocked(1)).toBe(false);
-    chapters[0]!.stages.forEach((_, stageIndex) => progressStore.markCleared(0, stageIndex));
+    progressStore.markCleared(0, 0);
+    expect(isChapterCleared(0)).toBe(false);
+    chapters[0]!.stages
+      .slice(1)
+      .forEach((_, stageIndex) => progressStore.markCleared(0, stageIndex + 1));
+    expect(isChapterCleared(0)).toBe(true);
     expect(isChapterUnlocked(1)).toBe(true);
     progressStore.reset();
   });

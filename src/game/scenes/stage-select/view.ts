@@ -1,4 +1,9 @@
-import { backgroundUrl, stageSelectAssets as assets, starNodeAssets } from "@/src/game/assets";
+import {
+  backgroundUrl,
+  chapterZodiacInactiveAssets,
+  stageSelectAssets as assets,
+  starNodeAssets,
+} from "@/src/game/assets";
 import { computeLayout } from "@/src/game/constellation/layout";
 import { renderConstellationSvg } from "@/src/game/constellation/render";
 import { signVisuals, type StageSignVisual } from "@/src/game/data/signVisuals";
@@ -6,7 +11,7 @@ import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars"
 import { createMoonDecor } from "@/src/game/scenes/shared/moonDecor";
 import { createSceneTitle, createTitleStar } from "@/src/game/scenes/shared/title";
 import styles from "@/src/game/scenes/stage-select/scene.module.css";
-import { type ChapterDefinition, stageStatuses } from "@/src/game/stages";
+import { isChapterCleared, type ChapterDefinition, stageStatuses } from "@/src/game/stages";
 
 const nodeImageByStatus = {
   cleared: starNodeAssets.gold,
@@ -19,7 +24,9 @@ function createHeader(chapter: ChapterDefinition, chapterIndex: number): HTMLEle
   const header = document.createElement("header");
   header.className = "scene-header";
   const zodiac = document.createElement("img");
-  zodiac.src = chapter.zodiacUrl;
+  zodiac.src = isChapterCleared(chapterIndex)
+    ? chapter.zodiacUrl
+    : chapterZodiacInactiveAssets[chapter.sign];
   zodiac.alt = "";
   const sign = document.createElement("span");
   sign.textContent = chapter.sign;

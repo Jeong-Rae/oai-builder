@@ -85,10 +85,6 @@
   display: block;
   width: 5cqw;
 }
-.exactNode .star,
-.exactNode .glow {
-  width: 100%;
-}
 .node .glow {
   filter: blur(10px);
   left: 0;
@@ -97,6 +93,10 @@
   position: absolute;
   top: 0;
   width: 5cqw;
+}
+.exactNode .star,
+.exactNode .glow {
+  width: 100%;
 }
 .node:not([data-status="locked"]):hover .star,
 .node:not([data-status="locked"]):focus-visible .star {
