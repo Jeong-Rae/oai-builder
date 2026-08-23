@@ -1,45 +1,96 @@
 .title {
-  align-items: center;
   color: #fff;
-  column-gap: 0.75cqw;
-  display: grid;
   font-family: "온글잎 박다현체", monospace;
-  font-size: 1.667cqw;
-  grid-template-columns: calc(1.4581cqw + 2.1px) 16cqw calc(1.4581cqw + 2.1px);
-  height: calc(2.083cqw + 3px);
+  font-size: 4.167cqw;
+  font-weight: 700;
+  height: 6.354cqw;
   margin: 0;
-  width: max-content;
+  position: relative;
+  text-shadow: 0 0 0.677cqw #7588ab;
+  width: 25.938cqw;
+}
+.chapter {
+  height: 7.188cqw;
+  width: 44.115cqw;
+}
+.stage {
+  left: -0.156cqw;
 }
 .star {
-  justify-self: center;
+  filter: drop-shadow(0 0 0.391cqw rgb(255 250 191 / 80%));
+  height: 1.042cqw;
+  left: 0;
+  position: absolute;
+  top: 2.031cqw;
+  width: 0.885cqw;
 }
-img.star {
-  height: calc(1.4581cqw + 2.1px);
-  width: auto;
+.star:nth-of-type(2) {
+  left: auto;
+  right: 0;
 }
-.star:not(img) {
-  font-size: calc(1.4581cqw + 2.1px);
-  line-height: 1;
+.chapter .star {
+  left: 3.646cqw;
+  width: 1.042cqw;
 }
-.content {
-  display: flex;
-  flex-direction: column;
-  width: 16cqw;
+.chapter .star:nth-of-type(2) {
+  left: auto;
+  right: 3.802cqw;
 }
 .text {
   align-items: center;
   display: flex;
-  height: 2.083cqw;
+  height: 5cqw;
   justify-content: center;
-  letter-spacing: 0.08em;
+  left: 50%;
+  line-height: normal;
+  position: absolute;
+  text-transform: uppercase;
+  top: 0;
+  transform: translateX(-50%);
   white-space: nowrap;
 }
-.text > img {
-  height: 100%;
+.chapter .text {
+  width: 100%;
+}
+.stage .text {
+  gap: 0.833cqw;
+}
+.stage .text > img {
+  height: 3.75cqw;
+  object-fit: contain;
   width: auto;
 }
 .divider {
-  border-top: 3px dashed rgb(131 144 154 / 55%);
+  background: repeating-linear-gradient(
+    to right,
+    #36383a 0 0.521cqw,
+    transparent 0.521cqw 1.042cqw
+  );
   display: block;
+  height: 0.26cqw;
+  left: 0;
+  position: absolute;
+  top: 6.094cqw;
   width: 100%;
+}
+.chapter .divider {
+  left: 5.833cqw;
+  width: 13.542cqw;
+}
+.chapter .divider::after {
+  background: inherit;
+  content: "";
+  height: 100%;
+  left: 18.906cqw;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.dividerCenter {
+  height: 2.448cqw;
+  left: 20.833cqw;
+  opacity: 0.8;
+  position: absolute;
+  top: 4.74cqw;
+  width: 2.448cqw;
 }
