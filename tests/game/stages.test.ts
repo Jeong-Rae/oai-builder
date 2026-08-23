@@ -115,6 +115,16 @@ describe("스테이지 선택", () => {
     await progressStore.reset();
   });
 
+  it("잠긴 챕터의 스테이지 선택 화면은 모든 별을 검은색 잠금 상태로 표시한다", async () => {
+    await progressStore.reset();
+    expect(stageStatuses(1)).toEqual(Array(chapters[1]!.stages.length).fill("locked"));
+    for (const stageIndex of chapters[0]!.stages.keys()) {
+      await progressStore.markCleared(0, stageIndex);
+    }
+    expect(stageStatuses(1)).toContain("current");
+    await progressStore.reset();
+  });
+
   it("챕터 마지막에서는 다음 챕터로, 전체 마지막에서는 처음으로 순환한다", () => {
     expect(nextSelection({ chapterIndex: 0, stageIndex: 3 })).toEqual({
       chapterIndex: 1,
