@@ -459,24 +459,39 @@ h1 {
 .control-assets {
   position: absolute;
   z-index: 3;
-  right: 2px;
-  top: 2px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: end;
-  gap: 1px;
-  max-width: 70%;
+  inset: 9%;
+  width: 82%;
+  height: 82%;
   pointer-events: none;
 }
+.control-assets-normal {
+  inset: 23%;
+  width: 54%;
+  height: 54%;
+}
 .control-asset {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: clamp(0.55rem, 1.2vw, 0.8rem);
   height: clamp(0.55rem, 1.2vw, 0.8rem);
   filter: drop-shadow(0 1px 1px #000);
   object-fit: contain;
+  transform: translate(-50%, -50%);
 }
-.control-down,
+.control-up {
+  top: 0;
+}
+.control-right {
+  left: 100%;
+}
+.control-down {
+  top: 100%;
+  transform: translate(-50%, -50%) rotate(180deg);
+}
 .control-left {
-  transform: rotate(180deg);
+  left: 0;
+  transform: translate(-50%, -50%) rotate(180deg);
 }
 .notice {
   min-height: 1.25rem;

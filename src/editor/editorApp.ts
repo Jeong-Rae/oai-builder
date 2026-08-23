@@ -377,7 +377,7 @@ export function mountEditor(
             : "";
         const overlay = pathOverlay.get(key)?.join("") ?? "";
         cells.push(
-          `<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${fieldAsset}${gate}${goal}${objectAsset}<span class="path-overlay">${overlay}</span><span class="control-assets">${controls}</span></button>`,
+          `<button type="button" class="map-cell field-${field}${selected}" data-cell data-x="${x}" data-y="${y}" aria-label="(${x}, ${y}) ${label}">${tileAsset}${fieldAsset}${gate}${goal}${objectAsset}<span class="path-overlay">${overlay}</span><span class="control-assets${object ? ` control-assets-${object.kind}` : ""}">${controls}</span></button>`,
         );
       }
     }

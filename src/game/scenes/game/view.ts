@@ -1,5 +1,4 @@
 import type { GameState, Position } from "../../domain/types";
-import { TILE_SIZE } from "../../domain/level";
 import { findExit } from "../../features/fields/exit/rules";
 import { gateOrientationFor, gateVisualFor } from "../../features/fields/gate/presentation";
 import {
@@ -117,16 +116,13 @@ export function createGameView(): GameView {
       image.src = assetUrls[textureForEntity(entity)];
       image.parentElement?.querySelectorAll(`.${styles.control}`).forEach((node) => node.remove());
       cells.get(key(entity.position))!.append(image);
-      entity.controls.forEach((direction, index) => {
+      entity.controls.forEach((direction) => {
         const control = document.createElement("img");
         control.className = styles.control;
         control.dataset.direction = direction;
+        control.dataset.entityKind = entity.kind;
         control.src = assetUrls[assetForDirection(direction)];
         control.alt = "";
-        control.style.setProperty(
-          "--control-offset",
-          `${((index - (entity.controls.length - 1) / 2) * 18) / TILE_SIZE}`,
-        );
         image.parentElement!.append(control);
       });
     });
