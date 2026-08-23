@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { decide, evolveAll } from "../../src/game/domain/decider";
-import { createInitialState } from "../../src/game/domain/level";
-import type { Anchor, GameState, Normal, Position, Swapper } from "../../src/game/domain/types";
+import { decide, evolveAll } from "@/src/game/domain/decider";
+import { createInitialState } from "@/src/game/domain/level";
+import type { Anchor, GameState, Normal, Position, Swapper } from "@/src/game/domain/types";
 
 function createStateWithPlayer(position: Position) {
   const state = createInitialState({ boxCount: 0 });
@@ -245,6 +245,7 @@ describe("웜홀", () => {
       entityId: "player",
       from: { x: 1, y: 1 },
       to: { x: 6, y: 4 },
+      wormhole: { x: 2, y: 1 },
     });
     expect(next.entities.player.position).toEqual({ x: 6, y: 4 });
   });

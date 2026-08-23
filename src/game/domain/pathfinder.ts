@@ -1,10 +1,7 @@
-import { decide, evolveAll } from './decider';
-import type { Direction, GameEvent, GameState, Position } from './types';
+import { decide, evolveAll } from '@/src/game/domain/decider';
+import type { Direction, GameEvent, GameState, Position } from '@/src/game/domain/types';
 
 const directions: Direction[] = ['up', 'down', 'left', 'right'];
-const offsets: Record<Direction, Position> = {
-  up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
-};
 
 export interface PathMove {
   step: number;
@@ -38,14 +35,16 @@ function stateKey(state: GameState): string {
   ]);
 }
 
-function movesFor(state: GameState, direction: Direction, events: GameEvent[], step: number): PathMove[] {
+function movesFor(events: GameEvent[], step: number): PathMove[] {
   return events.flatMap((event) => {
     if (event.type !== 'entity/moved') return [];
-    const offset = offsets[direction];
-    const entered = { x: event.from.x + offset.x, y: event.from.y + offset.y };
-    const wormhole = state.tiles[entered.y]?.[entered.x] === 'wormhole'
-      && (entered.x !== event.to.x || entered.y !== event.to.y) ? entered : undefined;
-    return [{ step, entityId: event.entityId, from: event.from, to: event.to, wormhole }];
+    return [{
+      step,
+      entityId: event.entityId,
+      from: event.from,
+      to: event.to,
+      ...(event.wormhole ? { wormhole: event.wormhole } : {}),
+    }];
   });
 }
 
@@ -73,7 +72,7 @@ export function findPath(initial: GameState): PathResult | undefined {
         state: next,
         steps: [...current.steps, {
           direction,
-          moves: movesFor(current.state, direction, decision.events, current.steps.length + 1),
+          moves: movesFor(decision.events, current.steps.length + 1),
         }],
       });
     }
@@ -123,7 +122,7 @@ export function findBalancedPath(initial: GameState): BalancedPathResult | undef
         state: next,
         steps: [...current.steps, {
           direction,
-          moves: movesFor(current.state, direction, decision.events, current.steps.length + 1),
+          moves: movesFor(decision.events, current.steps.length + 1),
         }],
         cost,
         interactionCount: current.interactionCount + Number(interaction),

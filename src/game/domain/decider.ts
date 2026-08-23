@@ -6,13 +6,13 @@ import type {
   GameEvent,
   GameState,
   Position,
-} from './types';
-import { exitEvents } from '../features/fields/exit/rules';
-import { plateEvents } from '../features/fields/plate/rules';
-import { wormholeDestination } from '../features/fields/wormhole/rules';
-import { anchorCollisionEvents } from '../features/objects/anchor/rules';
-import { swapperCollisionEvents } from '../features/objects/swapper/rules';
-import { fieldRules, objectRules } from '../features/rules';
+} from '@/src/game/domain/types';
+import { exitEvents } from '@/src/game/features/fields/exit/rules';
+import { plateEvents } from '@/src/game/features/fields/plate/rules';
+import { wormholeDestination } from '@/src/game/features/fields/wormhole/rules';
+import { anchorCollisionEvents } from '@/src/game/features/objects/anchor/rules';
+import { swapperCollisionEvents } from '@/src/game/features/objects/swapper/rules';
+import { fieldRules, objectRules } from '@/src/game/features/rules';
 
 const directionOffsets: Record<Direction, Position> = {
   up: { x: 0, y: -1 },
@@ -41,13 +41,19 @@ function getEntityAt(state: GameState, position: Position): Entity | undefined {
   );
 }
 
-function moveEvents(state: GameState, entity: Entity, target: Position): GameEvent[] {
+function moveEvents(
+  state: GameState,
+  entity: Entity,
+  target: Position,
+  wormhole?: Position,
+): GameEvent[] {
   const events: GameEvent[] = [
     {
       type: 'entity/moved',
       entityId: entity.id,
       from: entity.position,
       to: target,
+      ...(wormhole ? { wormhole } : {}),
     },
   ];
 
@@ -91,7 +97,7 @@ export function decide(state: GameState, command: GameCommand): Decision {
       if (!destination || getEntityAt(state, destination)) {
         return { events: [], rejectedBy: 'occupied' };
       }
-      return { events: moveEvents(state, owner, destination) };
+      return { events: moveEvents(state, owner, destination, target) };
     }
     return { events: moveEvents(state, owner, target) };
   }

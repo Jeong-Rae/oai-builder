@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { createGameStateFromMap } from "../../src/game/domain/level";
-import { findBalancedPath, findPath } from "../../src/game/domain/pathfinder";
-import type { MapDocument } from "../../src/map/mapDocument";
+import { createGameStateFromMap } from "@/src/game/domain/level";
+import { findBalancedPath, findPath } from "@/src/game/domain/pathfinder";
+import type { MapDocument } from "@/src/map/mapDocument";
 
 const map: MapDocument = {
   version: 2,

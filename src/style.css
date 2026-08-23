@@ -44,6 +44,92 @@ button {
   z-index: 2;
 }
 
+.scene-transition {
+  background: #000;
+  height: min(100vh, 56.25vw);
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  visibility: hidden;
+  width: min(100vw, 177.778vh);
+  z-index: 10;
+}
+.scene-transition.covering,
+.scene-transition.revealing,
+.scene-transition.covered {
+  pointer-events: auto;
+  visibility: visible;
+}
+.scene-transition.covering {
+  animation: wave-cover 350ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+.scene-transition.revealing {
+  animation: wave-reveal 350ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+.scene-transition.covered {
+  clip-path: inset(0);
+}
+
+@keyframes wave-cover {
+  from {
+    clip-path: polygon(
+      0 0,
+      -8% 0,
+      -2% 15%,
+      -10% 31%,
+      -3% 49%,
+      -11% 67%,
+      -2% 84%,
+      -8% 100%,
+      0 100%
+    );
+  }
+  to {
+    clip-path: polygon(
+      0 0,
+      108% 0,
+      114% 15%,
+      106% 31%,
+      113% 49%,
+      105% 67%,
+      114% 84%,
+      108% 100%,
+      0 100%
+    );
+  }
+}
+
+@keyframes wave-reveal {
+  from {
+    clip-path: polygon(
+      -8% 0,
+      100% 0,
+      100% 100%,
+      -8% 100%,
+      -2% 84%,
+      -11% 67%,
+      -3% 49%,
+      -10% 31%,
+      -2% 15%
+    );
+  }
+  to {
+    clip-path: polygon(
+      108% 0,
+      100% 0,
+      100% 100%,
+      108% 100%,
+      114% 84%,
+      105% 67%,
+      113% 49%,
+      106% 31%,
+      114% 15%
+    );
+  }
+}
+
 .scene-header {
   align-items: center;
   display: flex;

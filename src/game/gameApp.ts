@@ -33,6 +33,7 @@ export class GameApp {
   private authGateway?: AuthGateway;
   private storage?: BrowserStorage;
   private readonly initialStartScene: StartScene;
+  private readonly transitionLayer: HTMLElement;
   private session?: GameSession;
 
   private blockTransitionKeydown = (event: KeyboardEvent): void => {
@@ -45,6 +46,9 @@ export class GameApp {
     this.root.addEventListener("click", this.handleButtonSound);
     preloadSfx();
     if (import.meta.env.DEV) document.addEventListener("keydown", this.handleDevShortcut);
+    this.transitionLayer = document.createElement("div");
+    this.transitionLayer.className = "scene-transition";
+    this.transitionLayer.setAttribute("aria-hidden", "true");
     this.initialStartScene = this.createIntroScene(false);
     this.mount(this.initialStartScene);
     this.preloadPromise = preloadAssets(allGameAssetUrls(), this.initialStartScene.updateLoading);
@@ -128,24 +132,51 @@ export class GameApp {
     showScreen();
   };
 
-  private async show(scene: Scene): Promise<void> {
+  private async show(scene: Scene, wave = false): Promise<void> {
     const transitionId = ++this.transitionId;
     const previousFrame = this.frame;
     this.blockTransitionInput(previousFrame);
     try {
-      await this.preloadPromise;
-      await scene.ready;
+      await Promise.all([
+        this.preloadPromise,
+        scene.ready,
+        ...(wave ? [this.playWaveTransition("covering")] : []),
+      ]);
       if (transitionId !== this.transitionId) {
         scene.dispose();
         return;
       }
       this.mount(scene);
+      if (wave) await this.playWaveTransition("revealing");
       this.releaseTransitionInput();
     } catch (error) {
       scene.dispose();
-      if (transitionId === this.transitionId) this.releaseTransitionInput(previousFrame);
+      if (transitionId === this.transitionId) {
+        this.transitionLayer.className = "scene-transition";
+        this.releaseTransitionInput(previousFrame);
+      }
       throw error;
     }
+  }
+
+  private playWaveTransition(phase: "covering" | "revealing"): Promise<void> {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.transitionLayer.className =
+        phase === "covering" ? "scene-transition covered" : "scene-transition";
+      return Promise.resolve();
+    }
+    this.transitionLayer.className = `scene-transition ${phase}`;
+    return new Promise((resolve) => {
+      this.transitionLayer.addEventListener(
+        "animationend",
+        () => {
+          this.transitionLayer.className =
+            phase === "covering" ? "scene-transition covered" : "scene-transition";
+          resolve();
+        },
+        { once: true },
+      );
+    });
   }
 
   private blockTransitionInput(frame?: HTMLElement): void {
@@ -161,13 +192,13 @@ export class GameApp {
   private mount(scene: Scene): void {
     this.disposeScene?.();
     this.disposeScene = scene.dispose;
-    this.root.replaceChildren();
     const frame = document.createElement("div");
     frame.className = "game-frame";
     attachClickStars(frame);
     frame.append(scene.view);
+    if (this.frame?.isConnected) this.frame.replaceWith(frame);
+    else this.root.append(frame, this.transitionLayer);
     this.frame = frame;
-    this.root.append(frame);
     scene.activate?.();
   }
 
@@ -209,14 +240,19 @@ export class GameApp {
   };
 
   private showChapter = (chapterIndex: number): Promise<void> =>
-    this.show(createChapterScene(chapterIndex, this.showStageSelect));
-  private showStageSelect = (chapterIndex: number): Promise<void> =>
+    this.show(
+      createChapterScene(chapterIndex, (selectedChapter) =>
+        this.showStageSelect(selectedChapter, true),
+      ),
+    );
+  private showStageSelect = (chapterIndex: number, wave = false): Promise<void> =>
     this.show(
       createStageSelectScene(
         chapterIndex,
-        (stageIndex) => this.showGame({ chapterIndex, stageIndex }),
+        (stageIndex) => this.showGame({ chapterIndex, stageIndex }, true),
         () => this.showChapter(chapterIndex),
       ),
+      wave,
     );
   private prepareGame(selection: PlaySelection): ReturnType<typeof createGameScene> {
     return createGameScene(
@@ -226,8 +262,8 @@ export class GameApp {
     );
   }
 
-  private showGame = (selection: PlaySelection): Promise<void> =>
-    this.show(this.prepareGame(selection));
+  private showGame = (selection: PlaySelection, wave = false): Promise<void> =>
+    this.show(this.prepareGame(selection), wave);
   private showClear = async (selection: PlaySelection): Promise<void> => {
     const next = nextSelection(selection);
     const preparedNext = this.prepareGame(next);

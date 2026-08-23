@@ -19,12 +19,13 @@ export function createGameScene(
     timers.clear();
   };
   let store: ReturnType<typeof createGameStoreFromMap> | undefined;
+  let motionLocked = false;
   const undo = () => {
-    if (store?.getState().game.status !== "playing") return;
+    if (motionLocked || store?.getState().game.status !== "playing") return;
     if (store.getState().undo()) clearPlateTimers();
   };
   const reset = () => {
-    if (store?.getState().game.status !== "playing") return;
+    if (motionLocked || store?.getState().game.status !== "playing") return;
     clearPlateTimers();
     store.getState().reset();
   };
@@ -37,12 +38,17 @@ export function createGameScene(
   let completeTimer: number | undefined;
   const keydown = (event: KeyboardEvent) => {
     if (!store || store.getState().game.status === "completed") return;
-    if (isUndoShortcut(event)) {
+    const undoRequested = isUndoShortcut(event);
+    const direction = directionFromKey(event.key);
+    if (motionLocked) {
+      if (undoRequested || direction) event.preventDefault();
+      return;
+    }
+    if (undoRequested) {
       event.preventDefault();
       undo();
       return;
     }
-    const direction = directionFromKey(event.key);
     if (!direction) return;
     event.preventDefault();
     const game = store.getState().game;
@@ -50,6 +56,24 @@ export function createGameScene(
     if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
     if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");
     view.setPlayerTexture(playerTextureForMove(game, direction, decision));
+    const teleport = decision.events.find(
+      (entry) => entry.type === "entity/moved" && entry.wormhole,
+    );
+    if (teleport?.type === "entity/moved" && teleport.wormhole) {
+      motionLocked = true;
+      view.setActionAvailability(false, false);
+      void view
+        .playWormhole(teleport.entityId, teleport.wormhole, teleport.to)
+        .finally(() => {
+          motionLocked = false;
+          const state = store?.getState();
+          if (state)
+            view.setActionAvailability(
+              state.game.status === "playing" && state.eventStream.length > 0,
+              state.game.status === "playing",
+            );
+        });
+    }
   };
   const activateInput = () => {
     if (!active || !store || listening) return;
@@ -129,6 +153,7 @@ export function createGameScene(
       listening = false;
       if (completeTimer) window.clearTimeout(completeTimer);
       clearPlateTimers();
+      view.cancelAnimations();
     },
   };
 }

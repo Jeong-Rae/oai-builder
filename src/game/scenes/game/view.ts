@@ -17,6 +17,8 @@ const key = ({ x, y }: Position) => `${x},${y}`;
 export interface GameView {
   root: HTMLElement;
   sync(game: GameState): void;
+  playWormhole(entityId: string, entry: Position, destination: Position): Promise<void>;
+  cancelAnimations(): void;
   setActionAvailability(undoEnabled: boolean, resetEnabled: boolean): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
@@ -76,13 +78,17 @@ export function createGameView(
   root.append(board);
   const cells = new Map<string, HTMLElement>();
   const entityNodes = new Map<string, HTMLImageElement>();
+  const entityLayers = new Map<string, HTMLElement>();
   const overlays = new Map<string, HTMLImageElement>();
+  const animations = new Set<Animation>();
+  let animationGeneration = 0;
   let dimensions = "";
   const build = (game: GameState) => {
     dimensions = `${game.columns}x${game.rows}`;
     board.replaceChildren();
     cells.clear();
     entityNodes.clear();
+    entityLayers.clear();
     overlays.clear();
     board.style.setProperty("--columns", String(game.columns));
     board.style.setProperty("--rows", String(game.rows));
@@ -150,35 +156,124 @@ export function createGameView(
     Object.values(game.entities).forEach((entity) => {
       present.add(entity.id);
       let image = entityNodes.get(entity.id);
+      let layer = entityLayers.get(entity.id);
       if (!image) {
+        layer = document.createElement("div");
+        layer.className = styles.entityLayer;
         image = document.createElement("img");
         image.className =
           entity.kind === "normal" ? `${styles.entity} ${styles.normal}` : styles.entity;
         image.alt = entity.kind === "player" ? "플레이어" : entity.kind;
+        layer.append(image);
         entityNodes.set(entity.id, image);
+        entityLayers.set(entity.id, layer);
       }
       image.src = assetUrls[textureForEntity(entity)];
-      image.parentElement?.querySelectorAll(`.${styles.control}`).forEach((node) => node.remove());
-      cells.get(key(entity.position))!.append(image);
+      layer!.querySelectorAll(`.${styles.control}`).forEach((node) => node.remove());
+      cells.get(key(entity.position))!.append(layer!);
       entity.controls.forEach((direction) => {
         const control = document.createElement("img");
         control.className = styles.control;
         control.dataset.direction = direction;
         control.src = assetUrls[assetForDirection(direction)];
         control.alt = "";
-        image.parentElement!.append(control);
+        layer!.append(control);
       });
     });
     entityNodes.forEach((image, id) => {
       if (!present.has(id)) {
-        image.remove();
+        entityLayers.get(id)?.remove();
         entityNodes.delete(id);
+        entityLayers.delete(id);
       }
     });
+  };
+  const track = (animation: Animation): Animation => {
+    animations.add(animation);
+    return animation;
+  };
+  const finish = (animation: Animation): Promise<void> =>
+    animation.finished.then(
+      () => undefined,
+      () => undefined,
+    );
+  const stop = (animation: Animation): void => {
+    animation.cancel();
+    animations.delete(animation);
+  };
+  const cancelAnimations = () => {
+    animationGeneration += 1;
+    animations.forEach((animation) => animation.cancel());
+    animations.clear();
   };
   return {
     root,
     sync,
+    playWormhole: async (entityId, entry, destination) => {
+      const layer = entityLayers.get(entityId);
+      const entryCell = cells.get(key(entry));
+      const destinationCell = cells.get(key(destination));
+      if (!layer || !entryCell || !destinationCell) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        destinationCell.append(layer);
+        return;
+      }
+
+      const generation = animationGeneration;
+      entryCell.append(layer);
+      const disappear = track(
+        layer.animate(
+          [
+            { clipPath: "inset(0 0 0 0)", opacity: 1, transform: "translateY(0) scale(1)" },
+            {
+              clipPath: "inset(0 0 0 0)",
+              opacity: 1,
+              transform: "translateY(0) scale(1)",
+              offset: 0.18,
+            },
+            {
+              clipPath: "inset(0 0 100% 0)",
+              opacity: 0.15,
+              transform: "translateY(18%) scale(0.88)",
+            },
+          ],
+          { duration: 400, easing: "cubic-bezier(.55, 0, 1, .45)", fill: "both" },
+        ),
+      );
+      const entryPulse = overlays.get(key(entry))?.animate(
+        [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
+        { duration: 400, easing: "ease-in-out" },
+      );
+      if (entryPulse) track(entryPulse);
+      await Promise.all([finish(disappear), ...(entryPulse ? [finish(entryPulse)] : [])]);
+      if (generation !== animationGeneration) return;
+
+      destinationCell.append(layer);
+      const appear = track(
+        layer.animate(
+          [
+            {
+              clipPath: "inset(100% 0 0 0)",
+              opacity: 0.15,
+              transform: "translateY(18%) scale(0.88)",
+            },
+            { clipPath: "inset(0 0 0 0)", opacity: 1, transform: "translateY(0) scale(1)" },
+          ],
+          { duration: 400, easing: "cubic-bezier(0, .55, .45, 1)", fill: "both" },
+        ),
+      );
+      const exitPulse = overlays.get(key(destination))?.animate(
+        [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
+        { duration: 400, easing: "ease-in-out" },
+      );
+      if (exitPulse) track(exitPulse);
+      stop(disappear);
+      if (entryPulse) stop(entryPulse);
+      await Promise.all([finish(appear), ...(exitPulse ? [finish(exitPulse)] : [])]);
+      stop(appear);
+      if (exitPulse) stop(exitPulse);
+    },
+    cancelAnimations,
     setActionAvailability: (undoEnabled, resetEnabled) => {
       undo.disabled = !undoEnabled;
       reset.disabled = !resetEnabled;

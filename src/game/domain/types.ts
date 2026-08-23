@@ -68,6 +68,7 @@ export type GameEvent =
       entityId: string;
       from: Position;
       to: Position;
+      wormhole?: Position;
     }
   | {
       type: "control/transferred";
