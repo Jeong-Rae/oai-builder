@@ -1,4 +1,4 @@
-import { backgroundUrl, startAssets } from "@/src/game/assets";
+import { backgroundUrl, stageSelectAssets, startAssets } from "@/src/game/assets";
 import { createPlateButton } from "@/src/game/components/PlateButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/start/scene.module.css";
@@ -83,9 +83,16 @@ export function createStartView(
   let ready = false;
   let start: HTMLButtonElement | undefined;
   let googleMark: SVGSVGElement | undefined;
-  const notice = document.createElement("p");
+  const notice = document.createElement("div");
   notice.className = styles.notice;
-  notice.textContent = "데모 로그인입니다. 실제 Google 계정과 연결되지 않습니다.";
+  const noticeBubble = document.createElement("img");
+  noticeBubble.className = styles.noticeBubble;
+  noticeBubble.src = stageSelectAssets.bubbleNext;
+  noticeBubble.alt = "";
+  const noticeLabel = document.createElement("span");
+  noticeLabel.className = styles.noticeLabel;
+  noticeLabel.textContent = "DEMO / FAKE";
+  notice.append(noticeBubble, noticeLabel);
   const error = document.createElement("p");
   error.className = styles.error;
   error.setAttribute("role", "alert");

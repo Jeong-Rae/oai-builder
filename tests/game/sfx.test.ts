@@ -24,11 +24,12 @@ describe("게임 SFX", () => {
     preloadSfx();
     playSfx("move");
 
-    expect(players).toHaveLength(4);
+    expect(players).toHaveLength(5);
     expect(
       players.every((player) => player.preload === "auto" && player.load.mock.calls.length === 1),
     ).toBe(true);
     const move = players.find((player) => player.src.includes("sfx.move.mp3"));
+    expect(players.some((player) => player.src.includes("sfx.typing.mp3"))).toBe(true);
     expect(move?.currentTime).toBe(0);
     expect(move?.play).toHaveBeenCalledOnce();
   });

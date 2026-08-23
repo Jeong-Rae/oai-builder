@@ -4,20 +4,24 @@ import type { GameDataStore } from "@/src/game/dataStore";
 export type StageStatus = "cleared" | "current" | "available" | "locked";
 
 const STORAGE_KEY = "progress";
+const TUTORIAL_STORAGE_KEY = "tutorial-completed";
 
 function storageKey(chapterIndex: number, stageIndex: number): string {
   return `${chapterIndex}:${stageIndex}`;
 }
 
 export interface ProgressStore {
+  isTutorialCompleted(): boolean;
   isCleared(chapterIndex: number, stageIndex: number): boolean;
   clearedStages(chapterIndex: number, stageCount: number): ReadonlySet<number>;
+  markTutorialCompleted(): Promise<void>;
   markCleared(chapterIndex: number, stageIndex: number): Promise<void>;
   reset(): Promise<void>;
 }
 
 export async function createProgressStore(storage?: GameDataStore): Promise<ProgressStore> {
   let cleared = new Set<string>();
+  let tutorialCompleted = (await storage?.get(TUTORIAL_STORAGE_KEY)) === "true";
   if (storage) {
     const raw = await storage.get(STORAGE_KEY);
     if (raw !== null) {
@@ -39,6 +43,9 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
   };
 
   return {
+    isTutorialCompleted() {
+      return tutorialCompleted;
+    },
     isCleared(chapterIndex, stageIndex) {
       return cleared.has(storageKey(chapterIndex, stageIndex));
     },
@@ -48,6 +55,11 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
         if (cleared.has(storageKey(chapterIndex, stageIndex))) indices.add(stageIndex);
       }
       return indices;
+    },
+    async markTutorialCompleted() {
+      if (tutorialCompleted) return;
+      await storage?.set(TUTORIAL_STORAGE_KEY, "true");
+      tutorialCompleted = true;
     },
     async markCleared(chapterIndex, stageIndex) {
       const key = storageKey(chapterIndex, stageIndex);
@@ -59,7 +71,9 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
     async reset() {
       const next = new Set<string>();
       await persist(next);
+      await storage?.remove(TUTORIAL_STORAGE_KEY);
       cleared = next;
+      tutorialCompleted = false;
     },
   };
 }

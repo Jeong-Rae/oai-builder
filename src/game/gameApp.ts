@@ -21,6 +21,7 @@ import { createChallengeGameScene, createGameScene } from "@/src/game/scenes/gam
 import { attachClickStars } from "@/src/game/scenes/shared/backgroundStars";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
+import { createTutorialScene } from "@/src/game/scenes/tutorial/controller";
 import { nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 import { playSfx, preloadSfx } from "@/src/game/sfx";
@@ -166,7 +167,7 @@ export class GameApp {
 
   private startFromIntro = async (scene: StartScene): Promise<void> => {
     if (this.session) {
-      this.showGroups();
+      this.showTutorialOrGroups();
       return;
     }
 
@@ -176,7 +177,7 @@ export class GameApp {
       if (!this.authGateway) throw new Error("브라우저 저장소를 사용할 수 없습니다.");
       await this.establishSession(await this.authGateway.signIn("GOOGLE"));
       scene.setAuthenticated(true);
-      this.showGroups();
+      this.showTutorialOrGroups();
     } catch {
       scene.setError("로그인 정보를 저장하지 못했습니다. 브라우저 저장소 설정을 확인해 주세요.");
     } finally {
@@ -184,18 +185,49 @@ export class GameApp {
     }
   };
 
-  private handleDevShortcut = (event: KeyboardEvent): void => {
-    if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.repeat) return;
+  private showTutorialOrGroups(): void {
+    if (progressStore.isTutorialCompleted()) {
+      this.showGroups();
+      return;
+    }
+    void this.show(createTutorialScene(() => void this.completeTutorial()));
+  }
 
-    const screens: Record<string, () => void> = {
-      Digit1: this.showGameStart,
-      Digit2: this.showGroups,
-    };
-    const showScreen = screens[event.code];
-    if (!showScreen) return;
+  private completeTutorial = async (): Promise<void> => {
+    try {
+      await progressStore.markTutorialCompleted();
+    } catch {
+      window.alert("튜토리얼 완료 상태를 저장하지 못했습니다. 다음 실행에서 다시 표시됩니다.");
+    }
+    this.showGroups(true);
+  };
+
+  private handleDevShortcut = (event: KeyboardEvent): void => {
+    if (
+      !event.ctrlKey ||
+      event.altKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.repeat ||
+      event.code !== "Digit0"
+    )
+      return;
 
     event.preventDefault();
-    showScreen();
+    void this.resetAccountForTutorial();
+  };
+
+  private resetAccountForTutorial = async (): Promise<void> => {
+    try {
+      if (!this.session) {
+        if (!this.authGateway) throw new Error("브라우저 저장소를 사용할 수 없습니다.");
+        await this.establishSession(await this.authGateway.signIn("GOOGLE"));
+      }
+      await progressStore.reset();
+      this.showTutorialOrGroups();
+    } catch {
+      window.alert("계정 기록을 초기화하지 못했습니다. 브라우저 저장소를 확인해 주세요.");
+    }
   };
 
   private async show(scene: Scene, wave = false): Promise<void> {
@@ -297,21 +329,18 @@ export class GameApp {
     }
   };
 
-  showGameStart = (): void => {
-    this.show(this.createIntroScene(true));
+  showGroups = (wave = false): void => {
+    void this.showChapter(0, wave);
   };
 
-  showGroups = (): void => {
-    this.showChapter(0);
-  };
-
-  private showChapter = (selectionIndex: number): Promise<void> =>
+  private showChapter = (selectionIndex: number, wave = false): Promise<void> =>
     this.show(
       createChapterScene(
         selectionIndex,
         (selectedChapter) => this.showStageSelect(selectedChapter, true),
         this.showChallenge,
       ),
+      wave,
     );
   private showStageSelect = (chapterIndex: number, wave = false): Promise<void> =>
     this.show(

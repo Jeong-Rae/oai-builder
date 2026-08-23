@@ -61,6 +61,30 @@ describe("스테이지 진행 상태", () => {
     expect(restored.clearedStages(1, 4)).toEqual(new Set());
   });
 
+  it("튜토리얼 완료 상태를 플레이어 저장소에 영구 저장한다", async () => {
+    const storage = memoryStorage();
+    const store = await createProgressStore(storage);
+    expect(store.isTutorialCompleted()).toBe(false);
+
+    await store.markTutorialCompleted();
+
+    expect(store.isTutorialCompleted()).toBe(true);
+    expect((await createProgressStore(storage)).isTutorialCompleted()).toBe(true);
+  });
+
+  it("초기화하면 스테이지 진행도와 튜토리얼 완료 상태를 함께 지운다", async () => {
+    const storage = memoryStorage();
+    const store = await createProgressStore(storage);
+    await store.markCleared(0, 0);
+    await store.markTutorialCompleted();
+
+    await store.reset();
+
+    expect(store.isCleared(0, 0)).toBe(false);
+    expect(store.isTutorialCompleted()).toBe(false);
+    expect(storage.data.has("tutorial-completed")).toBe(false);
+  });
+
   it("손상된 진행 상태를 정상 데이터로 사용하지 않는다", async () => {
     const storage = memoryStorage();
     storage.data.set("progress", "not-json");
@@ -77,5 +101,16 @@ describe("스테이지 진행 상태", () => {
     const store = await createProgressStore(storage);
     await expect(store.markCleared(0, 0)).rejects.toThrow("quota exceeded");
     expect(store.isCleared(0, 0)).toBe(false);
+  });
+
+  it("저장에 실패하면 튜토리얼도 완료로 처리하지 않는다", async () => {
+    const storage = memoryStorage();
+    const store = await createProgressStore(storage);
+    storage.set = async () => {
+      throw new Error("quota exceeded");
+    };
+
+    await expect(store.markTutorialCompleted()).rejects.toThrow("quota exceeded");
+    expect(store.isTutorialCompleted()).toBe(false);
   });
 });

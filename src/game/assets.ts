@@ -85,6 +85,7 @@ export function gameAssetUrlGroups(): string[][] {
     startAssets.title,
     startAssets.lunar,
     ...startAssets.mascots,
+    stageSelectAssets.bubbleNext,
     clearAssets.spark,
     decorAssets.starSmall,
     decorAssets.starMedium,

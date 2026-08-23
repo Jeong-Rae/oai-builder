@@ -2,8 +2,15 @@ import buttonUrl from "@/assets/sfx/button/sfx.button.mp3";
 import clearUrl from "@/assets/sfx/clear/sfx.clear.mp3";
 import clickUrl from "@/assets/sfx/click/sfx.click.mp3";
 import moveUrl from "@/assets/sfx/move/sfx.move.mp3";
+import typingUrl from "@/assets/sfx/typing/sfx.typing.mp3";
 
-const urls = { button: buttonUrl, clear: clearUrl, click: clickUrl, move: moveUrl } as const;
+const urls = {
+  button: buttonUrl,
+  clear: clearUrl,
+  click: clickUrl,
+  move: moveUrl,
+  typing: typingUrl,
+} as const;
 const players = new Map<string, HTMLAudioElement>();
 
 function playerFor(name: keyof typeof urls): HTMLAudioElement {

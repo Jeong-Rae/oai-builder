@@ -64,7 +64,6 @@
   height: 0.9em;
   width: 0.9em;
 }
-.notice,
 .error {
   font-size: clamp(0.45rem, 0.8cqw, 1rem);
   line-height: 1.25;
@@ -73,7 +72,28 @@
   text-shadow: 0 2px 8px #000;
 }
 .notice {
-  color: #d7f9ff;
+  aspect-ratio: 414 / 230;
+  position: relative;
+  width: 7.7cqw;
+}
+.noticeBubble {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  transform: rotate(180deg);
+  width: 100%;
+}
+.noticeLabel {
+  color: #15171d;
+  font-size: clamp(0.5rem, 0.9cqw, 1.15rem);
+  font-weight: 700;
+  left: 50%;
+  letter-spacing: 0.08em;
+  position: absolute;
+  text-indent: 0.08em;
+  top: 62%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
 }
 .error {
   color: #ff9e9e;
