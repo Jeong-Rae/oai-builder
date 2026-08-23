@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { createGameStateFromMap } from "@/src/game/domain/level";
-import { findBalancedPath, findNextInteraction, findPath } from "@/src/game/domain/pathfinder";
+import { findBalancedPath, findNextHint, findPath } from "@/src/game/domain/pathfinder";
+import { decide, evolveAll } from "@/src/game/domain/decider";
 import type { MapDocument } from "@/src/map/mapDocument";
 
 const map: MapDocument = {
@@ -63,7 +64,40 @@ describe("경로 찾기", () => {
     ]);
   });
 
-  it("최소 경로에서 다음 상호작용 대상의 위치를 찾는다", () => {
-    expect(findNextInteraction(createGameStateFromMap(map))).toEqual({ x: 3, y: 1 });
+  it("최소 경로에서 웜홀과 다음 오브젝트를 순서대로 찾는다", () => {
+    const initial = createGameStateFromMap(map);
+    expect(findNextHint(initial)).toEqual({
+      type: "field",
+      field: "wormhole",
+      position: { x: 2, y: 2 },
+    });
+
+    const decision = decide(initial, { type: "player/move", direction: "left" });
+    expect(findNextHint(evolveAll(initial, decision.events))).toEqual({
+      type: "entity",
+      entityId: "normal-1",
+      position: { x: 3, y: 1 },
+    });
+  });
+
+  it("활성화할 플레이트와 최종 출구를 순서대로 찾는다", () => {
+    let state = createGameStateFromMap(map);
+    for (const direction of ["left", "down", "right"] as const) {
+      const decision = decide(state, { type: "player/move", direction });
+      state = evolveAll(state, decision.events);
+    }
+    expect(findNextHint(state)).toEqual({
+      type: "field",
+      field: "plate",
+      position: { x: 4, y: 1 },
+    });
+
+    const decision = decide(state, { type: "player/move", direction: "right" });
+    state = evolveAll(state, decision.events);
+    expect(findNextHint(state)).toEqual({
+      type: "field",
+      field: "exit",
+      position: { x: 0, y: 1 },
+    });
   });
 });

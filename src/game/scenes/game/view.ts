@@ -1,5 +1,7 @@
 import type { GameState, Position } from "@/src/game/domain/types";
+import type { HintTarget } from "@/src/game/domain/pathfinder";
 import { gateOrientationFor, gateVisualFor } from "@/src/game/features/fields/gate/presentation";
+import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import {
   assetForDirection,
   assetUrls,
@@ -7,6 +9,7 @@ import {
   textureForEntity,
   textureForField,
 } from "@/src/game/features/presentation";
+import type { AssetSlot } from "@/src/game/features/presentationTypes";
 import { backgroundUrl, clearAssets, stageSelectAssets } from "@/src/game/assets";
 import { formatDuration } from "@/src/game/challenge";
 import { createBackButton } from "@/src/game/components/BackButton";
@@ -14,6 +17,9 @@ import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars"
 import styles from "@/src/game/scenes/game/scene.module.css";
 
 const key = ({ x, y }: Position) => `${x},${y}`;
+const goalFrames = ["goalInactive", "goalActive"] as const;
+const normalFrames = ["normalInactive", "normalActive"] as const;
+const gateFrames = ["gateWarn", "gateSafe"] as const;
 const goalSparks = [
   [8, 18, 0, 11],
   [45, 3, 180, 8],
@@ -23,6 +29,42 @@ const goalSparks = [
   [31, 97, 900, 8],
   [3, 66, 1_080, 10],
 ] as const;
+
+function selectStateAsset(container: HTMLElement, source: string): void {
+  const url = assetUrls[source as AssetSlot] ?? source;
+  container.querySelectorAll<HTMLImageElement>(`.${styles.stateAsset}`).forEach((image) => {
+    const active = image.dataset.source === url;
+    image.classList.toggle(styles.stateAssetActive, active);
+    image.setAttribute("aria-hidden", String(!active));
+  });
+}
+
+function createStateAsset(
+  frames: readonly AssetSlot[],
+  source: AssetSlot,
+  className: string,
+  label = "",
+  imageClassName = styles.stateAssetFill,
+): HTMLElement {
+  const container = document.createElement("span");
+  container.className = className;
+  if (label) {
+    container.setAttribute("role", "img");
+    container.setAttribute("aria-label", label);
+  } else {
+    container.setAttribute("aria-hidden", "true");
+  }
+  frames.forEach((frame) => {
+    const image = document.createElement("img");
+    image.className = `${styles.stateAsset} ${imageClassName}`;
+    image.dataset.source = assetUrls[frame];
+    image.src = assetUrls[frame];
+    image.alt = "";
+    container.append(image);
+  });
+  selectStateAsset(container, source);
+  return container;
+}
 
 function createGoalEffect(): HTMLElement {
   const effect = document.createElement("span");
@@ -56,7 +98,7 @@ export interface GameView {
   playWormhole(entityId: string, entry: Position, destination: Position): Promise<void>;
   cancelAnimations(): void;
   setActionAvailability(undoEnabled: boolean, navigationEnabled: boolean): void;
-  setHintPosition(position?: Position): void;
+  setHintTarget(target?: HintTarget): void;
   setElapsedMs(durationMs: number): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
@@ -130,9 +172,9 @@ export function createGameView(
   board.className = styles.board;
   root.append(board);
   const cells = new Map<string, HTMLElement>();
-  const entityNodes = new Map<string, HTMLImageElement>();
+  const entityNodes = new Map<string, HTMLElement>();
   const entityLayers = new Map<string, HTMLElement>();
-  const overlays = new Map<string, HTMLImageElement>();
+  const overlays = new Map<string, HTMLElement>();
   const animations = new Set<Animation>();
   const hintRing = document.createElement("span");
   hintRing.className = styles.hintRing;
@@ -179,9 +221,8 @@ export function createGameView(
       overlays.delete(positionKey);
       return;
     }
-    const overlay = old ?? document.createElement("img");
     const overlayKind = game.tiles[position.y]![position.x];
-    overlay.className =
+    const className =
       overlayKind === "plate"
         ? `${styles.overlay} ${styles.plate}`
         : overlayKind === "wormhole"
@@ -189,8 +230,21 @@ export function createGameView(
           : overlayKind === "exit"
             ? `${styles.overlay} ${styles.goal}`
             : styles.overlay;
-    overlay.alt = overlayKind === "exit" ? "목표" : "";
-    overlay.src = assetUrls[overlayTexture];
+    const overlay =
+      old ??
+      (overlayKind === "plate"
+        ? createStateAsset(platePressFrames, overlayTexture, className)
+        : overlayKind === "exit"
+          ? createStateAsset(goalFrames, overlayTexture, className, "목표")
+          : document.createElement("img"));
+    overlay.className = className;
+    if (overlayKind === "plate" || overlayKind === "exit") {
+      selectStateAsset(overlay, overlayTexture);
+    } else {
+      const image = overlay as HTMLImageElement;
+      image.alt = "";
+      image.src = assetUrls[overlayTexture];
+    }
     if (!old) {
       cell.append(overlay);
       overlays.set(positionKey, overlay);
@@ -243,15 +297,26 @@ export function createGameView(
             : entity.kind === "player"
               ? `${styles.entityLayer} ${styles.playerLayer}`
               : styles.entityLayer;
-        image = document.createElement("img");
-        image.className =
-          entity.kind === "normal" ? `${styles.entity} ${styles.normal}` : styles.entity;
-        image.alt = entity.kind === "player" ? "플레이어" : entity.kind;
+        image =
+          entity.kind === "normal"
+            ? createStateAsset(
+                normalFrames,
+                textureForEntity(entity, game),
+                `${styles.entity} ${styles.normal}`,
+                entity.kind,
+              )
+            : document.createElement("img");
+        if (image instanceof HTMLImageElement) {
+          image.className = styles.entity;
+          image.alt = entity.kind === "player" ? "플레이어" : entity.kind;
+        }
         layer.append(image);
         entityNodes.set(entity.id, image);
         entityLayers.set(entity.id, layer);
       }
-      image.src = assetUrls[textureForEntity(entity, game)];
+      const texture = textureForEntity(entity, game);
+      if (entity.kind === "normal") selectStateAsset(image, texture);
+      else (image as HTMLImageElement).src = assetUrls[texture];
       syncEntityControls(layer!, entity);
       cells.get(key(entity.position))!.append(layer!);
     });
@@ -304,58 +369,29 @@ export function createGameView(
       const disappear = track(
         layer.animate(
           [
-            { clipPath: "inset(0 0 0 0)", opacity: 1, transform: "translateY(0) scale(1)" },
-            {
-              clipPath: "inset(0 0 0 0)",
-              opacity: 1,
-              transform: "translateY(0) scale(1)",
-              offset: 0.18,
-            },
-            {
-              clipPath: "inset(0 0 100% 0)",
-              opacity: 0.15,
-              transform: "translateY(18%) scale(0.88)",
-            },
+            { clipPath: "inset(0 0 0 0)", opacity: 1 },
+            { clipPath: "inset(0 0 0 0)", opacity: 1, offset: 0.18 },
+            { clipPath: "inset(0 0 100% 0)", opacity: 0.15 },
           ],
           { duration: 400, easing: "cubic-bezier(.55, 0, 1, .45)", fill: "both" },
         ),
       );
-      const entryPulse = overlays
-        .get(key(entry))
-        ?.animate(
-          [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
-          { duration: 400, easing: "ease-in-out" },
-        );
-      if (entryPulse) track(entryPulse);
-      await Promise.all([finish(disappear), ...(entryPulse ? [finish(entryPulse)] : [])]);
+      await finish(disappear);
       if (generation !== animationGeneration) return;
 
       destinationCell.append(layer);
       const appear = track(
         layer.animate(
           [
-            {
-              clipPath: "inset(100% 0 0 0)",
-              opacity: 0.15,
-              transform: "translateY(18%) scale(0.88)",
-            },
-            { clipPath: "inset(0 0 0 0)", opacity: 1, transform: "translateY(0) scale(1)" },
+            { clipPath: "inset(100% 0 0 0)", opacity: 0.15 },
+            { clipPath: "inset(0 0 0 0)", opacity: 1 },
           ],
           { duration: 400, easing: "cubic-bezier(0, .55, .45, 1)", fill: "both" },
         ),
       );
-      const exitPulse = overlays
-        .get(key(destination))
-        ?.animate(
-          [{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }],
-          { duration: 400, easing: "ease-in-out" },
-        );
-      if (exitPulse) track(exitPulse);
       stop(disappear);
-      if (entryPulse) stop(entryPulse);
-      await Promise.all([finish(appear), ...(exitPulse ? [finish(exitPulse)] : [])]);
+      await finish(appear);
       stop(appear);
-      if (exitPulse) stop(exitPulse);
     },
     cancelAnimations,
     setActionAvailability: (undoEnabled, navigationEnabled) => {
@@ -364,21 +400,34 @@ export function createGameView(
       reset.disabled = !navigationEnabled;
       hint.disabled = !navigationEnabled;
     },
-    setHintPosition: (position) => {
+    setHintTarget: (target) => {
       hintRing.remove();
-      const cell = position && cells.get(key(position));
-      [...entityLayers.values()].find((layer) => layer.parentElement === cell)?.append(hintRing);
+      hintRing.className = styles.hintRing;
+      if (!target) return;
+      if (target.type === "entity") {
+        entityLayers.get(target.entityId)?.append(hintRing);
+        return;
+      }
+      hintRing.classList.add(
+        target.field === "plate"
+          ? styles.plateHintRing
+          : target.field === "wormhole"
+            ? styles.wormholeHintRing
+            : styles.exitHintRing,
+      );
+      cells.get(key(target.position))?.append(hintRing);
     },
     setElapsedMs: (durationMs) => {
       timer.value = formatDuration(durationMs);
     },
     setPlayerTexture: (source) => {
       const player = entityNodes.get("player");
-      if (player) player.src = assetUrls[source as keyof typeof assetUrls] ?? source;
+      if (player instanceof HTMLImageElement)
+        player.src = assetUrls[source as keyof typeof assetUrls] ?? source;
     },
     setPlateFrame: (position, source) => {
       const overlay = overlays.get(key(position));
-      if (overlay) overlay.src = assetUrls[source as keyof typeof assetUrls] ?? source;
+      if (overlay) selectStateAsset(overlay, source);
     },
     showError: (onRetry) => {
       board.replaceChildren();
@@ -398,17 +447,18 @@ export function createGameView(
 function renderGate(cell: HTMLElement, game: GameState, position: Position): void {
   const visual = gateVisualFor(game);
   const orientation = gateOrientationFor(game, position);
-  const signature = `${visual}:${orientation}`;
-  const current = cell.querySelector<HTMLElement>(`.${styles.gate}`);
-  if (current?.dataset.signature === signature) return;
-  current?.remove();
-  const gate = document.createElement("div");
-  gate.className = styles.gate;
-  gate.dataset.signature = signature;
-  const image = document.createElement("img");
-  image.className = `${styles.gateAsset} ${orientation === "vertical" ? styles.vertical : ""}`;
-  image.src = assetUrls[visual];
-  image.alt = "";
-  gate.append(image);
-  cell.append(gate);
+  let gate = cell.querySelector<HTMLElement>(`.${styles.gate}`);
+  if (!gate || gate.dataset.orientation !== orientation) {
+    gate?.remove();
+    gate = createStateAsset(
+      gateFrames,
+      visual,
+      styles.gate,
+      "",
+      `${styles.gateAsset} ${orientation === "vertical" ? styles.vertical : ""}`,
+    );
+    gate.dataset.orientation = orientation;
+    cell.append(gate);
+  }
+  selectStateAsset(gate, visual);
 }

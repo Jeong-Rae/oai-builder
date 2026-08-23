@@ -26,22 +26,28 @@ export interface BalancedPathResult extends PathResult {
   movementCount: number;
 }
 
+export type HintTarget =
+  | { type: "entity"; entityId: string; position: Position }
+  | { type: "field"; field: "wormhole" | "plate" | "exit"; position: Position };
+
 function interactionTarget(
   state: GameState,
   direction: Direction,
   events: GameEvent[],
-): Position | undefined {
+): HintTarget | undefined {
   const owner = Object.values(state.entities).find((entity) => entity.controls.includes(direction));
   if (!owner) return;
 
   for (const event of events) {
     if (event.type === "control/transferred") {
       const id = event.fromEntityId === owner.id ? event.toEntityId : event.fromEntityId;
-      return state.entities[id]?.position;
+      const entity = state.entities[id];
+      if (entity) return { type: "entity", entityId: id, position: entity.position };
     }
     if (event.type === "controls/swapped") {
       const id = event.firstEntityId === owner.id ? event.secondEntityId : event.firstEntityId;
-      return state.entities[id]?.position;
+      const entity = state.entities[id];
+      if (entity) return { type: "entity", entityId: id, position: entity.position };
     }
   }
 }
@@ -113,16 +119,27 @@ export function findPath(initial: GameState): PathResult | undefined {
   }
 }
 
-/** Returns the object position for the first interaction on the shortest solution path. */
-export function findNextInteraction(initial: GameState): Position | undefined {
+/** Returns the next object or field that matters on the shortest solution path. */
+export function findNextHint(initial: GameState): HintTarget | undefined {
   const path = findPath(initial);
   if (!path) return;
 
   let state = initial;
   for (const { direction } of path.steps) {
     const decision = decide(state, { type: "player/move", direction });
+    const move = decision.events.find((event) => event.type === "entity/moved");
+    if (move?.type === "entity/moved" && move.wormhole)
+      return { type: "field", field: "wormhole", position: move.wormhole };
+    const plate = decision.events.find((event) => event.type === "plate/activated");
+    if (plate?.type === "plate/activated")
+      return { type: "field", field: "plate", position: plate.position };
     const target = interactionTarget(state, direction, decision.events);
     if (target) return target;
+    if (
+      decision.events.some((event) => event.type === "game/completed") &&
+      move?.type === "entity/moved"
+    )
+      return { type: "field", field: "exit", position: move.to };
     state = evolveAll(state, decision.events);
   }
 }
