@@ -218,16 +218,16 @@ function challengeConstellation(): SVGSVGElement {
   svg.setAttribute("aria-label", "반짝이는 큰 노란별 모양의 오늘의 챌린지");
 
   const star = document.createElementNS(svgNamespace, "image");
-  setImageBox(star, starNodeAssets.gold, 154, 98, 170, 170);
+  setImageBox(star, starNodeAssets.gold, 69, 13, 340, 340);
   const glow = star.cloneNode() as SVGImageElement;
   glow.setAttribute("class", `${styles.glow} ${styles.goldGlow} ${styles.challengeGlow}`);
   svg.append(glow, star);
 
   [
-    [challengeDecorAssets.stellSmall, 308, 94, 38, 38, "0s"],
-    [challengeDecorAssets.plus, 110, 148, 34, 37, "0.7s"],
-    [challengeDecorAssets.stellSmall, 318, 238, 24, 23, "1.4s"],
-    [challengeDecorAssets.stellSmall, 134, 246, 24, 24, "2.1s"],
+    [challengeDecorAssets.stellSmall, 18, 88, 38, 38, "0s"],
+    [challengeDecorAssets.plus, 424, 142, 34, 37, "0.7s"],
+    [challengeDecorAssets.stellSmall, 34, 254, 24, 23, "1.4s"],
+    [challengeDecorAssets.stellSmall, 420, 285, 24, 24, "2.1s"],
   ].forEach(([source, x, y, width, height, delay]) => {
     const sparkle = document.createElementNS(svgNamespace, "image");
     sparkle.setAttribute("class", styles.challengeSparkle);
@@ -246,13 +246,8 @@ function challengeConstellation(): SVGSVGElement {
   title.setAttribute("class", styles.challengeTitle);
   title.setAttribute("x", "239");
   title.setAttribute("y", "430");
-  title.textContent = "DAILY CHALLENGE";
-  const subtitle = document.createElementNS(svgNamespace, "text");
-  subtitle.setAttribute("class", styles.challengeSubtitle);
-  subtitle.setAttribute("x", "239");
-  subtitle.setAttribute("y", "468");
-  subtitle.textContent = "오늘의 기록에 도전하세요";
-  svg.append(title, subtitle);
+  title.textContent = "CHALLENGE";
+  svg.append(title);
   return svg;
 }
 function constellation(

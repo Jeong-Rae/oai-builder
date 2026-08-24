@@ -108,21 +108,16 @@
     transform: scale(1.05);
   }
 }
-.challengeTitle,
-.challengeSubtitle {
+.challengeTitle {
   fill: #fff;
   font-family: "온글잎 박다현체", monospace;
   text-anchor: middle;
 }
 .challengeTitle {
   fill: #ffd866;
-  font-size: 32px;
+  font-size: 46px;
   font-weight: 700;
   letter-spacing: 4px;
-}
-.challengeSubtitle {
-  fill: #d7f9ff;
-  font-size: 22px;
 }
 .glow {
   filter: blur(7px);
