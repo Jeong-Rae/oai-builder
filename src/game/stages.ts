@@ -76,6 +76,10 @@ const stageMapUrls: Partial<Record<ZodiacSign, Readonly<Record<number, string>>>
     3: new URL("@/maps/chapter-02.stage-04.map", import.meta.url).href,
     4: new URL("@/maps/chapter-02.stage-05.map", import.meta.url).href,
     6: new URL("@/maps/chapter-02.stage-07.map", import.meta.url).href,
+    9: new URL("@/maps/chapter-02.stage-10.map", import.meta.url).href,
+  },
+  GEMINI: {
+    2: new URL("@/maps/chapter-03.stage-03.map", import.meta.url).href,
   },
 };
 

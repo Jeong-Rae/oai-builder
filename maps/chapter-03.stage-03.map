@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "columns": 9,
+  "rows": 9,
+  "tiles": [
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "plate",
+      "floor",
+      "floor"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "floor",
+      "floor",
+      "floor"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "floor",
+      "floor",
+      "plate"
+    ],
+    [
+      "blank",
+      "blank",
+      "floor",
+      "plate",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "blank"
+    ],
+    [
+      "blank",
+      "wormhole",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "wormhole",
+      "blank"
+    ],
+    [
+      "exit",
+      "gate",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank",
+      "blank"
+    ]
+  ],
+  "objects": [
+    {
+      "id": "player",
+      "kind": "player",
+      "position": {
+        "x": 2,
+        "y": 6
+      }
+    },
+    {
+      "id": "normal-1",
+      "kind": "normal",
+      "position": {
+        "x": 4,
+        "y": 6
+      }
+    },
+    {
+      "id": "swapper-1",
+      "kind": "swapper",
+      "position": {
+        "x": 4,
+        "y": 3
+      }
+    },
+    {
+      "id": "normal-2",
+      "kind": "normal",
+      "position": {
+        "x": 6,
+        "y": 2
+      }
+    },
+    {
+      "id": "normal-3",
+      "kind": "normal",
+      "position": {
+        "x": 7,
+        "y": 2
+      }
+    }
+  ]
+}

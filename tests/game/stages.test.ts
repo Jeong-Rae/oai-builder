@@ -48,7 +48,7 @@ describe("스테이지 선택", () => {
     expect(chapters[1]!.stages).toHaveLength(12);
     expect(
       chapters.flatMap((chapter) => chapter.stages).filter((stage) => stage.mapUrl),
-    ).toHaveLength(9);
+    ).toHaveLength(11);
   });
 
   it("챕터 선택 화면에는 앞의 네 별자리만 노출한다", () => {
@@ -75,10 +75,20 @@ describe("스테이지 선택", () => {
       "chapter-02.stage-05.map",
       undefined,
       "chapter-02.stage-07.map",
-      ...Array(5).fill(undefined),
+      undefined,
+      undefined,
+      "chapter-02.stage-10.map",
+      undefined,
+      undefined,
+    ]);
+    expect(chapters[2]!.stages.map((stage) => stage.mapUrl?.split("/").at(-1))).toEqual([
+      undefined,
+      undefined,
+      "chapter-03.stage-03.map",
+      ...Array(12).fill(undefined),
     ]);
     expect(
-      chapters.slice(2).every((chapter) => chapter.stages.every((stage) => !stage.mapUrl)),
+      chapters.slice(3).every((chapter) => chapter.stages.every((stage) => !stage.mapUrl)),
     ).toBe(true);
   });
 
