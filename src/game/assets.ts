@@ -13,8 +13,6 @@ import starNodeGoldUrl from "@/assets/star/star.node.color-gold.webp";
 import starNodeGrayUrl from "@/assets/star/star.node.color-gray.webp";
 import starNodeWhiteUrl from "@/assets/star/star.node.color-white.webp";
 import starNodeBlackUrl from "@/assets/star/star.node.color-black.webp";
-import backFrameUrl from "@/assets/button/button.back.webp";
-import arrowBackUrl from "@/assets/arrow/arrow.back.webp";
 import bubbleNextUrl from "@/assets/button/button.bubble.webp";
 import iconBackUrl from "@/assets/icon/icon.back.size-96x81.webp";
 import iconHintUrl from "@/assets/icon/icon.hint.size-76x96.webp";
@@ -81,8 +79,6 @@ export const chapterZodiacInactiveAssets: Record<ZodiacSign, string> = {
 };
 
 export const stageSelectAssets = {
-  backFrame: backFrameUrl,
-  arrowBack: arrowBackUrl,
   bubbleNext: bubbleNextUrl,
 } as const;
 

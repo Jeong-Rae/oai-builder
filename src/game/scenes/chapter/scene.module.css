@@ -159,28 +159,3 @@
 .right {
   left: 65.417%;
 }
-.back {
-  aspect-ratio: 1;
-  background-color: transparent;
-  border: 0;
-  cursor: pointer;
-  display: grid;
-  left: 2.5%;
-  padding: 0;
-  place-items: center;
-  position: absolute;
-  top: 4%;
-  width: 4.8cqw;
-  z-index: 3;
-}
-.back img {
-  width: 25%;
-}
-.back:hover img,
-.back:focus-visible img {
-  filter: brightness(1.3);
-}
-.back:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 4px;
-}

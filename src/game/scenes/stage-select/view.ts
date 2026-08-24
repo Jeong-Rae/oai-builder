@@ -164,7 +164,7 @@ export function createStageSelectView(
     createHeader(chapter, chapterIndex),
     constellation,
     nodes,
-    createBackButton("챕터 선택으로 돌아가기", onBack, styles.back),
+    createBackButton("챕터 선택으로 돌아가기", onBack),
     decor,
   );
   return root;

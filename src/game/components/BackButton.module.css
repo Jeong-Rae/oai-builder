@@ -1,0 +1,25 @@
+.root {
+  aspect-ratio: 1;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  left: 2.5%;
+  padding: 0;
+  place-items: center;
+  position: absolute;
+  top: 4%;
+  transition: filter 150ms ease;
+  width: 4.8cqw;
+  z-index: 4;
+}
+.root img {
+  height: 55%;
+  object-fit: contain;
+  width: 55%;
+}
+.root:hover,
+.root:focus-visible {
+  filter: drop-shadow(0 0 0.35cqw rgb(215 249 255 / 70%));
+  outline: none;
+}

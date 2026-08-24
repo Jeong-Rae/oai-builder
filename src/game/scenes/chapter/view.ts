@@ -60,7 +60,7 @@ export function createChapterView(
     carousel,
     left,
     right,
-    createBackButton("메인 화면으로 돌아가기", onBack, styles.back),
+    createBackButton("메인 화면으로 돌아가기", onBack),
     createMoonDecor(),
   );
   let slots = [...cards];

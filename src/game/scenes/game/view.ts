@@ -17,6 +17,7 @@ import {
   tutorialAssets,
 } from "@/src/game/assets";
 import { formatDuration } from "@/src/game/challenge";
+import { createBackButton } from "@/src/game/components/BackButton";
 import type { HintState } from "@/src/game/scenes/game/hintMachine";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import type { TutorialCue } from "@/src/game/tutorial/rules";
@@ -199,9 +200,8 @@ export function createGameView(
   const navigation = document.createElement("nav");
   navigation.className = styles.navigation;
   navigation.setAttribute("aria-label", "게임 조작");
-  const back = createNavigationButton(
+  const back = createBackButton(
     mode === "tutorial" ? "시작 화면으로 돌아가기" : "스테이지 선택으로 돌아가기",
-    gameActionAssets.back,
     onBack,
   );
   const undo = createNavigationButton("마지막 이동 되돌리기", gameActionAssets.rollback, onUndo);
@@ -228,8 +228,8 @@ export function createGameView(
   hintStatus.className = styles.visuallyHidden;
   hintStatus.setAttribute("role", "status");
   hintStatus.setAttribute("aria-live", "polite");
-  navigation.append(back, undo, reset, hint, hintStatus);
-  root.append(navigation);
+  navigation.append(undo, reset, hint, hintStatus);
+  root.append(back, navigation);
   const timer = document.createElement("output");
   timer.className = styles.timer;
   timer.setAttribute("aria-label", "챌린지 경과 시간");
