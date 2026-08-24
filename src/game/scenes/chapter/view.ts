@@ -209,16 +209,17 @@ function challengeConstellation(): SVGSVGElement {
   const star = document.createElementNS(svgNamespace, "image");
   setImageBox(star, starNodeAssets.gold, 154, 98, 170, 170);
   const glow = star.cloneNode() as SVGImageElement;
-  glow.setAttribute("class", `${styles.glow} ${styles.goldGlow}`);
+  glow.setAttribute("class", `${styles.glow} ${styles.goldGlow} ${styles.challengeGlow}`);
   svg.append(glow, star);
 
   [
-    [decorAssets.starLarge, 300, 84, 54, 58],
-    [decorAssets.starMedium, 110, 148, 34, 37],
-    [decorAssets.starSmall, 318, 238, 24, 23],
-  ].forEach(([source, x, y, width, height]) => {
+    [decorAssets.starLarge, 300, 84, 54, 58, "0s"],
+    [decorAssets.starMedium, 110, 148, 34, 37, "0.9s"],
+    [decorAssets.starSmall, 318, 238, 24, 23, "1.8s"],
+  ].forEach(([source, x, y, width, height, delay]) => {
     const sparkle = document.createElementNS(svgNamespace, "image");
     sparkle.setAttribute("class", styles.challengeSparkle);
+    sparkle.style.setProperty("--sparkle-delay", delay as string);
     setImageBox(
       sparkle,
       source as string,

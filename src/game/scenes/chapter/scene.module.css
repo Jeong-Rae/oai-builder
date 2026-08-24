@@ -77,7 +77,36 @@
   stroke: #aeb9c2;
 }
 .challengeSparkle {
+  animation: challenge-sparkle 2.8s ease-in-out var(--sparkle-delay) infinite both;
   filter: drop-shadow(0 0 4px rgb(255 216 102 / 55%));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.challengeGlow {
+  animation: challenge-glow-breathe 2.4s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes challenge-glow-breathe {
+  from {
+    opacity: 0.3;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 0.62;
+    transform: scale(1.08);
+  }
+}
+@keyframes challenge-sparkle {
+  0%,
+  100% {
+    opacity: 0.48;
+    transform: scale(0.55);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 .challengeTitle,
 .challengeSubtitle {
