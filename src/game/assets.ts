@@ -4,6 +4,7 @@ import startTitleUrl from "@/assets/title/title.point.webp";
 import startLunarUrl from "@/assets/moon/moon.eclipse.trimmed.webp";
 import startMascot1Url from "@/assets/mascot/mascot.happy.frame-01.webp";
 import startMascot2Url from "@/assets/mascot/mascot.happy.frame-02.webp";
+import startMascot3Url from "@/assets/mascot/mascot.happy.frame-03.webp";
 import clearSparkUrl from "@/assets/star/star.plus.small.color-gold.webp";
 import titleStarCrossUrl from "@/assets/title/title.star-cross.color-yellow.svg";
 import chapterArrowLeftUrl from "@/assets/arrow/arrow.carousel.direction-left.webp";
@@ -29,7 +30,7 @@ export { backgroundUrl, plateButtonUrl };
 export const startAssets = {
   title: startTitleUrl,
   lunar: startLunarUrl,
-  mascots: [startMascot1Url, startMascot2Url],
+  mascots: [startMascot1Url, startMascot2Url, startMascot3Url],
 } as const;
 
 export const starNodeAssets = {

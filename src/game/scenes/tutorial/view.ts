@@ -25,15 +25,13 @@ export function createTutorialView(): TutorialView {
   story.setAttribute("aria-hidden", "true");
 
   const mascotClasses = [styles.mascotTop, styles.mascotLeft, styles.mascotRight];
-  const mascots = [startAssets.mascots[0], startAssets.mascots[1], startAssets.mascots[0]].map(
-    (source, index) => {
-      const mascot = document.createElement("img");
-      mascot.className = `${styles.mascot} ${mascotClasses[index]}`;
-      mascot.src = source;
-      mascot.alt = "";
-      return mascot;
-    },
-  );
+  const mascots = startAssets.mascots.map((source, index) => {
+    const mascot = document.createElement("img");
+    mascot.className = `${styles.mascot} ${mascotClasses[index]}`;
+    mascot.src = source;
+    mascot.alt = "";
+    return mascot;
+  });
 
   const finalLine = document.createElement("p");
   finalLine.className = styles.finalLine;
