@@ -159,3 +159,6 @@
 .right {
   left: 65.417%;
 }
+.right img {
+  transform: scaleX(-1);
+}

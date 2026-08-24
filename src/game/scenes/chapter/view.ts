@@ -53,7 +53,7 @@ export function createChapterView(
   carousel.append(...cards);
   attachDrag(carousel, () => activeIndex, onMove);
   const left = arrow("이전 챕터", chapterAssets.arrowLeft, () => onMove(-1), styles.left);
-  const right = arrow("다음 챕터", chapterAssets.arrowRight, () => onMove(1), styles.right);
+  const right = arrow("다음 챕터", chapterAssets.arrowLeft, () => onMove(1), styles.right);
   root.append(
     createBackgroundStars(),
     header,

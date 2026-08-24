@@ -8,7 +8,6 @@ import startMascot3Url from "@/assets/mascot/mascot.happy.frame-03.webp";
 import clearSparkUrl from "@/assets/star/star.plus.small.color-gold.webp";
 import titleStarCrossUrl from "@/assets/title/title.star-cross.color-yellow.svg";
 import chapterArrowLeftUrl from "@/assets/arrow/arrow.carousel.direction-left.webp";
-import chapterArrowRightUrl from "@/assets/arrow/arrow.carousel.direction-right.webp";
 import starNodeGoldUrl from "@/assets/star/star.node.color-gold.webp";
 import starNodeGrayUrl from "@/assets/star/star.node.color-gray.webp";
 import starNodeWhiteUrl from "@/assets/star/star.node.color-white.webp";
@@ -53,7 +52,6 @@ export const titleAssets = { starCross: titleStarCrossUrl } as const;
 
 export const chapterAssets = {
   arrowLeft: chapterArrowLeftUrl,
-  arrowRight: chapterArrowRightUrl,
 } as const;
 
 export const challengeDecorAssets = {
