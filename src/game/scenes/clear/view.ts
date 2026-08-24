@@ -1,4 +1,4 @@
-import { clearAssets } from "@/src/game/assets";
+import { clearAssets, starNodeAssets } from "@/src/game/assets";
 import { createPlateButton } from "@/src/game/components/PlateButton";
 import styles from "@/src/game/scenes/clear/scene.module.css";
 
@@ -19,15 +19,26 @@ function createStarCluster(): HTMLElement {
   const glow = document.createElement("span");
   glow.className = styles.glow;
   glow.setAttribute("aria-hidden", "true");
-  const image = document.createElement("img");
-  image.className = styles.star;
-  image.src = clearAssets.star;
-  image.alt = "";
+  const inactiveStar = document.createElement("img");
+  inactiveStar.className = `${styles.star} ${styles.inactiveStar}`;
+  inactiveStar.src = starNodeAssets.white;
+  inactiveStar.alt = "";
+  const clearStar = document.createElement("img");
+  clearStar.className = `${styles.star} ${styles.clearStar}`;
+  clearStar.src = clearAssets.star;
+  clearStar.alt = "";
+  const sideStars = [styles.sideStarLeft, styles.sideStarRight].map((side) => {
+    const star = document.createElement("img");
+    star.className = `${styles.star} ${styles.sideStar} ${side}`;
+    star.src = clearAssets.star;
+    star.alt = "";
+    return star;
+  });
   for (let index = 0; index < 4; index += 1) {
     const angle = ((index * 90 + 45) * Math.PI) / 180;
     cluster.append(createSpark(angle, 38 + (index % 2) * 7, index * 110, 4 + (index % 3)));
   }
-  cluster.append(glow, image);
+  cluster.append(glow, inactiveStar, ...sideStars, clearStar);
   return cluster;
 }
 
@@ -60,7 +71,7 @@ export function createClearView(
     ["HOME", onHome],
   ].forEach(([label, action], index) => {
     const button = createPlateButton(label as string, action as () => void, styles.button);
-    button.style.setProperty("--button-delay", `${500 + index * 70}ms`);
+    button.style.setProperty("--button-delay", `${2_250 + index * 70}ms`);
     actions.append(button);
   });
   root.append(createHeader(), createStarCluster(), actions);
