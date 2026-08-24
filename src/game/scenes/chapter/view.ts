@@ -2,7 +2,7 @@ import {
   backgroundUrl,
   chapterAssets,
   chapterZodiacInactiveAssets,
-  decorAssets,
+  challengeDecorAssets,
   starNodeAssets,
 } from "@/src/game/assets";
 import { computeLayout } from "@/src/game/constellation/layout";
@@ -214,9 +214,10 @@ function challengeConstellation(): SVGSVGElement {
   svg.append(glow, star);
 
   [
-    [decorAssets.starLarge, 300, 84, 54, 58, "0s"],
-    [decorAssets.starMedium, 110, 148, 34, 37, "0.9s"],
-    [decorAssets.starSmall, 318, 238, 24, 23, "1.8s"],
+    [challengeDecorAssets.stellSmall, 308, 94, 38, 38, "0s"],
+    [challengeDecorAssets.plus, 110, 148, 34, 37, "0.7s"],
+    [challengeDecorAssets.stellSmall, 318, 238, 24, 23, "1.4s"],
+    [challengeDecorAssets.stellSmall, 134, 246, 24, 24, "2.1s"],
   ].forEach(([source, x, y, width, height, delay]) => {
     const sparkle = document.createElementNS(svgNamespace, "image");
     sparkle.setAttribute("class", styles.challengeSparkle);

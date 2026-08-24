@@ -18,6 +18,7 @@ import bubbleNextUrl from "@/assets/button/button.bubble.webp";
 import decorStarSmallUrl from "@/assets/star/star.cross.small.webp";
 import decorStarMediumUrl from "@/assets/star/star.cross.medium.webp";
 import decorStarLargeUrl from "@/assets/star/star.cross.large.webp";
+import challengeStarStellSmallUrl from "@/assets/star/star.stell.small.color-gold.webp";
 import decorMoonUrl from "@/assets/moon/moon.eclipse.trimmed.webp";
 import decorMascotUrl from "@/assets/mascot/mascot.angle-135.webp";
 import { assetUrls } from "@/src/game/features/presentation";
@@ -45,6 +46,11 @@ export const titleAssets = { starCross: titleStarCrossUrl } as const;
 export const chapterAssets = {
   arrowLeft: chapterArrowLeftUrl,
   arrowRight: chapterArrowRightUrl,
+} as const;
+
+export const challengeDecorAssets = {
+  plus: clearSparkUrl,
+  stellSmall: challengeStarStellSmallUrl,
 } as const;
 
 export const chapterZodiacInactiveAssets: Record<ZodiacSign, string> = {
@@ -95,6 +101,7 @@ export function gameAssetUrlGroups(): string[][] {
     ...Object.values(titleAssets),
     ...Object.values(starNodeAssets),
     ...Object.values(chapterAssets),
+    ...Object.values(challengeDecorAssets),
     decorAssets.moon,
     decorAssets.mascot,
     ...visibleChapters.flatMap(({ sign, zodiacUrl }) => [
