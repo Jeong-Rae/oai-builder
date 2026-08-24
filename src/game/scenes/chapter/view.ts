@@ -5,6 +5,7 @@ import {
   challengeDecorAssets,
   starNodeAssets,
 } from "@/src/game/assets";
+import { createBackButton } from "@/src/game/components/BackButton";
 import { computeLayout } from "@/src/game/constellation/layout";
 import { renderConstellationSvg } from "@/src/game/constellation/render";
 import { signVisuals, type SignLineVisual } from "@/src/game/data/signVisuals";
@@ -31,6 +32,7 @@ export function chapterMoveFromDrag(distance: number, width: number): -1 | 0 | 1
 export function createChapterView(
   onMove: (offset: -1 | 1) => void,
   onSelect: (index: number) => void,
+  onBack: () => void,
 ): { root: HTMLElement; setActive(index: number): void } {
   const root = document.createElement("main");
   root.className = styles.root;
@@ -52,7 +54,15 @@ export function createChapterView(
   attachDrag(carousel, () => activeIndex, onMove);
   const left = arrow("이전 챕터", chapterAssets.arrowLeft, () => onMove(-1), styles.left);
   const right = arrow("다음 챕터", chapterAssets.arrowRight, () => onMove(1), styles.right);
-  root.append(createBackgroundStars(), header, carousel, left, right, createMoonDecor());
+  root.append(
+    createBackgroundStars(),
+    header,
+    carousel,
+    left,
+    right,
+    createBackButton("메인 화면으로 돌아가기", onBack, styles.back),
+    createMoonDecor(),
+  );
   let slots = [...cards];
   let activeIndex = 0;
   let hasRendered = false;

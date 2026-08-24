@@ -341,6 +341,7 @@ export class GameApp {
         selectionIndex,
         (selectedChapter) => this.showStageSelect(selectedChapter, true),
         this.showChallenge,
+        () => void this.show(this.createIntroScene(true)),
       ),
       wave,
     );

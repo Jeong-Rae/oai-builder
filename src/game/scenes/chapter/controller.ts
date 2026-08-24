@@ -5,6 +5,7 @@ export function createChapterScene(
   initialIndex: number,
   onSelect: (index: number) => void,
   onSelectChallenge: () => void,
+  onBack: () => void,
 ): { view: HTMLElement; dispose(): void } {
   let active = initialIndex;
   let moving = false;
@@ -23,11 +24,15 @@ export function createChapterScene(
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 420,
     );
   };
-  const view = createChapterView(move, (selected) => {
-    if (moving) return;
-    if (selected === 0) onSelectChallenge();
-    else onSelect(selected - 1);
-  });
+  const view = createChapterView(
+    move,
+    (selected) => {
+      if (moving) return;
+      if (selected === 0) onSelectChallenge();
+      else onSelect(selected - 1);
+    },
+    onBack,
+  );
   view.setActive(active);
   const keydown = (event: KeyboardEvent) => {
     if (event.key === "ArrowLeft") move(-1);
