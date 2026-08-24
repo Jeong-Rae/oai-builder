@@ -25,6 +25,7 @@ const positions = [
 ] as const;
 
 const interactiveSelector = "button, a, input, select, textarea, [role='button']";
+const sparkleTargetSelector = "[data-click-stars]";
 const clickStars = [
   {
     source: decorAssets.starLarge,
@@ -61,7 +62,9 @@ const clickStars = [
 export function isInteractiveClickTarget(target: {
   closest(selector: string): Element | null;
 }): boolean {
-  return target.closest(interactiveSelector) !== null;
+  return (
+    target.closest(sparkleTargetSelector) === null && target.closest(interactiveSelector) !== null
+  );
 }
 
 export function pickYellowStarIndexes(random: () => number = Math.random): ReadonlySet<number> {

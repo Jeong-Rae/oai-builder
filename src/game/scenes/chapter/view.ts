@@ -176,6 +176,7 @@ function arrow(
 function createCard(): HTMLButtonElement {
   const card = document.createElement("button");
   card.type = "button";
+  card.dataset.clickStars = "";
   return card;
 }
 function renderCard(

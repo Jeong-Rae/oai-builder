@@ -9,7 +9,22 @@ import {
 describe("빈 영역 클릭 별 효과", () => {
   it("조작 요소의 클릭만 제외한다", () => {
     expect(isInteractiveClickTarget({ closest: () => null })).toBe(false);
-    expect(isInteractiveClickTarget({ closest: () => ({}) as Element })).toBe(true);
+    expect(
+      isInteractiveClickTarget({
+        closest: (selector) => (selector.startsWith("button") ? ({} as Element) : null),
+      }),
+    ).toBe(true);
+  });
+
+  it("별 효과가 지정된 조작 요소는 제외하지 않는다", () => {
+    expect(
+      isInteractiveClickTarget({
+        closest: (selector) =>
+          selector === "[data-click-stars]" || selector.startsWith("button")
+            ? ({} as Element)
+            : null,
+      }),
+    ).toBe(false);
   });
 
   it("노란 별의 위치와 개수를 무작위로 한두 개 선택한다", () => {
