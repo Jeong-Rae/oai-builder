@@ -36,14 +36,9 @@
   width: 4.8cqw;
 }
 .navigationButton img {
-  width: 25%;
-}
-.actionIcon {
-  color: #d7f9ff;
-  font-family: sans-serif;
-  font-size: 2.8cqw;
-  line-height: 1;
-  transform: translateY(-4%);
+  height: 55%;
+  object-fit: contain;
+  width: 55%;
 }
 .navigationButton:hover:not(:disabled),
 .navigationButton:focus-visible:not(:disabled) {
@@ -60,29 +55,26 @@
 .hintUnavailable {
   filter: drop-shadow(0 0 0.3cqw rgb(255 70 82 / 65%));
 }
-.hintUnavailable .actionIcon {
-  color: #ff4652;
-  text-shadow: 0 0 0.45cqw rgb(255 70 82 / 80%);
-}
 .hintBubble {
+  animation: hint-bubble-float 4s ease-in-out infinite;
   aspect-ratio: 414 / 230;
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
-  bottom: calc(100% - 0.25cqw);
+  bottom: 82%;
   color: #15171d;
   display: grid;
   font-family: "온글잎 박다현체", monospace;
-  font-size: 0.82cqw;
+  font-size: 0.7cqw;
   font-weight: 700;
-  left: 50%;
+  left: 45%;
   letter-spacing: 0.04em;
   padding-bottom: 8%;
   place-content: center;
   position: absolute;
   text-align: center;
   transform: translateX(-50%);
-  width: 5.4cqw;
+  width: 3.78cqw;
 }
 .visuallyHidden {
   clip-path: inset(50%);
@@ -367,12 +359,18 @@
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
+@keyframes hint-bubble-float {
+  50% {
+    transform: translate(-50%, -8px);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .goalActive .goal,
   .goalGlow,
   .goalSpark,
   .playerHappy .entity,
-  .hintRing {
+  .hintRing,
+  .hintBubble {
     animation: none;
   }
   .goalGlow {

@@ -9,9 +9,8 @@ import {
   textureForField,
 } from "@/src/game/features/presentation";
 import type { AssetSlot } from "@/src/game/features/presentationTypes";
-import { backgroundUrl, clearAssets, stageSelectAssets } from "@/src/game/assets";
+import { backgroundUrl, clearAssets, gameActionAssets, stageSelectAssets } from "@/src/game/assets";
 import { formatDuration } from "@/src/game/challenge";
-import { createBackButton } from "@/src/game/components/BackButton";
 import type { HintState } from "@/src/game/scenes/game/hintMachine";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/game/scene.module.css";
@@ -92,6 +91,24 @@ function createGoalSpark([x, y, delay, size]: (typeof goalSparks)[number]): HTML
   return spark;
 }
 
+function createNavigationButton(
+  label: string,
+  source: string,
+  onClick: () => void,
+  className = styles.navigationButton,
+): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = className;
+  button.setAttribute("aria-label", label);
+  const image = document.createElement("img");
+  image.src = source;
+  image.alt = "";
+  button.append(image);
+  button.addEventListener("click", onClick);
+  return button;
+}
+
 export interface GameView {
   root: HTMLElement;
   sync(game: GameState): void;
@@ -119,47 +136,27 @@ export function createGameView(
   const navigation = document.createElement("nav");
   navigation.className = styles.navigation;
   navigation.setAttribute("aria-label", "게임 조작");
-  const back = createBackButton("스테이지 선택으로 돌아가기", onBack, styles.navigationButton);
-  const undo = document.createElement("button");
-  undo.type = "button";
-  undo.className = styles.navigationButton;
-  undo.setAttribute("aria-label", "마지막 이동 되돌리기");
-  undo.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
+  const back = createNavigationButton("스테이지 선택으로 돌아가기", gameActionAssets.back, onBack);
+  const undo = createNavigationButton("마지막 이동 되돌리기", gameActionAssets.rollback, onUndo);
   undo.disabled = true;
-  const undoIcon = document.createElement("span");
-  undoIcon.className = styles.actionIcon;
-  undoIcon.setAttribute("aria-hidden", "true");
-  undoIcon.textContent = "↶";
-  undo.append(undoIcon);
-  undo.addEventListener("click", onUndo);
-  const reset = document.createElement("button");
-  reset.type = "button";
-  reset.className = styles.navigationButton;
-  reset.setAttribute("aria-label", "스테이지 처음부터 다시하기");
-  reset.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
+  const reset = createNavigationButton(
+    "스테이지 처음부터 다시하기",
+    gameActionAssets.reset,
+    onReset,
+  );
   reset.disabled = true;
-  const resetIcon = document.createElement("span");
-  resetIcon.className = styles.actionIcon;
-  resetIcon.setAttribute("aria-hidden", "true");
-  resetIcon.textContent = "↻";
-  reset.append(resetIcon);
-  reset.addEventListener("click", onReset);
-  const hint = document.createElement("button");
-  hint.type = "button";
-  hint.className = `${styles.navigationButton} ${styles.hintButton}`;
-  hint.setAttribute("aria-label", "다음 상호작용 힌트 보기");
-  hint.style.backgroundImage = `url(${stageSelectAssets.backFrame})`;
-  const hintIcon = document.createElement("span");
-  hintIcon.className = styles.actionIcon;
-  hintIcon.setAttribute("aria-hidden", "true");
-  hintIcon.textContent = "?";
+  const hint = createNavigationButton(
+    "다음 상호작용 힌트 보기",
+    gameActionAssets.hint,
+    onHint,
+    `${styles.navigationButton} ${styles.hintButton}`,
+  );
   const hintBubble = document.createElement("span");
   hintBubble.className = styles.hintBubble;
   hintBubble.setAttribute("aria-hidden", "true");
-  hintBubble.textContent = "hint(demo)";
+  hintBubble.textContent = "hint";
   hintBubble.style.backgroundImage = `url(${stageSelectAssets.bubbleNext})`;
-  hint.append(hintIcon, hintBubble);
-  hint.addEventListener("click", onHint);
+  hint.append(hintBubble);
   const hintStatus = document.createElement("span");
   hintStatus.className = styles.visuallyHidden;
   hintStatus.setAttribute("role", "status");

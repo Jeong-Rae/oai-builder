@@ -16,6 +16,10 @@ import starNodeBlackUrl from "@/assets/star/star.node.color-black.webp";
 import backFrameUrl from "@/assets/button/button.back.webp";
 import arrowBackUrl from "@/assets/arrow/arrow.back.webp";
 import bubbleNextUrl from "@/assets/button/button.bubble.webp";
+import iconBackUrl from "@/assets/icon/icon.back.size-96x81.webp";
+import iconHintUrl from "@/assets/icon/icon.hint.size-76x96.webp";
+import iconResetUrl from "@/assets/icon/icon.reset.size-92x96.webp";
+import iconRollbackUrl from "@/assets/icon/icon.rollback.size-96x87.webp";
 import decorStarSmallUrl from "@/assets/star/star.cross.small.webp";
 import decorStarMediumUrl from "@/assets/star/star.cross.medium.webp";
 import decorStarLargeUrl from "@/assets/star/star.cross.large.webp";
@@ -77,6 +81,13 @@ export const stageSelectAssets = {
   bubbleNext: bubbleNextUrl,
 } as const;
 
+export const gameActionAssets = {
+  back: iconBackUrl,
+  hint: iconHintUrl,
+  reset: iconResetUrl,
+  rollback: iconRollbackUrl,
+} as const;
+
 export const decorAssets = {
   starSmall: decorStarSmallUrl,
   starMedium: decorStarMediumUrl,
@@ -114,6 +125,7 @@ export function gameAssetUrlGroups(): string[][] {
   const remaining = [
     ...Object.values(chapterZodiacInactiveAssets),
     ...Object.values(stageSelectAssets),
+    ...Object.values(gameActionAssets),
     ...Object.values(assetUrls),
     ...chapters.map((chapter) => chapter.zodiacUrl),
   ].filter((url) => !prioritized.has(url));
