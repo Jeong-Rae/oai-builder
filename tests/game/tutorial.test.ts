@@ -122,9 +122,9 @@ describe("최초 실행 튜토리얼", () => {
   it("단어가 길수록 더 빠르게 입력하고 공백 뒤에는 추가로 기다린다", () => {
     const characters = Array.from("가 나나나나 아주아주아주아주");
 
-    expect(typingDelay(characters, 0)).toBe(150);
-    expect(typingDelay(characters, 1)).toBe(350);
-    expect(typingDelay(characters, 2)).toBe(105);
+    expect(typingDelay(characters, 0)).toBe(100);
+    expect(typingDelay(characters, 1)).toBe(300);
+    expect(typingDelay(characters, 2)).toBe(60);
     expect(typingDelay(characters, 7)).toBe(60);
   });
 

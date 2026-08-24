@@ -22,7 +22,7 @@ export const tutorialText = {
   final: tutorialSentences.final.join(""),
 } as const;
 
-const TYPE_INTERVAL = 150;
+const TYPE_INTERVAL = 100;
 const SPACE_DELAY = 200;
 const WORD_LENGTH_REDUCTION = 15;
 const MIN_TYPE_INTERVAL = 60;
