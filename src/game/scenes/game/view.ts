@@ -1,5 +1,4 @@
 import type { GameState, Position } from "@/src/game/domain/types";
-import type { HintTarget } from "@/src/game/domain/pathfinder";
 import { gateOrientationFor, gateVisualFor } from "@/src/game/features/fields/gate/presentation";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import {
@@ -13,6 +12,7 @@ import type { AssetSlot } from "@/src/game/features/presentationTypes";
 import { backgroundUrl, clearAssets, stageSelectAssets } from "@/src/game/assets";
 import { formatDuration } from "@/src/game/challenge";
 import { createBackButton } from "@/src/game/components/BackButton";
+import type { HintState } from "@/src/game/scenes/game/hintMachine";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/game/scene.module.css";
 
@@ -98,7 +98,7 @@ export interface GameView {
   playWormhole(entityId: string, entry: Position, destination: Position): Promise<void>;
   cancelAnimations(): void;
   setActionAvailability(undoEnabled: boolean, navigationEnabled: boolean): void;
-  setHintTarget(target?: HintTarget): void;
+  renderHint(state: HintState): void;
   setElapsedMs(durationMs: number): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
@@ -160,7 +160,11 @@ export function createGameView(
   hintBubble.style.backgroundImage = `url(${stageSelectAssets.bubbleNext})`;
   hint.append(hintIcon, hintBubble);
   hint.addEventListener("click", onHint);
-  navigation.append(back, undo, reset, hint);
+  const hintStatus = document.createElement("span");
+  hintStatus.className = styles.visuallyHidden;
+  hintStatus.setAttribute("role", "status");
+  hintStatus.setAttribute("aria-live", "polite");
+  navigation.append(back, undo, reset, hint, hintStatus);
   root.append(navigation);
   const timer = document.createElement("output");
   timer.className = styles.timer;
@@ -171,6 +175,10 @@ export function createGameView(
   const board = document.createElement("div");
   board.className = styles.board;
   root.append(board);
+  const hintWarningTint = document.createElement("span");
+  hintWarningTint.className = styles.hintWarningTint;
+  hintWarningTint.setAttribute("aria-hidden", "true");
+  root.append(hintWarningTint);
   const cells = new Map<string, HTMLElement>();
   const entityNodes = new Map<string, HTMLElement>();
   const entityLayers = new Map<string, HTMLElement>();
@@ -179,6 +187,7 @@ export function createGameView(
   const hintRing = document.createElement("span");
   hintRing.className = styles.hintRing;
   hintRing.setAttribute("aria-hidden", "true");
+  let hintWarnings: Animation[] = [];
   let animationGeneration = 0;
   let dimensions = "";
   const build = (game: GameState) => {
@@ -350,10 +359,46 @@ export function createGameView(
     animation.cancel();
     animations.delete(animation);
   };
+  const stopHintWarnings = () => {
+    hintWarnings.forEach(stop);
+    hintWarnings = [];
+  };
+  const playHintWarning = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    stopHintWarnings();
+    const warnings = [
+      track(
+        hint.animate(
+          [
+            { transform: "scale(1)", filter: "drop-shadow(0 0 0 rgb(255 70 82 / 0%))" },
+            {
+              transform: "scale(1.08)",
+              filter: "drop-shadow(0 0 0.9cqw rgb(255 70 82 / 95%))",
+            },
+            { transform: "scale(1)", filter: "drop-shadow(0 0 0.3cqw rgb(255 70 82 / 65%))" },
+          ],
+          { duration: 240, easing: "ease-out", iterations: 2 },
+        ),
+      ),
+      track(
+        hintWarningTint.animate([{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }], {
+          duration: 240,
+          easing: "ease-out",
+          iterations: 2,
+        }),
+      ),
+    ];
+    hintWarnings = warnings;
+    void Promise.all(warnings.map(finish)).then(() => {
+      warnings.forEach((warning) => animations.delete(warning));
+      if (hintWarnings === warnings) hintWarnings = [];
+    });
+  };
   const cancelAnimations = () => {
     animationGeneration += 1;
     animations.forEach((animation) => animation.cancel());
     animations.clear();
+    hintWarnings = [];
   };
   return {
     root,
@@ -404,10 +449,23 @@ export function createGameView(
       reset.disabled = !navigationEnabled;
       hint.disabled = !navigationEnabled;
     },
-    setHintTarget: (target) => {
+    renderHint: (state) => {
       hintRing.remove();
       hintRing.className = styles.hintRing;
-      if (!target) return;
+      const unavailable = state.status === "unavailable";
+      hint.classList.toggle(styles.hintUnavailable, unavailable);
+      hint.setAttribute(
+        "aria-label",
+        unavailable ? "현재 위치에서는 풀이 경로를 찾을 수 없음" : "다음 상호작용 힌트 보기",
+      );
+      hintStatus.textContent = unavailable ? "현재 위치에서는 풀이 경로를 찾을 수 없습니다." : "";
+      if (unavailable) {
+        playHintWarning();
+        return;
+      }
+      stopHintWarnings();
+      if (state.status !== "targeted") return;
+      const target = state.target;
       if (target.type === "entity") {
         entityLayers.get(target.entityId)?.append(hintRing);
         return;

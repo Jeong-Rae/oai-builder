@@ -30,6 +30,10 @@ export type HintTarget =
   | { type: "entity"; entityId: string; position: Position }
   | { type: "field"; field: "wormhole" | "plate" | "exit"; position: Position };
 
+export type HintSearchResult =
+  | { status: "available"; target: HintTarget }
+  | { status: "unavailable" };
+
 function interactionTarget(
   state: GameState,
   direction: Direction,
@@ -118,29 +122,40 @@ export function findPath(initial: GameState): PathResult | undefined {
   }
 }
 
-/** Returns the next object or field that matters on the shortest solution path. */
-export function findNextHint(initial: GameState): HintTarget | undefined {
+/** Finds the next meaningful target, or reports that the current state cannot be solved. */
+export function findNextHint(initial: GameState): HintSearchResult {
   const path = findPath(initial);
-  if (!path) return;
+  if (!path) return { status: "unavailable" };
 
   let state = initial;
   for (const { direction } of path.steps) {
     const decision = decide(state, { type: "player/move", direction });
     const move = decision.events.find((event) => event.type === "entity/moved");
     if (move?.type === "entity/moved" && move.wormhole)
-      return { type: "field", field: "wormhole", position: move.wormhole };
+      return {
+        status: "available",
+        target: { type: "field", field: "wormhole", position: move.wormhole },
+      };
     const plate = decision.events.find((event) => event.type === "plate/activated");
     if (plate?.type === "plate/activated")
-      return { type: "field", field: "plate", position: plate.position };
+      return {
+        status: "available",
+        target: { type: "field", field: "plate", position: plate.position },
+      };
     const target = interactionTarget(state, direction, decision.events);
-    if (target) return target;
+    if (target) return { status: "available", target };
     if (
       decision.events.some((event) => event.type === "game/completed") &&
       move?.type === "entity/moved"
     )
-      return { type: "field", field: "exit", position: move.to };
+      return {
+        status: "available",
+        target: { type: "field", field: "exit", position: move.to },
+      };
     state = evolveAll(state, decision.events);
   }
+
+  return { status: "unavailable" };
 }
 
 /**

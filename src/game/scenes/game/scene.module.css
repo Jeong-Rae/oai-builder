@@ -5,6 +5,14 @@
   position: relative;
   width: 100%;
 }
+.hintWarningTint {
+  background: rgb(255 36 52 / 16%);
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 5;
+}
 .navigation {
   display: flex;
   gap: 0.8cqw;
@@ -49,6 +57,13 @@
 .hintButton {
   position: relative;
 }
+.hintUnavailable {
+  filter: drop-shadow(0 0 0.3cqw rgb(255 70 82 / 65%));
+}
+.hintUnavailable .actionIcon {
+  color: #ff4652;
+  text-shadow: 0 0 0.45cqw rgb(255 70 82 / 80%);
+}
 .hintBubble {
   aspect-ratio: 414 / 230;
   background-position: center;
@@ -68,6 +83,14 @@
   text-align: center;
   transform: translateX(-50%);
   width: 5.4cqw;
+}
+.visuallyHidden {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 .timer {
   color: #ffd866;

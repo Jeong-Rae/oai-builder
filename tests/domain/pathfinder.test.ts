@@ -67,16 +67,14 @@ describe("경로 찾기", () => {
   it("최소 경로에서 웜홀과 다음 오브젝트를 순서대로 찾는다", () => {
     const initial = createGameStateFromMap(map);
     expect(findNextHint(initial)).toEqual({
-      type: "field",
-      field: "wormhole",
-      position: { x: 2, y: 2 },
+      status: "available",
+      target: { type: "field", field: "wormhole", position: { x: 2, y: 2 } },
     });
 
     const decision = decide(initial, { type: "player/move", direction: "left" });
     expect(findNextHint(evolveAll(initial, decision.events))).toEqual({
-      type: "entity",
-      entityId: "normal-1",
-      position: { x: 3, y: 1 },
+      status: "available",
+      target: { type: "entity", entityId: "normal-1", position: { x: 3, y: 1 } },
     });
   });
 
@@ -87,17 +85,32 @@ describe("경로 찾기", () => {
       state = evolveAll(state, decision.events);
     }
     expect(findNextHint(state)).toEqual({
-      type: "field",
-      field: "plate",
-      position: { x: 4, y: 1 },
+      status: "available",
+      target: { type: "field", field: "plate", position: { x: 4, y: 1 } },
     });
 
     const decision = decide(state, { type: "player/move", direction: "right" });
     state = evolveAll(state, decision.events);
     expect(findNextHint(state)).toEqual({
-      type: "field",
-      field: "exit",
-      position: { x: 0, y: 1 },
+      status: "available",
+      target: { type: "field", field: "exit", position: { x: 0, y: 1 } },
     });
+  });
+
+  it("현재 상태에서 출구에 도달할 수 없으면 풀이 불가를 반환한다", () => {
+    const blocked: MapDocument = {
+      version: 2,
+      columns: 3,
+      rows: 3,
+      tiles: [
+        ["exit", "wall", "wall"],
+        ["wall", "floor", "wall"],
+        ["wall", "wall", "wall"],
+      ],
+      wormholePairs: [],
+      objects: [{ id: "player", kind: "player", position: { x: 1, y: 1 } }],
+    };
+
+    expect(findNextHint(createGameStateFromMap(blocked))).toEqual({ status: "unavailable" });
   });
 });

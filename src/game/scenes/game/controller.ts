@@ -1,9 +1,14 @@
 import { parseMap } from "@/src/map/mapDocument";
-import { findNextHint, type HintTarget } from "@/src/game/domain/pathfinder";
-import type { GameEvent, Position } from "@/src/game/domain/types";
+import { findNextHint } from "@/src/game/domain/pathfinder";
+import type { Position } from "@/src/game/domain/types";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import { playerTextureForMove } from "@/src/game/features/presentation";
 import { directionFromKey, isUndoShortcut } from "@/src/game/input";
+import {
+  initialHintState,
+  transitionHint,
+  type HintEvent,
+} from "@/src/game/scenes/game/hintMachine";
 import { createGameView } from "@/src/game/scenes/game/view";
 import { playSfx } from "@/src/game/sfx";
 import { createGameStoreFromMap } from "@/src/game/store/gameStore";
@@ -45,20 +50,28 @@ function createMapGameScene(
   };
   let store: ReturnType<typeof createGameStoreFromMap> | undefined;
   let motionLocked = false;
-  let hintTarget: HintTarget | undefined;
+  let hintState = initialHintState;
+  const sendHint = (event: HintEvent) => {
+    const next = transitionHint(hintState, event);
+    if (next === hintState) return;
+    hintState = next;
+    view.renderHint(hintState);
+  };
   const undo = () => {
     if (motionLocked || store?.getState().game.status !== "playing") return;
-    if (store.getState().undo()) clearPlateTimers();
+    if (!store.getState().undo()) return;
+    clearPlateTimers();
+    sendHint({ type: "hint/cleared" });
   };
   const reset = () => {
     if (motionLocked || store?.getState().game.status !== "playing") return;
     clearPlateTimers();
     store.getState().reset();
+    sendHint({ type: "hint/cleared" });
   };
   const hint = () => {
     if (motionLocked || !store || store.getState().game.status !== "playing") return;
-    hintTarget = findNextHint(store.getState().game);
-    view.setHintTarget(hintTarget);
+    sendHint({ type: "hint/requested", result: findNextHint(store.getState().game) });
   };
   const view = createGameView(onBack, undo, reset, hint, timed);
   const abort = new AbortController();
@@ -110,10 +123,7 @@ function createMapGameScene(
     event.preventDefault();
     const game = store.getState().game;
     const decision = store.getState().dispatch({ type: "player/move", direction });
-    if (hintTarget && completesHint(hintTarget, decision.events)) {
-      hintTarget = undefined;
-      view.setHintTarget();
-    }
+    sendHint({ type: "game/events", events: decision.events });
     if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
     if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");
     view.setPlayerTexture(playerTextureForMove(game, direction, decision));
@@ -213,26 +223,4 @@ function createMapGameScene(
 }
 function motionDuration(duration: number): number {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : duration;
-}
-
-function completesHint(target: HintTarget, events: GameEvent[]): boolean {
-  return events.some((event) => {
-    if (target.type === "entity") {
-      if (event.type === "control/transferred")
-        return event.fromEntityId === target.entityId || event.toEntityId === target.entityId;
-      return (
-        event.type === "controls/swapped" &&
-        (event.firstEntityId === target.entityId || event.secondEntityId === target.entityId)
-      );
-    }
-    if (target.field === "wormhole")
-      return event.type === "entity/moved" && samePosition(event.wormhole, target.position);
-    if (target.field === "plate")
-      return event.type === "plate/activated" && samePosition(event.position, target.position);
-    return event.type === "game/completed";
-  });
-}
-
-function samePosition(first: Position | undefined, second: Position): boolean {
-  return first?.x === second.x && first.y === second.y;
 }

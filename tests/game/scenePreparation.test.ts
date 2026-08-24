@@ -16,26 +16,33 @@ const mocked = vi.hoisted(() => ({
         type: "field";
         field: "wormhole" | "plate" | "exit";
         position: { x: number; y: number };
-      },
+      }
+    | undefined,
+  onReset: undefined as (() => void) | undefined,
+  onUndo: undefined as (() => void) | undefined,
   onHint: undefined as (() => void) | undefined,
   playWormhole: vi.fn(() => Promise.resolve()),
   removeEventListener: vi.fn(),
   setActionAvailability: vi.fn(),
   setElapsedMs: vi.fn(),
-  setHintTarget: vi.fn(),
+  renderHint: vi.fn(),
+  reset: vi.fn(),
   setPlateFrame: vi.fn(),
   showError: vi.fn(),
   subscribe: vi.fn((_listener: (state: any, previous: any) => void) => vi.fn()),
   sync: vi.fn(),
+  undo: vi.fn(() => true),
 }));
 
 vi.mock("@/src/game/scenes/game/view", () => ({
   createGameView: (
     _onBack: () => void,
-    _onUndo: () => void,
-    _onReset: () => void,
+    onUndo: () => void,
+    onReset: () => void,
     onHint: () => void,
   ) => {
+    mocked.onUndo = onUndo;
+    mocked.onReset = onReset;
     mocked.onHint = onHint;
     return {
       root: {} as HTMLElement,
@@ -44,7 +51,7 @@ vi.mock("@/src/game/scenes/game/view", () => ({
       cancelAnimations: mocked.cancelAnimations,
       setActionAvailability: mocked.setActionAvailability,
       setElapsedMs: mocked.setElapsedMs,
-      setHintTarget: mocked.setHintTarget,
+      renderHint: mocked.renderHint,
       setPlayerTexture: vi.fn(),
       setPlateFrame: mocked.setPlateFrame,
       showError: mocked.showError,
@@ -66,14 +73,15 @@ vi.mock("@/src/game/store/gameStore", () => ({
       },
       eventStream: [],
       dispatch: mocked.dispatch,
-      undo: vi.fn(),
-      reset: vi.fn(),
+      undo: mocked.undo,
+      reset: mocked.reset,
     }),
     subscribe: mocked.subscribe,
   }),
 }));
 vi.mock("@/src/game/domain/pathfinder", () => ({
-  findNextHint: () => mocked.nextHint,
+  findNextHint: () =>
+    mocked.nextHint ? { status: "available", target: mocked.nextHint } : { status: "unavailable" },
 }));
 vi.mock("@/src/game/stages", () => ({
   stageFor: () => ({ mapUrl: mocked.mapUrl }),
@@ -101,9 +109,12 @@ describe("게임 장면 사전 준비", () => {
       position: { x: 2, y: 1 },
     };
     mocked.direction = undefined;
+    mocked.onReset = undefined;
+    mocked.onUndo = undefined;
     mocked.onHint = undefined;
     mocked.dispatch.mockReturnValue({ events: [] });
     mocked.playWormhole.mockImplementation(() => Promise.resolve());
+    mocked.undo.mockReturnValue(true);
     vi.clearAllMocks();
     vi.unstubAllGlobals();
   });
@@ -268,13 +279,16 @@ describe("게임 장면 사전 준비", () => {
     scene.activate();
     await scene.ready;
     mocked.onHint?.();
-    expect(mocked.setHintTarget).toHaveBeenCalledWith(mocked.nextHint);
+    expect(mocked.renderHint).toHaveBeenCalledWith({
+      status: "targeted",
+      target: mocked.nextHint,
+    });
 
     const keydown = mocked.addEventListener.mock.calls.find(
       ([type]) => type === "keydown",
     )?.[1] as (event: KeyboardEvent) => void;
     const event = { key: "ArrowRight", preventDefault: vi.fn() } as unknown as KeyboardEvent;
-    mocked.setHintTarget.mockClear();
+    mocked.renderHint.mockClear();
 
     mocked.dispatch.mockReturnValueOnce({
       events: [{ type: "entity/moved", entityId: "player" }],
@@ -290,7 +304,7 @@ describe("게임 장면 사전 준비", () => {
       ],
     });
     keydown(event);
-    expect(mocked.setHintTarget).not.toHaveBeenCalled();
+    expect(mocked.renderHint).not.toHaveBeenCalled();
 
     mocked.dispatch.mockReturnValueOnce({
       events: [
@@ -302,7 +316,7 @@ describe("게임 장면 사전 준비", () => {
       ],
     });
     keydown(event);
-    expect(mocked.setHintTarget).toHaveBeenCalledWith();
+    expect(mocked.renderHint).toHaveBeenCalledWith({ status: "idle" });
     scene.dispose();
   });
 
@@ -347,14 +361,72 @@ describe("게임 장면 사전 준비", () => {
     scene.activate();
     await scene.ready;
     mocked.onHint?.();
-    mocked.setHintTarget.mockClear();
+    mocked.renderHint.mockClear();
 
     const keydown = mocked.addEventListener.mock.calls.find(
       ([type]) => type === "keydown",
     )?.[1] as (event: KeyboardEvent) => void;
     keydown({ key: "ArrowRight", preventDefault: vi.fn() } as unknown as KeyboardEvent);
 
-    expect(mocked.setHintTarget).toHaveBeenCalledWith();
+    expect(mocked.renderHint).toHaveBeenCalledWith({ status: "idle" });
+    scene.dispose();
+  });
+
+  it("초기화와 성공한 되돌리기는 힌트 상태를 함께 초기화한다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
+    await scene.ready;
+
+    mocked.onHint?.();
+    mocked.renderHint.mockClear();
+    mocked.onReset?.();
+    expect(mocked.reset).toHaveBeenCalledOnce();
+    expect(mocked.renderHint).toHaveBeenLastCalledWith({ status: "idle" });
+
+    mocked.onHint?.();
+    mocked.renderHint.mockClear();
+    mocked.undo.mockReturnValueOnce(false);
+    mocked.onUndo?.();
+    expect(mocked.renderHint).not.toHaveBeenCalled();
+
+    mocked.undo.mockReturnValueOnce(true);
+    mocked.onUndo?.();
+    expect(mocked.renderHint).toHaveBeenLastCalledWith({ status: "idle" });
+    scene.dispose();
+  });
+
+  it("풀이 경로가 없으면 힌트 버튼의 경고 상태를 매번 다시 요청한다", async () => {
+    mocked.nextHint = undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
+    await scene.ready;
+    mocked.onHint?.();
+    mocked.onHint?.();
+
+    expect(mocked.renderHint).toHaveBeenCalledTimes(2);
+    expect(mocked.renderHint).toHaveBeenLastCalledWith({ status: "unavailable" });
     scene.dispose();
   });
 
