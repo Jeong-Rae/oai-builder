@@ -300,9 +300,11 @@ export function createGameView(
         layer.className =
           entity.kind === "normal"
             ? `${styles.entityLayer} ${styles.normalLayer}`
-            : entity.kind === "player"
-              ? `${styles.entityLayer} ${styles.playerLayer}`
-              : styles.entityLayer;
+            : entity.kind === "swapper"
+              ? `${styles.entityLayer} ${styles.swapperLayer}`
+              : entity.kind === "player"
+                ? `${styles.entityLayer} ${styles.playerLayer}`
+                : styles.entityLayer;
         image =
           entity.kind === "normal"
             ? createStateAsset(
