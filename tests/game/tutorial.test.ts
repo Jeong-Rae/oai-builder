@@ -97,22 +97,22 @@ describe("최초 실행 튜토리얼", () => {
     expect(onComplete).toHaveBeenCalledOnce();
   });
 
-  it("Enter를 한 번 누르면 현재 문장을 완성하고 다시 누르면 다음 문장으로 간다", () => {
+  it("화면 터치, Enter, 오른쪽 방향키로 현재 문장을 완성하거나 다음 문장으로 넘어간다", () => {
     const view = tutorialView();
     const onComplete = vi.fn();
     const scene = createTutorialScene(onComplete, view);
     scene.activate();
     const keydown = listeners.get("keydown")! as (event: KeyboardEvent) => void;
-    const enter = () =>
-      keydown({ key: "Enter", preventDefault: vi.fn() } as unknown as KeyboardEvent);
+    const key = (value: "Enter" | "ArrowRight") =>
+      keydown({ key: value, preventDefault: vi.fn() } as unknown as KeyboardEvent);
 
-    enter();
+    view.clickScreen();
     expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialSentences.first[0]);
     expect(view.setContinueVisible).toHaveBeenLastCalledWith(true);
     expect(view.setBlurred).not.toHaveBeenCalled();
-    enter();
+    key("ArrowRight");
     expect(view.setContinueVisible).toHaveBeenLastCalledWith(false);
-    enter();
+    key("Enter");
     expect(view.setStoryText).toHaveBeenLastCalledWith(
       tutorialSentences.first.slice(0, 2).join(""),
     );

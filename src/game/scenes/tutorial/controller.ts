@@ -218,18 +218,26 @@ export function createTutorialScene(
     next();
   };
 
-  view.setContinueHandler(() => {
-    if (phase === "holding-input") advanceNow();
-  });
-
-  const handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== "Enter" || phase === "blurring" || phase === "done") return;
-    event.preventDefault();
+  const continueTutorial = (): void => {
     if (typing) {
       typing.complete();
       return;
     }
     if (phase === "holding-input") advanceNow();
+  };
+
+  view.setContinueHandler(continueTutorial);
+
+  const handleKeydown = (event: KeyboardEvent): void => {
+    if (
+      (event.key !== "Enter" && event.key !== "ArrowRight") ||
+      phase === "blurring" ||
+      phase === "done"
+    ) {
+      return;
+    }
+    event.preventDefault();
+    continueTutorial();
   };
 
   return {

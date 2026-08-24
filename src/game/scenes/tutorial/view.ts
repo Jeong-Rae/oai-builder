@@ -46,7 +46,7 @@ export function createTutorialView(): TutorialView {
 
   const prompt = document.createElement("p");
   prompt.className = styles.prompt;
-  prompt.textContent = "화면을 누르거나, enter를 눌러주세요";
+  prompt.textContent = "화면을 누르거나, ↵를 눌러주세요";
   prompt.setAttribute("aria-live", "polite");
   prompt.hidden = true;
 
