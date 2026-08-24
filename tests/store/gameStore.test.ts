@@ -19,6 +19,31 @@ describe("게임 저장소", () => {
     expect(store.getState().game.entities.player.position).toEqual({ x: 0, y: 1 });
   });
 
+  it("맵 종류별 기본값 대신 지정한 오브젝트의 초기 컨트롤을 사용한다", () => {
+    const map = createBlankMap(5, 2);
+    map.tiles[0][4] = "exit";
+    map.objects.push(
+      { id: "player", kind: "player", position: { x: 1, y: 1 } },
+      { id: "normal-2", kind: "normal", position: { x: 3, y: 1 } },
+    );
+    const store = createGameStoreFromMap(map, {
+      player: ["up", "down", "right"],
+      "normal-2": ["left"],
+    });
+
+    expect(store.getState().game.entities.player.controls).toEqual(["up", "down", "right"]);
+    expect(store.getState().game.entities["normal-2"].controls).toEqual(["left"]);
+
+    store.getState().dispatch({ type: "player/move", direction: "left" });
+    store.getState().dispatch({ type: "player/move", direction: "left" });
+    expect(store.getState().game.entities.player.controls).toContain("left");
+    expect(store.getState().game.entities["normal-2"].controls).toEqual([]);
+
+    store.getState().reset();
+    expect(store.getState().game.entities.player.controls).toEqual(["up", "down", "right"]);
+    expect(store.getState().game.entities["normal-2"].controls).toEqual(["left"]);
+  });
+
   it("이동 명령은 게임 상태를 한 번만 갱신한다", () => {
     const store = createGameStore({ boxCount: 0 });
     let notificationCount = 0;

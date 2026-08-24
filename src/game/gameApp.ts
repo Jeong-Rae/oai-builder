@@ -29,7 +29,7 @@ import { createTutorialScene } from "@/src/game/scenes/tutorial/controller";
 import { nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 import { playSfx, preloadSfx } from "@/src/game/sfx";
-import { firstPlayTutorial } from "@/src/game/tutorial/definitions";
+import { firstPlayTutorials } from "@/src/game/tutorial/definitions";
 
 interface Scene {
   view: HTMLElement;
@@ -200,11 +200,16 @@ export class GameApp {
     void this.show(createTutorialScene(this.showPlayTutorial));
   }
 
-  private showPlayTutorial = (): void => {
+  private showPlayTutorial = (stageIndex = 0): void => {
+    const tutorial = firstPlayTutorials[stageIndex];
+    if (!tutorial) {
+      void this.completeTutorial();
+      return;
+    }
     void this.show(
       createTutorialGameScene(
-        firstPlayTutorial,
-        () => void this.completeTutorial(),
+        tutorial,
+        () => this.showPlayTutorial(stageIndex + 1),
         () => void this.show(this.createIntroScene(true), true),
       ),
       true,

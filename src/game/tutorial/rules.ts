@@ -22,6 +22,12 @@ export interface TutorialCue {
   id: string;
   lines: readonly (readonly TutorialTextPart[])[];
   mascot: TutorialMascotKey;
+  keyHint?: Direction;
+}
+
+export interface TutorialPathGuidance {
+  afterInitialMs: number;
+  mascot: TutorialMascotKey;
 }
 
 export interface TutorialEntitySelector {
@@ -47,8 +53,10 @@ export interface TutorialRule {
 
 export interface TutorialDefinition {
   id: string;
+  initialControls?: Readonly<Record<string, readonly Direction[]>>;
   mapUrl: string;
   initialCue: TutorialCue;
+  pathGuidance?: TutorialPathGuidance;
   rules: readonly TutorialRule[];
 }
 
@@ -71,6 +79,27 @@ const offsets: Record<Direction, readonly [number, number]> = {
   left: [-1, 0],
   right: [1, 0],
 };
+
+const pathCueLabels: Record<Direction, string> = {
+  up: "W▲",
+  down: "S▼",
+  left: "A◀",
+  right: "D▶",
+};
+
+export function createPathTutorialCue(
+  direction: Direction,
+  mascot: TutorialMascotKey,
+): TutorialCue {
+  return {
+    id: `path-${direction}`,
+    mascot,
+    keyHint: direction,
+    lines: [
+      [{ text: pathCueLabels[direction], emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }],
+    ],
+  };
+}
 
 function entityAt(game: GameState, x: number, y: number): Entity | undefined {
   return Object.values(game.entities).find(

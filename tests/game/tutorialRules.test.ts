@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import type { Decision, Entity, GameState } from "@/src/game/domain/types";
+import type { Decision, Direction, Entity, GameState } from "@/src/game/domain/types";
+import { firstPlayTutorials } from "@/src/game/tutorial/definitions";
 import {
   createActionTutorialSignal,
   createMoveTutorialSignal,
+  createPathTutorialCue,
   selectTutorialRule,
   type TutorialCue,
   type TutorialRule,
@@ -45,6 +47,115 @@ const normal: Entity = {
 };
 
 describe("튜토리얼 안내 규칙", () => {
+  it("1-1부터 1-3까지 순서대로 준비한다", () => {
+    expect(firstPlayTutorials.map(({ id }) => id)).toEqual([
+      "tutorial-01.stage-01",
+      "tutorial-01.stage-02",
+      "tutorial-01.stage-03",
+    ]);
+  });
+
+  it("방향에 맞는 WASD와 채워진 화살표 안내를 만든다", () => {
+    expect(
+      (["up", "down", "left", "right"] as const).map((direction) =>
+        createPathTutorialCue(direction, "flag"),
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        keyHint: "up",
+        lines: [[{ text: "W▲", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+      }),
+      expect.objectContaining({
+        keyHint: "down",
+        lines: [[{ text: "S▼", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+      }),
+      expect.objectContaining({
+        keyHint: "left",
+        lines: [[{ text: "A◀", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+      }),
+      expect.objectContaining({
+        keyHint: "right",
+        lines: [[{ text: "D▶", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+      }),
+    ]);
+  });
+
+  it("1-2에서 노말 블록에 컨트롤이 옮겨지면 왼쪽 이동을 안내한다", () => {
+    const definition = firstPlayTutorials[1];
+    const playerAtRight = { ...player, position: { x: 2, y: 1 } };
+    const normalAtMiddle = { ...normal, position: { x: 1, y: 1 } };
+    const before = game([playerAtRight, normalAtMiddle]);
+    const decision: Decision = {
+      events: [
+        {
+          type: "control/transferred",
+          direction: "left",
+          fromEntityId: "player",
+          toEntityId: "normal-1",
+        },
+      ],
+    };
+
+    expect(definition.initialCue).toMatchObject({
+      mascot: "lens",
+      lines: [
+        [{ text: "사물과 부딪혀 봐!" }],
+        [{ text: "사물과 부딪히면, 부딪힌 방향의 방향키가 사물에게 옮겨갈 거야." }],
+        [{ text: "이제 왼쪽으로 이동해봐!" }],
+      ],
+    });
+    expect(
+      selectTutorialRule(
+        definition.rules,
+        createMoveTutorialSignal(before, before, "left", decision),
+        new Set(),
+      )?.cue,
+    ).toMatchObject({ mascot: "flag", keyHint: "left", id: "path-left" });
+  });
+
+  it("1-3에서 노말 블록이 플레이어에게 왼쪽 컨트롤을 전달하면 안내를 바꾼다", () => {
+    const definition = firstPlayTutorials[2];
+    const playerWithoutLeft = {
+      ...player,
+      controls: ["up", "down", "right"] as Direction[],
+    };
+    const normalWithLeft = {
+      ...normal,
+      id: "normal-2",
+      controls: ["left"] as Direction[],
+      position: { x: 1, y: 1 },
+    };
+    const before = game([playerWithoutLeft, normalWithLeft]);
+    const decision: Decision = {
+      events: [
+        {
+          type: "control/transferred",
+          direction: "left",
+          fromEntityId: "normal-2",
+          toEntityId: "player",
+        },
+      ],
+    };
+
+    expect(definition).toMatchObject({
+      initialControls: { player: ["up", "down", "right"], "normal-2": ["left"] },
+      initialCue: {
+        mascot: "lens",
+        lines: [
+          [{ text: "나는 지금 왼쪽으로 갈 수가 없어!" }],
+          [{ text: "왼쪽으로 가야 하는데 지금 누가 움직일 수 있는 거지?" }],
+        ],
+      },
+    });
+    expect(
+      selectTutorialRule(
+        definition.rules,
+        createMoveTutorialSignal(before, before, "left", decision),
+        new Set(),
+      )?.cue,
+    ).toMatchObject({ mascot: "flag", lines: [[{ text: "이제 움직일 수 있어!" }]] });
+  });
+
   it("방향, 상호작용 결과와 특정 대상 오브젝트를 함께 판정한다", () => {
     const before = game([player, normal]);
     const decision: Decision = {

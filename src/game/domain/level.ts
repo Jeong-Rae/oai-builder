@@ -1,5 +1,13 @@
 import type { MapDocument } from "@/src/map/mapDocument";
-import type { Entity, GameState, Normal, Position, TileKind, WormholePair } from "./types";
+import type {
+  Direction,
+  Entity,
+  GameState,
+  Normal,
+  Position,
+  TileKind,
+  WormholePair,
+} from "./types";
 import { createPlateStates } from "../features/fields/plate/rules";
 import { objectRules } from "../features/rules";
 
@@ -14,6 +22,8 @@ export interface InitialStateOptions {
   tileOverrides?: Array<{ position: Position; kind: TileKind }>;
   wormholePairs?: WormholePair[];
 }
+
+export type InitialControlsByEntity = Readonly<Record<string, readonly Direction[]>>;
 
 function createTiles(tileOverrides: InitialStateOptions["tileOverrides"] = []): TileKind[][] {
   const tiles: TileKind[][] = Array.from({ length: BOARD_ROWS }, (_, y) =>
@@ -95,13 +105,17 @@ export function createInitialState({
   };
 }
 
-export function createGameStateFromMap(map: MapDocument): GameState {
+export function createGameStateFromMap(
+  map: MapDocument,
+  initialControls: InitialControlsByEntity = {},
+): GameState {
   const entities: Record<string, Entity> = {};
 
   for (const object of map.objects) {
-    const controls = objectRules[object.kind].initialControls;
+    const id = objectRules[object.kind].fixedId?.value ?? object.id;
+    const controls = initialControls[id] ?? objectRules[object.kind].initialControls;
     const entity = {
-      id: objectRules[object.kind].fixedId?.value ?? object.id,
+      id,
       kind: object.kind,
       position: { ...object.position },
       controls: [...controls],

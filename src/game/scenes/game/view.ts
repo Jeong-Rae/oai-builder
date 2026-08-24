@@ -154,7 +154,7 @@ function createTutorialGuide(): TutorialGuide {
     render(cue) {
       mascot.src = tutorialAssets.mascots[cue.mascot];
       message.replaceChildren(
-        ...cue.lines.map((parts) => {
+        ...cue.lines.map((parts, lineIndex) => {
           const line = document.createElement("span");
           line.className = styles.tutorialLine;
           parts.forEach((part) => {
@@ -163,6 +163,23 @@ function createTutorialGuide(): TutorialGuide {
             if (part.emphasis) text.className = styles.tutorialEmphasis;
             line.append(text);
           });
+          if (cue.keyHint && lineIndex === cue.lines.length - 1) {
+            line.classList.add(styles.tutorialLineWithKey);
+            const key = document.createElement("span");
+            key.className = styles.tutorialKey;
+            key.setAttribute("aria-hidden", "true");
+            const assets = tutorialAssets.keys[cue.keyHint];
+            const idle = document.createElement("img");
+            idle.className = styles.tutorialKeyImage;
+            idle.src = assets.idle;
+            idle.alt = "";
+            const pressed = document.createElement("img");
+            pressed.className = `${styles.tutorialKeyImage} ${styles.tutorialKeyPressed}`;
+            pressed.src = assets.pressed;
+            pressed.alt = "";
+            key.append(idle, pressed);
+            line.append(key);
+          }
           return line;
         }),
       );

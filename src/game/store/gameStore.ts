@@ -1,9 +1,14 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from "zustand/vanilla";
 
-import { decide, evolveAll } from '../domain/decider';
-import { createGameStateFromMap, createInitialState, type InitialStateOptions } from '../domain/level';
-import type { Decision, GameCommand, GameEvent, GameState } from '../domain/types';
-import type { MapDocument } from '@/src/map/mapDocument';
+import { decide, evolveAll } from "../domain/decider";
+import {
+  createGameStateFromMap,
+  createInitialState,
+  type InitialControlsByEntity,
+  type InitialStateOptions,
+} from "../domain/level";
+import type { Decision, GameCommand, GameEvent, GameState } from "../domain/types";
+import type { MapDocument } from "@/src/map/mapDocument";
 
 export interface GameStore {
   game: GameState;
@@ -56,8 +61,11 @@ export function createGameStore(options: InitialStateOptions = {}) {
   return createStoreFrom(() => createInitialState(options));
 }
 
-export function createGameStoreFromMap(map: MapDocument) {
-  return createStoreFrom(() => createGameStateFromMap(map));
+export function createGameStoreFromMap(
+  map: MapDocument,
+  initialControls?: InitialControlsByEntity,
+) {
+  return createStoreFrom(() => createGameStateFromMap(map, initialControls));
 }
 
 export type GameStoreApi = ReturnType<typeof createGameStore>;

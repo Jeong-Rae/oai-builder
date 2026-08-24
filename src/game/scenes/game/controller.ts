@@ -1,5 +1,5 @@
 import { parseMap } from "@/src/map/mapDocument";
-import { findNextHint } from "@/src/game/domain/pathfinder";
+import { findNextHint, findPath } from "@/src/game/domain/pathfinder";
 import type { GameState, Position } from "@/src/game/domain/types";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import { playerTextureForMove } from "@/src/game/features/presentation";
@@ -16,6 +16,7 @@ import { stageFor, type PlaySelection } from "@/src/game/stages";
 import {
   createActionTutorialSignal,
   createMoveTutorialSignal,
+  createPathTutorialCue,
   selectTutorialRule,
   type TutorialAction,
   type TutorialActionResult,
@@ -72,6 +73,18 @@ function createMapGameScene(
   let hintState = initialHintState;
   const shownTutorialRuleIds = new Set<string>();
   let tutorialCueId = tutorialDefinition?.initialCue.id;
+  let tutorialGuidanceActive = false;
+  let tutorialGuidanceTimer: number | undefined;
+  const renderPathGuidance = (game: GameState) => {
+    const guidance = tutorialDefinition?.pathGuidance;
+    if (!guidance || game.status !== "playing") return;
+    const direction = findPath(game)?.steps[0]?.direction;
+    if (!direction) return;
+    const cue = createPathTutorialCue(direction, guidance.mascot);
+    if (tutorialCueId === cue.id) return;
+    tutorialCueId = cue.id;
+    view.renderTutorialCue(cue);
+  };
   const sendTutorial = (signal: TutorialSignal) => {
     if (!tutorialDefinition) return;
     const rule = selectTutorialRule(tutorialDefinition.rules, signal, shownTutorialRuleIds);
@@ -144,6 +157,22 @@ function createMapGameScene(
     view.setElapsedMs(0);
     timerFrame = window.requestAnimationFrame(updateTimer);
   };
+  const activateTutorialGuidance = () => {
+    const guidance = tutorialDefinition?.pathGuidance;
+    if (
+      !guidance ||
+      !active ||
+      !store ||
+      tutorialGuidanceActive ||
+      tutorialGuidanceTimer !== undefined
+    )
+      return;
+    tutorialGuidanceTimer = window.setTimeout(() => {
+      tutorialGuidanceTimer = undefined;
+      tutorialGuidanceActive = true;
+      if (store) renderPathGuidance(store.getState().game);
+    }, guidance.afterInitialMs);
+  };
   const stopTimer = () => {
     if (!timed) return;
     if (startedAt !== undefined) elapsedMs = performance.now() - startedAt;
@@ -210,12 +239,13 @@ function createMapGameScene(
       if (!response.ok) throw new Error("map fetch failed");
       const parsed = parseMap(source);
       if (!parsed.ok) throw new Error("invalid map");
-      const loadedStore = createGameStoreFromMap(parsed.map);
+      const loadedStore = createGameStoreFromMap(parsed.map, tutorialDefinition?.initialControls);
       store = loadedStore;
       view.sync(loadedStore.getState().game);
       view.setActionAvailability(false, true);
       unsubscribe = loadedStore.subscribe((state, previous) => {
         view.sync(state.game);
+        if (tutorialGuidanceActive) renderPathGuidance(state.game);
         view.setActionAvailability(
           state.game.status === "playing" && state.eventStream.length > 0,
           state.game.status === "playing",
@@ -229,6 +259,7 @@ function createMapGameScene(
           scheduleCompletion(motionDuration(700));
       });
       activateInput();
+      activateTutorialGuidance();
     } catch (error) {
       if ((error as DOMException).name !== "AbortError") view.showError(load);
     }
@@ -258,6 +289,7 @@ function createMapGameScene(
       active = true;
       activateInput();
       activateCompletion();
+      activateTutorialGuidance();
     },
     dispose: () => {
       active = false;
@@ -266,6 +298,7 @@ function createMapGameScene(
       if (listening) window.removeEventListener("keydown", keydown);
       listening = false;
       if (completeTimer) window.clearTimeout(completeTimer);
+      if (tutorialGuidanceTimer !== undefined) window.clearTimeout(tutorialGuidanceTimer);
       if (timerFrame !== undefined) window.cancelAnimationFrame(timerFrame);
       clearPlateTimers();
       view.cancelAnimations();

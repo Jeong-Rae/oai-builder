@@ -27,6 +27,15 @@ import tutorialDialogueUrl from "@/assets/dialogue/dialogue.panel.webp";
 import tutorialNextUrl from "@/assets/arrow/arrow.dialogue.direction-down.webp";
 import tutorialMascotFlagUrl from "@/assets/mascot/mascot.flag.webp";
 import tutorialMascotLensUrl from "@/assets/mascot/mascot.lens.webp";
+import tutorialKeyAUrl from "@/assets/key/key.a.webp";
+import tutorialKeyAPressedUrl from "@/assets/key/key.a.state-pressed.webp";
+import tutorialKeyDUrl from "@/assets/key/key.d.webp";
+import tutorialKeyDPressedUrl from "@/assets/key/key.d.state-pressed.webp";
+import tutorialKeySUrl from "@/assets/key/key.s.webp";
+import tutorialKeySPressedUrl from "@/assets/key/key.s.state-pressed.webp";
+import tutorialKeyWUrl from "@/assets/key/key.w.webp";
+import tutorialKeyWPressedUrl from "@/assets/key/key.w.state-pressed.webp";
+import type { Direction } from "@/src/game/domain/types";
 import { assetUrls } from "@/src/game/features/presentation";
 import { chapters, visibleChapters, type ZodiacSign } from "@/src/game/stages";
 import type { TutorialMascotKey } from "@/src/game/tutorial/rules";
@@ -103,6 +112,12 @@ export const tutorialAssets = {
     flag: tutorialMascotFlagUrl,
     lens: tutorialMascotLensUrl,
   } satisfies Record<TutorialMascotKey, string>,
+  keys: {
+    up: { idle: tutorialKeyWUrl, pressed: tutorialKeyWPressedUrl },
+    left: { idle: tutorialKeyAUrl, pressed: tutorialKeyAPressedUrl },
+    down: { idle: tutorialKeySUrl, pressed: tutorialKeySPressedUrl },
+    right: { idle: tutorialKeyDUrl, pressed: tutorialKeyDPressedUrl },
+  } satisfies Record<Direction, { idle: string; pressed: string }>,
 } as const;
 
 export function gameAssetUrlGroups(): string[][] {
@@ -120,6 +135,7 @@ export function gameAssetUrlGroups(): string[][] {
     tutorialAssets.dialogue,
     tutorialAssets.next,
     ...Object.values(tutorialAssets.mascots),
+    ...Object.values(tutorialAssets.keys).flatMap(({ idle, pressed }) => [idle, pressed]),
   ];
   const chapter = [
     ...Object.values(titleAssets),

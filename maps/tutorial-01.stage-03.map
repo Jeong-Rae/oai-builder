@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "columns": 6,
+  "rows": 3,
+  "tiles": [
+    ["wall", "wall", "wall", "wall", "wall", "wall"],
+    ["wall", "exit", "floor", "floor", "floor", "wall"],
+    ["wall", "wall", "wall", "wall", "wall", "wall"]
+  ],
+  "wormholePairs": [],
+  "objects": [
+    {
+      "id": "player",
+      "kind": "player",
+      "position": { "x": 2, "y": 1 }
+    },
+    {
+      "id": "normal-2",
+      "kind": "normal",
+      "position": { "x": 4, "y": 1 }
+    }
+  ]
+}

@@ -19,6 +19,7 @@ const mocked = vi.hoisted(() => ({
         position: { x: number; y: number };
       }
     | undefined,
+  pathDirection: "up" as "up" | "down" | "left" | "right" | undefined,
   onReset: undefined as (() => void) | undefined,
   onUndo: undefined as (() => void) | undefined,
   onHint: undefined as (() => void) | undefined,
@@ -85,6 +86,8 @@ vi.mock("@/src/game/store/gameStore", () => ({
   }),
 }));
 vi.mock("@/src/game/domain/pathfinder", () => ({
+  findPath: () =>
+    mocked.pathDirection ? { steps: [{ direction: mocked.pathDirection, moves: [] }] } : undefined,
   findNextHint: () =>
     mocked.nextHint ? { status: "available", target: mocked.nextHint } : { status: "unavailable" },
 }));
@@ -112,6 +115,7 @@ import type { TutorialDefinition } from "@/src/game/tutorial/rules";
 
 describe("게임 장면 사전 준비", () => {
   afterEach(() => {
+    vi.useRealTimers();
     mocked.mapUrl = "/stage.map";
     mocked.nextHint = {
       type: "entity",
@@ -119,6 +123,7 @@ describe("게임 장면 사전 준비", () => {
       position: { x: 2, y: 1 },
     };
     mocked.direction = undefined;
+    mocked.pathDirection = "up";
     mocked.mode = undefined;
     mocked.onReset = undefined;
     mocked.onUndo = undefined;
@@ -161,6 +166,58 @@ describe("게임 장면 사전 준비", () => {
     expect(fetch).toHaveBeenCalledWith(
       "/tutorial.map",
       expect.objectContaining({ signal: expect.anything() }),
+    );
+    scene.dispose();
+  });
+
+  it("최초 안내를 2초간 표시한 뒤 현재 경로의 다음 키를 계속 안내한다", async () => {
+    vi.useFakeTimers();
+    let listener!: (state: any, previous: any) => void;
+    mocked.subscribe.mockImplementationOnce((entry) => {
+      listener = entry;
+      return vi.fn();
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+    const definition: TutorialDefinition = {
+      id: "tutorial-path",
+      mapUrl: "/tutorial.map",
+      initialCue: {
+        id: "start",
+        mascot: "flag",
+        lines: [[{ text: "별을 되찾아 주세요!" }]],
+      },
+      pathGuidance: { afterInitialMs: 2_000, mascot: "flag" },
+      rules: [],
+    };
+
+    const scene = createTutorialGameScene(definition, vi.fn(), vi.fn());
+    await scene.ready;
+    scene.activate();
+
+    vi.advanceTimersByTime(1_999);
+    expect(mocked.renderTutorialCue).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(1);
+    expect(mocked.renderTutorialCue).toHaveBeenLastCalledWith(
+      expect.objectContaining({ id: "path-up", keyHint: "up", mascot: "flag" }),
+    );
+
+    mocked.pathDirection = "right";
+    listener(
+      { game: { status: "playing", plateStates: {} }, eventStream: [] },
+      { game: { status: "playing", plateStates: {} }, eventStream: [] },
+    );
+    expect(mocked.renderTutorialCue).toHaveBeenLastCalledWith(
+      expect.objectContaining({ id: "path-right", keyHint: "right", mascot: "flag" }),
     );
     scene.dispose();
   });

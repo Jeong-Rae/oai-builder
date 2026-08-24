@@ -160,10 +160,33 @@
 .tutorialLine {
   display: block;
 }
+.tutorialLineWithKey {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.8cqw;
+  justify-content: center;
+}
 .tutorialEmphasis {
   color: #ef6570;
   font-size: 1.12em;
   font-weight: 700;
+}
+.tutorialKey {
+  display: inline-grid;
+  flex: 0 0 auto;
+  height: 4.4cqw;
+  place-items: center;
+  width: 4.9cqw;
+}
+.tutorialKeyImage {
+  grid-area: 1 / 1;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+.tutorialKeyPressed {
+  animation: tutorial-key-press 800ms steps(1, end) infinite;
+  opacity: 0;
 }
 .tutorialMascotFrame {
   bottom: 4%;
@@ -436,6 +459,12 @@
     transform: translateY(12%) scale(0.94);
   }
 }
+@keyframes tutorial-key-press {
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .goalActive .goal,
   .goalGlow,
@@ -443,7 +472,8 @@
   .playerHappy .entity,
   .hintRing,
   .hintBubble,
-  .tutorialNext {
+  .tutorialNext,
+  .tutorialKeyPressed {
     animation: none;
   }
   .goalGlow {
