@@ -9,10 +9,17 @@ import {
   textureForField,
 } from "@/src/game/features/presentation";
 import type { AssetSlot } from "@/src/game/features/presentationTypes";
-import { backgroundUrl, clearAssets, gameActionAssets, stageSelectAssets } from "@/src/game/assets";
+import {
+  backgroundUrl,
+  clearAssets,
+  gameActionAssets,
+  stageSelectAssets,
+  tutorialAssets,
+} from "@/src/game/assets";
 import { formatDuration } from "@/src/game/challenge";
 import type { HintState } from "@/src/game/scenes/game/hintMachine";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
+import type { TutorialCue } from "@/src/game/tutorial/rules";
 import styles from "@/src/game/scenes/game/scene.module.css";
 
 const key = ({ x, y }: Position) => `${x},${y}`;
@@ -109,6 +116,61 @@ function createNavigationButton(
   return button;
 }
 
+interface TutorialGuide {
+  root: HTMLElement;
+  render(cue: TutorialCue): void;
+}
+
+function createTutorialGuide(): TutorialGuide {
+  const root = document.createElement("aside");
+  root.className = styles.tutorialGuide;
+  root.setAttribute("aria-label", "튜토리얼 안내");
+
+  const panel = document.createElement("div");
+  panel.className = styles.tutorialPanel;
+  panel.style.backgroundImage = `url(${tutorialAssets.dialogue})`;
+  const message = document.createElement("p");
+  message.className = styles.tutorialMessage;
+  message.setAttribute("aria-live", "polite");
+  message.setAttribute("aria-atomic", "true");
+  const next = document.createElement("img");
+  next.className = styles.tutorialNext;
+  next.src = tutorialAssets.next;
+  next.alt = "";
+  panel.append(message, next);
+
+  const mascotFrame = document.createElement("span");
+  mascotFrame.className = styles.tutorialMascotFrame;
+  mascotFrame.setAttribute("aria-hidden", "true");
+  const mascot = document.createElement("img");
+  mascot.className = styles.tutorialMascot;
+  mascot.alt = "";
+  mascotFrame.append(mascot);
+  root.append(panel, mascotFrame);
+
+  return {
+    root,
+    render(cue) {
+      mascot.src = tutorialAssets.mascots[cue.mascot];
+      message.replaceChildren(
+        ...cue.lines.map((parts) => {
+          const line = document.createElement("span");
+          line.className = styles.tutorialLine;
+          parts.forEach((part) => {
+            const text = document.createElement(part.emphasis ? "strong" : "span");
+            text.textContent = part.text;
+            if (part.emphasis) text.className = styles.tutorialEmphasis;
+            line.append(text);
+          });
+          return line;
+        }),
+      );
+    },
+  };
+}
+
+export type GameViewMode = "stage" | "challenge" | "tutorial";
+
 export interface GameView {
   root: HTMLElement;
   sync(game: GameState): void;
@@ -116,6 +178,7 @@ export interface GameView {
   cancelAnimations(): void;
   setActionAvailability(undoEnabled: boolean, navigationEnabled: boolean): void;
   renderHint(state: HintState): void;
+  renderTutorialCue(cue: TutorialCue): void;
   setElapsedMs(durationMs: number): void;
   setPlayerTexture(source: string): void;
   setPlateFrame(position: Position, source: string): void;
@@ -127,20 +190,24 @@ export function createGameView(
   onUndo: () => void,
   onReset: () => void,
   onHint: () => void,
-  timed = false,
+  mode: GameViewMode = "stage",
 ): GameView {
   const root = document.createElement("main");
-  root.className = styles.root;
+  root.className = `${styles.root} ${mode === "tutorial" ? styles.tutorial : ""}`;
   root.style.backgroundImage = `url(${backgroundUrl})`;
   root.append(createBackgroundStars());
   const navigation = document.createElement("nav");
   navigation.className = styles.navigation;
   navigation.setAttribute("aria-label", "게임 조작");
-  const back = createNavigationButton("스테이지 선택으로 돌아가기", gameActionAssets.back, onBack);
+  const back = createNavigationButton(
+    mode === "tutorial" ? "시작 화면으로 돌아가기" : "스테이지 선택으로 돌아가기",
+    gameActionAssets.back,
+    onBack,
+  );
   const undo = createNavigationButton("마지막 이동 되돌리기", gameActionAssets.rollback, onUndo);
   undo.disabled = true;
   const reset = createNavigationButton(
-    "스테이지 처음부터 다시하기",
+    mode === "tutorial" ? "튜토리얼 처음부터 다시하기" : "스테이지 처음부터 다시하기",
     gameActionAssets.reset,
     onReset,
   );
@@ -167,11 +234,13 @@ export function createGameView(
   timer.className = styles.timer;
   timer.setAttribute("aria-label", "챌린지 경과 시간");
   timer.value = formatDuration(0);
-  timer.hidden = !timed;
+  timer.hidden = mode !== "challenge";
   root.append(timer);
   const board = document.createElement("div");
   board.className = styles.board;
   root.append(board);
+  const tutorialGuide = mode === "tutorial" ? createTutorialGuide() : undefined;
+  if (tutorialGuide) root.append(tutorialGuide.root);
   const hintWarningTint = document.createElement("span");
   hintWarningTint.className = styles.hintWarningTint;
   hintWarningTint.setAttribute("aria-hidden", "true");
@@ -476,6 +545,7 @@ export function createGameView(
       );
       cells.get(key(target.position))?.append(hintRing);
     },
+    renderTutorialCue: (cue) => tutorialGuide?.render(cue),
     setElapsedMs: (durationMs) => {
       timer.value = formatDuration(durationMs);
     },

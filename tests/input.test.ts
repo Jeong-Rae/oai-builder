@@ -8,6 +8,10 @@ describe("방향키 입력", () => {
     ["아래쪽 방향키", "ArrowDown", "down"],
     ["왼쪽 방향키", "ArrowLeft", "left"],
     ["오른쪽 방향키", "ArrowRight", "right"],
+    ["W 키", "w", "up"],
+    ["S 키", "S", "down"],
+    ["A 키", "a", "left"],
+    ["D 키", "D", "right"],
   ])("%s는 해당 방향 이동 명령으로 해석된다", (_, key, direction) => {
     expect(directionFromKey(key)).toBe(direction);
   });

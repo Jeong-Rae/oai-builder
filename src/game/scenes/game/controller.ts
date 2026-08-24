@@ -1,6 +1,6 @@
 import { parseMap } from "@/src/map/mapDocument";
 import { findNextHint } from "@/src/game/domain/pathfinder";
-import type { Position } from "@/src/game/domain/types";
+import type { GameState, Position } from "@/src/game/domain/types";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import { playerTextureForMove } from "@/src/game/features/presentation";
 import { directionFromKey, isUndoShortcut } from "@/src/game/input";
@@ -9,17 +9,26 @@ import {
   transitionHint,
   type HintEvent,
 } from "@/src/game/scenes/game/hintMachine";
-import { createGameView } from "@/src/game/scenes/game/view";
+import { createGameView, type GameViewMode } from "@/src/game/scenes/game/view";
 import { playSfx } from "@/src/game/sfx";
 import { createGameStoreFromMap } from "@/src/game/store/gameStore";
 import { stageFor, type PlaySelection } from "@/src/game/stages";
+import {
+  createActionTutorialSignal,
+  createMoveTutorialSignal,
+  selectTutorialRule,
+  type TutorialAction,
+  type TutorialActionResult,
+  type TutorialDefinition,
+  type TutorialSignal,
+} from "@/src/game/tutorial/rules";
 
 export function createGameScene(
   selection: PlaySelection,
   onComplete: () => void,
   onBack: () => void,
 ): GameScene {
-  return createMapGameScene(stageFor(selection).mapUrl, onComplete, onBack, false);
+  return createMapGameScene(stageFor(selection).mapUrl, onComplete, onBack, "stage");
 }
 
 export function createChallengeGameScene(
@@ -27,7 +36,15 @@ export function createChallengeGameScene(
   onComplete: (durationMs: number) => void,
   onBack: () => void,
 ): GameScene {
-  return createMapGameScene(mapUrl, onComplete, onBack, true);
+  return createMapGameScene(mapUrl, onComplete, onBack, "challenge");
+}
+
+export function createTutorialGameScene(
+  definition: TutorialDefinition,
+  onComplete: () => void,
+  onBack: () => void,
+): GameScene {
+  return createMapGameScene(definition.mapUrl, () => onComplete(), onBack, "tutorial", definition);
 }
 
 export interface GameScene {
@@ -41,8 +58,10 @@ function createMapGameScene(
   mapUrl: string | undefined,
   onComplete: (durationMs: number) => void,
   onBack: () => void,
-  timed: boolean,
+  mode: GameViewMode,
+  tutorialDefinition?: TutorialDefinition,
 ): GameScene {
+  const timed = mode === "challenge";
   const timers = new Map<string, number[]>();
   const clearPlateTimers = () => {
     timers.forEach((entries) => entries.forEach(window.clearTimeout));
@@ -51,6 +70,25 @@ function createMapGameScene(
   let store: ReturnType<typeof createGameStoreFromMap> | undefined;
   let motionLocked = false;
   let hintState = initialHintState;
+  const shownTutorialRuleIds = new Set<string>();
+  let tutorialCueId = tutorialDefinition?.initialCue.id;
+  const sendTutorial = (signal: TutorialSignal) => {
+    if (!tutorialDefinition) return;
+    const rule = selectTutorialRule(tutorialDefinition.rules, signal, shownTutorialRuleIds);
+    if (!rule) return;
+    if (rule.once) shownTutorialRuleIds.add(rule.id);
+    if (tutorialCueId === rule.cue.id) return;
+    tutorialCueId = rule.cue.id;
+    view.renderTutorialCue(rule.cue);
+  };
+  const sendTutorialAction = (
+    action: TutorialAction,
+    result: TutorialActionResult,
+    before: GameState,
+    after = before,
+  ) => {
+    if (tutorialDefinition) sendTutorial(createActionTutorialSignal(before, action, result, after));
+  };
   const sendHint = (event: HintEvent) => {
     const next = transitionHint(hintState, event);
     if (next === hintState) return;
@@ -59,21 +97,32 @@ function createMapGameScene(
   };
   const undo = () => {
     if (motionLocked || store?.getState().game.status !== "playing") return;
-    if (!store.getState().undo()) return;
+    const before = store.getState().game;
+    if (!store.getState().undo()) {
+      sendTutorialAction("undo", "unavailable", before);
+      return;
+    }
     clearPlateTimers();
     sendHint({ type: "hint/cleared" });
+    sendTutorialAction("undo", "succeeded", before, store.getState().game);
   };
   const reset = () => {
     if (motionLocked || store?.getState().game.status !== "playing") return;
+    const before = store.getState().game;
     clearPlateTimers();
     store.getState().reset();
     sendHint({ type: "hint/cleared" });
+    sendTutorialAction("reset", "succeeded", before, store.getState().game);
   };
   const hint = () => {
     if (motionLocked || !store || store.getState().game.status !== "playing") return;
-    sendHint({ type: "hint/requested", result: findNextHint(store.getState().game) });
+    const game = store.getState().game;
+    const result = findNextHint(game);
+    sendHint({ type: "hint/requested", result });
+    sendTutorialAction("hint", result.status === "available" ? "succeeded" : "unavailable", game);
   };
-  const view = createGameView(onBack, undo, reset, hint, timed);
+  const view = createGameView(onBack, undo, reset, hint, mode);
+  if (tutorialDefinition) view.renderTutorialCue(tutorialDefinition.initialCue);
   const abort = new AbortController();
   let active = false;
   let listening = false;
@@ -123,6 +172,8 @@ function createMapGameScene(
     event.preventDefault();
     const game = store.getState().game;
     const decision = store.getState().dispatch({ type: "player/move", direction });
+    if (tutorialDefinition)
+      sendTutorial(createMoveTutorialSignal(game, store.getState().game, direction, decision));
     sendHint({ type: "game/events", events: decision.events });
     if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
     if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");

@@ -1,0 +1,169 @@
+import type {
+  Decision,
+  Direction,
+  Entity,
+  GameEvent,
+  GameState,
+  ObjectKind,
+  RejectionReason,
+} from "@/src/game/domain/types";
+
+export type TutorialMascotKey = "happy" | "flag" | "lens";
+export type TutorialAction = "hint" | "undo" | "reset";
+export type TutorialActionResult = "succeeded" | "unavailable";
+export type TutorialOutcome = "moved" | "interacted" | "rejected";
+
+export interface TutorialTextPart {
+  text: string;
+  emphasis?: boolean;
+}
+
+export interface TutorialCue {
+  id: string;
+  lines: readonly (readonly TutorialTextPart[])[];
+  mascot: TutorialMascotKey;
+}
+
+export interface TutorialEntitySelector {
+  role?: "actor" | "target" | "either";
+  id?: string;
+  kind?: ObjectKind;
+}
+
+export type TutorialCondition =
+  | { type: "direction"; direction?: Direction }
+  | { type: "outcome"; outcome: Exclude<TutorialOutcome, "rejected"> }
+  | { type: "outcome"; outcome: "rejected"; reason?: RejectionReason }
+  | { type: "event"; event: GameEvent["type"] }
+  | { type: "object"; entity: TutorialEntitySelector }
+  | { type: "action"; action: TutorialAction; result?: TutorialActionResult };
+
+export interface TutorialRule {
+  id: string;
+  when: readonly [TutorialCondition, ...TutorialCondition[]];
+  cue: TutorialCue;
+  once?: boolean;
+}
+
+export interface TutorialDefinition {
+  id: string;
+  mapUrl: string;
+  initialCue: TutorialCue;
+  rules: readonly TutorialRule[];
+}
+
+export interface TutorialSignal {
+  direction?: Direction;
+  outcome?: TutorialOutcome;
+  rejectedBy?: RejectionReason;
+  events: readonly GameEvent[];
+  action?: TutorialAction;
+  actionResult?: TutorialActionResult;
+  actorId?: string;
+  targetId?: string;
+  before: GameState;
+  after: GameState;
+}
+
+const offsets: Record<Direction, readonly [number, number]> = {
+  up: [0, -1],
+  down: [0, 1],
+  left: [-1, 0],
+  right: [1, 0],
+};
+
+function entityAt(game: GameState, x: number, y: number): Entity | undefined {
+  return Object.values(game.entities).find(
+    (entity) => entity.position.x === x && entity.position.y === y,
+  );
+}
+
+export function createMoveTutorialSignal(
+  before: GameState,
+  after: GameState,
+  direction: Direction,
+  decision: Decision,
+): TutorialSignal {
+  const actor = Object.values(before.entities).find((entity) =>
+    entity.controls.includes(direction),
+  );
+  const [offsetX, offsetY] = offsets[direction];
+  const target = actor
+    ? entityAt(before, actor.position.x + offsetX, actor.position.y + offsetY)
+    : undefined;
+  const interacted = decision.events.some(
+    (event) => event.type === "control/transferred" || event.type === "controls/swapped",
+  );
+
+  return {
+    direction,
+    outcome: decision.rejectedBy ? "rejected" : interacted ? "interacted" : "moved",
+    rejectedBy: decision.rejectedBy,
+    events: decision.events,
+    actorId: actor?.id,
+    targetId: target?.id,
+    before,
+    after,
+  };
+}
+
+export function createActionTutorialSignal(
+  game: GameState,
+  action: TutorialAction,
+  result: TutorialActionResult,
+  after = game,
+): TutorialSignal {
+  return { action, actionResult: result, events: [], before: game, after };
+}
+
+function entityMatches(signal: TutorialSignal, selector: TutorialEntitySelector): boolean {
+  const ids =
+    selector.role === "actor"
+      ? [signal.actorId]
+      : selector.role === "target"
+        ? [signal.targetId]
+        : [signal.actorId, signal.targetId];
+
+  return ids.some((id) => {
+    if (!id || (selector.id && selector.id !== id)) return false;
+    const entity = signal.before.entities[id] ?? signal.after.entities[id];
+    return Boolean(entity && (!selector.kind || entity.kind === selector.kind));
+  });
+}
+
+function conditionMatches(signal: TutorialSignal, condition: TutorialCondition): boolean {
+  switch (condition.type) {
+    case "direction":
+      return Boolean(
+        signal.direction && (!condition.direction || signal.direction === condition.direction),
+      );
+    case "outcome":
+      return (
+        signal.outcome === condition.outcome &&
+        (condition.outcome !== "rejected" ||
+          !condition.reason ||
+          signal.rejectedBy === condition.reason)
+      );
+    case "event":
+      return signal.events.some((event) => event.type === condition.event);
+    case "object":
+      return entityMatches(signal, condition.entity);
+    case "action":
+      return (
+        signal.action === condition.action &&
+        (!condition.result || signal.actionResult === condition.result)
+      );
+  }
+}
+
+export function selectTutorialRule(
+  rules: readonly TutorialRule[],
+  signal: TutorialSignal,
+  shownRuleIds: ReadonlySet<string>,
+): TutorialRule | undefined {
+  return rules.find(
+    (rule) =>
+      !(rule.once && shownRuleIds.has(rule.id)) &&
+      rule.when.every((condition) => conditionMatches(signal, condition)),
+  );
+}

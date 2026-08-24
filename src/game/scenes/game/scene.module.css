@@ -124,6 +124,70 @@
   user-select: none;
   z-index: 1;
 }
+.tutorial .board {
+  top: 38%;
+}
+.tutorialGuide {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+.tutorialPanel {
+  aspect-ratio: 1862 / 420;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  bottom: 5%;
+  box-sizing: border-box;
+  display: grid;
+  left: 50%;
+  padding: 0 8% 0 22%;
+  place-items: center;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 64%;
+}
+.tutorialMessage {
+  color: #101d34;
+  font-size: clamp(1rem, 2.05cqw, 2.55rem);
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  line-height: 1.28;
+  margin: 0;
+  text-align: center;
+}
+.tutorialLine {
+  display: block;
+}
+.tutorialEmphasis {
+  color: #ef6570;
+  font-size: 1.12em;
+  font-weight: 700;
+}
+.tutorialMascotFrame {
+  bottom: 4%;
+  display: grid;
+  height: 17cqw;
+  left: 22%;
+  place-items: end center;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 17cqw;
+}
+.tutorialMascot {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+.tutorialNext {
+  animation: tutorial-next-breathe 1.6s ease-in-out infinite;
+  bottom: 13%;
+  position: absolute;
+  right: 3.5%;
+  width: 2.8cqw;
+}
 .cell {
   height: var(--tile);
   pointer-events: none;
@@ -364,13 +428,19 @@
     transform: translate(-50%, -8px);
   }
 }
+@keyframes tutorial-next-breathe {
+  50% {
+    transform: translateY(12%) scale(0.94);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .goalActive .goal,
   .goalGlow,
   .goalSpark,
   .playerHappy .entity,
   .hintRing,
-  .hintBubble {
+  .hintBubble,
+  .tutorialNext {
     animation: none;
   }
   .goalGlow {

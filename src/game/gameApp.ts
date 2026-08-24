@@ -17,7 +17,11 @@ import { preloadAssets } from "@/src/game/preload";
 import { createChapterScene } from "@/src/game/scenes/chapter/controller";
 import { createChallengeResultScene } from "@/src/game/scenes/challenge-result/controller";
 import { createClearScene } from "@/src/game/scenes/clear/controller";
-import { createChallengeGameScene, createGameScene } from "@/src/game/scenes/game/controller";
+import {
+  createChallengeGameScene,
+  createGameScene,
+  createTutorialGameScene,
+} from "@/src/game/scenes/game/controller";
 import { attachClickStars } from "@/src/game/scenes/shared/backgroundStars";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
@@ -25,6 +29,7 @@ import { createTutorialScene } from "@/src/game/scenes/tutorial/controller";
 import { nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 import { playSfx, preloadSfx } from "@/src/game/sfx";
+import { firstPlayTutorial } from "@/src/game/tutorial/definitions";
 
 interface Scene {
   view: HTMLElement;
@@ -192,8 +197,19 @@ export class GameApp {
       this.showGroups();
       return;
     }
-    void this.show(createTutorialScene(() => void this.completeTutorial()));
+    void this.show(createTutorialScene(this.showPlayTutorial));
   }
+
+  private showPlayTutorial = (): void => {
+    void this.show(
+      createTutorialGameScene(
+        firstPlayTutorial,
+        () => void this.completeTutorial(),
+        () => void this.show(this.createIntroScene(true), true),
+      ),
+      true,
+    );
+  };
 
   private completeTutorial = async (): Promise<void> => {
     try {

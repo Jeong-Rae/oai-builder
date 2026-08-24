@@ -26,8 +26,13 @@ import decorStarLargeUrl from "@/assets/star/star.cross.large.webp";
 import challengeStarStellSmallUrl from "@/assets/star/star.stell.small.color-gold.webp";
 import decorMoonUrl from "@/assets/moon/moon.eclipse.trimmed.webp";
 import decorMascotUrl from "@/assets/mascot/mascot.angle-135.webp";
+import tutorialDialogueUrl from "@/assets/dialogue/dialogue.panel.webp";
+import tutorialNextUrl from "@/assets/arrow/arrow.dialogue.direction-down.webp";
+import tutorialMascotFlagUrl from "@/assets/mascot/mascot.flag.webp";
+import tutorialMascotLensUrl from "@/assets/mascot/mascot.lens.webp";
 import { assetUrls } from "@/src/game/features/presentation";
 import { chapters, visibleChapters, type ZodiacSign } from "@/src/game/stages";
+import type { TutorialMascotKey } from "@/src/game/tutorial/rules";
 
 export { backgroundUrl, plateButtonUrl };
 
@@ -96,6 +101,16 @@ export const decorAssets = {
   mascot: decorMascotUrl,
 } as const;
 
+export const tutorialAssets = {
+  dialogue: tutorialDialogueUrl,
+  next: tutorialNextUrl,
+  mascots: {
+    happy: startMascot1Url,
+    flag: tutorialMascotFlagUrl,
+    lens: tutorialMascotLensUrl,
+  } satisfies Record<TutorialMascotKey, string>,
+} as const;
+
 export function gameAssetUrlGroups(): string[][] {
   const intro = [
     backgroundUrl,
@@ -108,6 +123,9 @@ export function gameAssetUrlGroups(): string[][] {
     decorAssets.starSmall,
     decorAssets.starMedium,
     decorAssets.starLarge,
+    tutorialAssets.dialogue,
+    tutorialAssets.next,
+    ...Object.values(tutorialAssets.mascots),
   ];
   const chapter = [
     ...Object.values(titleAssets),

@@ -6,6 +6,7 @@ const mocked = vi.hoisted(() => ({
   direction: undefined as "up" | "down" | "left" | "right" | undefined,
   dispatch: vi.fn(() => ({ events: [] as Array<{ type: string; [key: string]: unknown }> })),
   mapUrl: "/stage.map" as string | undefined,
+  mode: undefined as "stage" | "challenge" | "tutorial" | undefined,
   nextHint: {
     type: "entity",
     entityId: "normal-1",
@@ -26,6 +27,7 @@ const mocked = vi.hoisted(() => ({
   setActionAvailability: vi.fn(),
   setElapsedMs: vi.fn(),
   renderHint: vi.fn(),
+  renderTutorialCue: vi.fn(),
   reset: vi.fn(),
   setPlateFrame: vi.fn(),
   showError: vi.fn(),
@@ -40,10 +42,12 @@ vi.mock("@/src/game/scenes/game/view", () => ({
     onUndo: () => void,
     onReset: () => void,
     onHint: () => void,
+    mode: "stage" | "challenge" | "tutorial" = "stage",
   ) => {
     mocked.onUndo = onUndo;
     mocked.onReset = onReset;
     mocked.onHint = onHint;
+    mocked.mode = mode;
     return {
       root: {} as HTMLElement,
       sync: mocked.sync,
@@ -52,6 +56,7 @@ vi.mock("@/src/game/scenes/game/view", () => ({
       setActionAvailability: mocked.setActionAvailability,
       setElapsedMs: mocked.setElapsedMs,
       renderHint: mocked.renderHint,
+      renderTutorialCue: mocked.renderTutorialCue,
       setPlayerTexture: vi.fn(),
       setPlateFrame: mocked.setPlateFrame,
       showError: mocked.showError,
@@ -98,7 +103,12 @@ vi.mock("@/src/game/input", () => ({
 }));
 vi.mock("@/src/game/sfx", () => ({ playSfx: vi.fn() }));
 
-import { createChallengeGameScene, createGameScene } from "@/src/game/scenes/game/controller";
+import {
+  createChallengeGameScene,
+  createGameScene,
+  createTutorialGameScene,
+} from "@/src/game/scenes/game/controller";
+import type { TutorialDefinition } from "@/src/game/tutorial/rules";
 
 describe("게임 장면 사전 준비", () => {
   afterEach(() => {
@@ -109,6 +119,7 @@ describe("게임 장면 사전 준비", () => {
       position: { x: 2, y: 1 },
     };
     mocked.direction = undefined;
+    mocked.mode = undefined;
     mocked.onReset = undefined;
     mocked.onUndo = undefined;
     mocked.onHint = undefined;
@@ -117,6 +128,41 @@ describe("게임 장면 사전 준비", () => {
     mocked.undo.mockReturnValue(true);
     vi.clearAllMocks();
     vi.unstubAllGlobals();
+  });
+
+  it("튜토리얼 전용 맵과 최초 안내를 준비한다", async () => {
+    const fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response),
+    );
+    vi.stubGlobal("fetch", fetch);
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+    const definition: TutorialDefinition = {
+      id: "tutorial-test",
+      mapUrl: "/tutorial.map",
+      initialCue: {
+        id: "start",
+        mascot: "happy",
+        lines: [[{ text: "움직여보자!" }]],
+      },
+      rules: [],
+    };
+
+    const scene = createTutorialGameScene(definition, vi.fn(), vi.fn());
+    await scene.ready;
+
+    expect(mocked.mode).toBe("tutorial");
+    expect(mocked.renderTutorialCue).toHaveBeenCalledWith(definition.initialCue);
+    expect(fetch).toHaveBeenCalledWith(
+      "/tutorial.map",
+      expect.objectContaining({ signal: expect.anything() }),
+    );
+    scene.dispose();
   });
 
   it("맵과 최초 화면이 준비된 후에만 입력을 활성화한다", async () => {
