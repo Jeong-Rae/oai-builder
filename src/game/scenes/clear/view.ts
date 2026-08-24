@@ -27,6 +27,8 @@ function createStarCluster(): HTMLElement {
   clearStar.className = `${styles.star} ${styles.clearStar}`;
   clearStar.src = clearAssets.star;
   clearStar.alt = "";
+  // Temporarily disabled: restore this block and the append spread to show the side stars again.
+  /*
   const sideStars = [styles.sideStarLeft, styles.sideStarRight].map((side) => {
     const star = document.createElement("img");
     star.className = `${styles.star} ${styles.sideStar} ${side}`;
@@ -34,11 +36,12 @@ function createStarCluster(): HTMLElement {
     star.alt = "";
     return star;
   });
+  */
   for (let index = 0; index < 4; index += 1) {
     const angle = ((index * 90 + 45) * Math.PI) / 180;
     cluster.append(createSpark(angle, 38 + (index % 2) * 7, index * 110, 4 + (index % 3)));
   }
-  cluster.append(glow, inactiveStar, ...sideStars, clearStar);
+  cluster.append(glow, inactiveStar, clearStar); // Add ...sideStars before clearStar to restore them.
   return cluster;
 }
 
@@ -71,7 +74,7 @@ export function createClearView(
     ["HOME", onHome],
   ].forEach(([label, action], index) => {
     const button = createPlateButton(label as string, action as () => void, styles.button);
-    button.style.setProperty("--button-delay", `${2_250 + index * 70}ms`);
+    button.style.setProperty("--button-delay", `${1_650 + index * 70}ms`);
     actions.append(button);
   });
   root.append(createHeader(), createStarCluster(), actions);

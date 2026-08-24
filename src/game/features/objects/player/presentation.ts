@@ -14,6 +14,7 @@ export function playerTextureForMove(
   direction: Direction,
   decision: Decision,
 ): AssetSlot {
+  if (decision.events.some((event) => event.type === "game/completed")) return "playerHappy";
   const player = game.entities[game.playerId];
   const offsets: Record<Direction, readonly [number, number]> = {
     up: [0, -1],
@@ -55,9 +56,14 @@ export const playerPresentation = {
       url: new URL("@/assets/playable/player.direction-right.webp", import.meta.url).href,
       group: "object",
     },
+    playerHappy: {
+      label: "별을 획득한 플레이어",
+      url: new URL("@/assets/mascot/mascot.happy.frame-01.webp", import.meta.url).href,
+      group: "object",
+    },
   },
   toolAsset: "playerDown",
-  gameTextures: Object.values(playerTextureKeys),
+  gameTextures: [...Object.values(playerTextureKeys), "playerHappy"],
   editorAsset: "playerDown",
-  gameTexture: "playerDown",
+  gameTexture: (game) => (game.status === "completed" ? "playerHappy" : "playerDown"),
 } satisfies ObjectPresentation;

@@ -53,7 +53,6 @@ export interface GameState {
   entities: Record<string, Entity>;
   playerId: "player";
   plateStates: Record<string, PlateState>;
-  goalOpened: boolean;
   status: "playing" | "completed";
 }
 
@@ -84,9 +83,6 @@ export type GameEvent =
   | {
       type: "plate/activated" | "plate/deactivated";
       position: Position;
-    }
-  | {
-      type: "goal/opened" | "goal/closed";
     }
   | {
       type: "game/completed";

@@ -6,13 +6,13 @@ import type {
   GameEvent,
   GameState,
   Position,
-} from '@/src/game/domain/types';
-import { exitEvents } from '@/src/game/features/fields/exit/rules';
-import { plateEvents } from '@/src/game/features/fields/plate/rules';
-import { wormholeDestination } from '@/src/game/features/fields/wormhole/rules';
-import { anchorCollisionEvents } from '@/src/game/features/objects/anchor/rules';
-import { swapperCollisionEvents } from '@/src/game/features/objects/swapper/rules';
-import { fieldRules, objectRules } from '@/src/game/features/rules';
+} from "@/src/game/domain/types";
+import { exitEvents } from "@/src/game/features/fields/exit/rules";
+import { plateEvents } from "@/src/game/features/fields/plate/rules";
+import { wormholeDestination } from "@/src/game/features/fields/wormhole/rules";
+import { anchorCollisionEvents } from "@/src/game/features/objects/anchor/rules";
+import { swapperCollisionEvents } from "@/src/game/features/objects/swapper/rules";
+import { fieldRules, objectRules } from "@/src/game/features/rules";
 
 const directionOffsets: Record<Direction, Position> = {
   up: { x: 0, y: -1 },
@@ -28,10 +28,7 @@ function nextPosition(position: Position, direction: Direction): Position {
 
 function isInside(state: GameState, position: Position): boolean {
   return (
-    position.x >= 0 &&
-    position.x < state.columns &&
-    position.y >= 0 &&
-    position.y < state.rows
+    position.x >= 0 && position.x < state.columns && position.y >= 0 && position.y < state.rows
   );
 }
 
@@ -49,7 +46,7 @@ function moveEvents(
 ): GameEvent[] {
   const events: GameEvent[] = [
     {
-      type: 'entity/moved',
+      type: "entity/moved",
       entityId: entity.id,
       from: entity.position,
       to: target,
@@ -73,18 +70,18 @@ export function decide(state: GameState, command: GameCommand): Decision {
   }
 
   if (!objectRules[owner.kind].movable) {
-    return { events: [], rejectedBy: 'fixed' };
+    return { events: [], rejectedBy: "fixed" };
   }
 
   const target = nextPosition(owner.position, command.direction);
 
   if (!isInside(state, target)) {
-    return { events: [], rejectedBy: 'out-of-bounds' };
+    return { events: [], rejectedBy: "out-of-bounds" };
   }
 
   const targetField = state.tiles[target.y][target.x];
   const entryRejection = fieldRules[targetField].entryRejection;
-  const rejectedBy = typeof entryRejection === 'function' ? entryRejection(state) : entryRejection;
+  const rejectedBy = typeof entryRejection === "function" ? entryRejection(state) : entryRejection;
   if (rejectedBy) {
     return { events: [], rejectedBy };
   }
@@ -92,10 +89,10 @@ export function decide(state: GameState, command: GameCommand): Decision {
   const targetEntity = getEntityAt(state, target);
 
   if (!targetEntity) {
-    if (targetField === 'wormhole') {
+    if (targetField === "wormhole") {
       const destination = wormholeDestination(state, target);
       if (!destination || getEntityAt(state, destination)) {
-        return { events: [], rejectedBy: 'occupied' };
+        return { events: [], rejectedBy: "occupied" };
       }
       return { events: moveEvents(state, owner, destination, target) };
     }
@@ -111,7 +108,7 @@ export function decide(state: GameState, command: GameCommand): Decision {
   return {
     events: [
       {
-        type: 'control/transferred',
+        type: "control/transferred",
         direction: command.direction,
         fromEntityId: owner.id,
         toEntityId: targetEntity.id,
@@ -122,11 +119,11 @@ export function decide(state: GameState, command: GameCommand): Decision {
 
 export function evolve(state: GameState, event: GameEvent): GameState {
   switch (event.type) {
-    case 'entity/moved': {
+    case "entity/moved": {
       const entity = state.entities[event.entityId];
 
       if (!entity) {
-        throw new Error('이동할 오브젝트를 찾을 수 없습니다.');
+        throw new Error("이동할 오브젝트를 찾을 수 없습니다.");
       }
 
       return {
@@ -141,12 +138,12 @@ export function evolve(state: GameState, event: GameEvent): GameState {
       };
     }
 
-    case 'control/transferred': {
+    case "control/transferred": {
       const from = state.entities[event.fromEntityId];
       const to = state.entities[event.toEntityId];
 
       if (!from || !to) {
-        throw new Error('컨트롤을 전달할 오브젝트를 찾을 수 없습니다.');
+        throw new Error("컨트롤을 전달할 오브젝트를 찾을 수 없습니다.");
       }
 
       return {
@@ -165,12 +162,12 @@ export function evolve(state: GameState, event: GameEvent): GameState {
       };
     }
 
-    case 'controls/swapped': {
+    case "controls/swapped": {
       const first = state.entities[event.firstEntityId];
       const second = state.entities[event.secondEntityId];
 
       if (!first || !second) {
-        throw new Error('컨트롤을 교환할 오브젝트를 찾을 수 없습니다.');
+        throw new Error("컨트롤을 교환할 오브젝트를 찾을 수 없습니다.");
       }
 
       return {
@@ -183,22 +180,19 @@ export function evolve(state: GameState, event: GameEvent): GameState {
       };
     }
 
-    case 'plate/activated':
-    case 'plate/deactivated':
+    case "plate/activated":
+    case "plate/deactivated":
       return {
         ...state,
         plateStates: {
           ...state.plateStates,
-          [`${event.position.x},${event.position.y}`]: event.type === 'plate/activated' ? 'active' : 'inactive',
+          [`${event.position.x},${event.position.y}`]:
+            event.type === "plate/activated" ? "active" : "inactive",
         },
       };
 
-    case 'goal/opened':
-    case 'goal/closed':
-      return { ...state, goalOpened: event.type === 'goal/opened' };
-
-    case 'game/completed':
-      return { ...state, status: 'completed' };
+    case "game/completed":
+      return { ...state, status: "completed" };
   }
 }
 

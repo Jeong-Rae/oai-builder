@@ -54,11 +54,11 @@ describe("에디터 에셋 슬롯", () => {
     expect(assetForField("blank", inactive, "0,0")).toBeUndefined();
   });
 
-  it("골 상태에 따라 별 에셋을 전환한다", () => {
+  it("플레이 중에는 활성 골을 표시하고 완료 후에는 숨긴다", () => {
     const game = createInitialState({ boxCount: 0 });
 
-    expect(overlayForField("exit", game, "0,0")).toBe("goalInactive");
-    expect(overlayForField("exit", { ...game, goalOpened: true }, "0,0")).toBe("goalActive");
+    expect(overlayForField("exit", game, "0,0")).toBe("goalActive");
+    expect(overlayForField("exit", { ...game, status: "completed" }, "0,0")).toBeUndefined();
   });
 
   it("노말 블록이 플레이트 위에 있으면 활성 에셋을 표시한다", () => {

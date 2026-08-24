@@ -91,7 +91,6 @@ export function createInitialState({
     },
     playerId: "player",
     plateStates: createPlateStates(tiles),
-    goalOpened: false,
     status: "playing",
   };
 }
@@ -123,7 +122,6 @@ export function createGameStateFromMap(map: MapDocument): GameState {
     entities,
     playerId: "player",
     plateStates: createPlateStates(map.tiles),
-    goalOpened: false,
     status: "playing",
   };
 }

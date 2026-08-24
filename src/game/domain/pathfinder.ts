@@ -63,7 +63,6 @@ function stateKey(state: GameState): string {
         [...entity.controls].sort(),
       ]),
     Object.entries(state.plateStates).sort(),
-    state.goalOpened,
     state.status,
   ]);
 }

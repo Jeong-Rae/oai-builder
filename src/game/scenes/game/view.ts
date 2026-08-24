@@ -17,7 +17,7 @@ import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars"
 import styles from "@/src/game/scenes/game/scene.module.css";
 
 const key = ({ x, y }: Position) => `${x},${y}`;
-const goalFrames = ["goalInactive", "goalActive"] as const;
+const goalFrames = ["goalActive"] as const;
 const normalFrames = ["normalInactive", "normalActive"] as const;
 const gateFrames = ["gateWarn", "gateSafe"] as const;
 const goalSparks = [
@@ -260,7 +260,7 @@ export function createGameView(
     const field = game.tiles[position.y]![position.x]!;
     syncBaseTexture(cell, textureForField(field, game, key(position)));
     syncFieldOverlay(cell, game, position);
-    syncGoalEffect(cell, field === "exit" && game.goalOpened);
+    syncGoalEffect(cell, field === "exit" && game.status === "playing");
     if (field === "gate") renderGate(cell, game, position);
     else cell.querySelector(`.${styles.gate}`)?.remove();
   };
@@ -314,6 +314,10 @@ export function createGameView(
         entityNodes.set(entity.id, image);
         entityLayers.set(entity.id, layer);
       }
+      layer!.classList.toggle(
+        styles.playerHappy,
+        entity.kind === "player" && game.status === "completed",
+      );
       const texture = textureForEntity(entity, game);
       if (entity.kind === "normal") selectStateAsset(image, texture);
       else (image as HTMLImageElement).src = assetUrls[texture];

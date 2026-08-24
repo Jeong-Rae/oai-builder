@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { createInitialState } from "../../src/game/domain/level";
-import { decide } from "../../src/game/domain/decider";
-import { playerTextureForMove, playerTextureKeys } from "../../src/game/features/presentation";
+import { decide } from "@/src/game/domain/decider";
+import { createInitialState } from "@/src/game/domain/level";
+import {
+  playerTextureForMove,
+  playerTextureKeys,
+  textureForEntity,
+} from "@/src/game/features/presentation";
 
 describe("플레이어 방향 스프라이트", () => {
   it("기본 상태에서 아래쪽을 바라본다", () => {
@@ -53,5 +57,24 @@ describe("플레이어 방향 스프라이트", () => {
         decide(wormholeGame, { type: "player/move", direction: "up" }),
       ),
     ).toBe(playerTextureKeys.default);
+  });
+
+  it("출구에 도착하면 별을 획득한 플레이어를 표시한다", () => {
+    const game = createInitialState({ boxCount: 0 });
+    const completed = { ...game, status: "completed" as const };
+    const decision = {
+      events: [
+        {
+          type: "entity/moved" as const,
+          entityId: "player",
+          from: { x: 0, y: 0 },
+          to: { x: 1, y: 0 },
+        },
+        { type: "game/completed" as const },
+      ],
+    };
+
+    expect(textureForEntity(completed.entities.player, completed)).toBe("playerHappy");
+    expect(playerTextureForMove(game, "right", decision)).toBe("playerHappy");
   });
 });

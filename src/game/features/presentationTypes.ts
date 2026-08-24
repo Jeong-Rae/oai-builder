@@ -21,7 +21,7 @@ export type AssetSlot =
   | "playerDown"
   | "playerLeft"
   | "playerRight"
-  | "goalInactive"
+  | "playerHappy"
   | "goalActive"
   | "up"
   | "down"
