@@ -77,10 +77,10 @@ describe("최초 실행 튜토리얼", () => {
       ...tutorialSentences.final,
     ]);
     expect(view.setBlurred.mock.calls).toEqual([[true], [false]]);
-    expect(view.clearStory).toHaveBeenCalledOnce();
+    expect(view.clearStory).toHaveBeenCalledTimes(2);
     expect(view.setSecondLayout).toHaveBeenCalledOnce();
     expect(view.showMascot.mock.calls).toEqual([[0], [1], [2]]);
-    expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialText.second);
+    expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialSentences.second.at(-1));
     expect(view.setFinalText).toHaveBeenLastCalledWith(tutorialText.final);
     expect(view.setContinueVisible.mock.calls).toEqual(
       Array.from({ length: 8 }, () => [[true], [false]]).flat(),
@@ -113,9 +113,7 @@ describe("최초 실행 튜토리얼", () => {
     key("ArrowRight");
     expect(view.setContinueVisible).toHaveBeenLastCalledWith(false);
     key("Enter");
-    expect(view.setStoryText).toHaveBeenLastCalledWith(
-      tutorialSentences.first.slice(0, 2).join(""),
-    );
+    expect(view.setStoryText).toHaveBeenLastCalledWith(tutorialSentences.first[1]);
     expect(view.setBlurred).not.toHaveBeenCalled();
   });
 

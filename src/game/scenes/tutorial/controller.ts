@@ -4,14 +4,14 @@ import { playSfx } from "@/src/game/sfx";
 export const tutorialSentences = {
   first: [
     "어느 우주…",
-    "\n별자리를 이루던 별들이 뿔뿔이 흩어졌다.",
-    "\n흩어진 별들은 방향을 잃어 제자리로 돌아가지 못했고…",
-    "\n별자리를 잃은 우주는 점점 혼란에 빠져들었다.",
+    "별자리를 이루던 별들이 뿔뿔이 흩어졌다.",
+    "흩어진 별들은 방향을 잃어 제자리로 돌아가지 못했고…",
+    "별자리를 잃은 우주는 점점 혼란에 빠져들었다.",
   ],
   second: [
     "우주를 구하기 위해 고양이 한 마리가 나섰다!!!!!",
-    "\n\n왜 고양이냐고?!",
-    "\n고양이는 귀여우니까!",
+    "왜 고양이냐고?!",
+    "고양이는 귀여우니까!",
   ],
   final: ["야옹, 저 너머로!"],
 } as const;
@@ -146,17 +146,11 @@ export function createTutorialScene(
   ): void => {
     let sentenceIndex = 0;
     const typeNextSentence = (): void => {
-      const precedingText = sentences.slice(0, sentenceIndex).join("");
       const sentence = sentences[sentenceIndex]!;
-      type(
-        "typing-story",
-        sentence,
-        (value) => update(`${precedingText}${value}`),
-        () => {
-          sentenceIndex += 1;
-          waitForInput(sentenceIndex === sentences.length ? finished : typeNextSentence);
-        },
-      );
+      type("typing-story", sentence, update, () => {
+        sentenceIndex += 1;
+        waitForInput(sentenceIndex === sentences.length ? finished : typeNextSentence);
+      });
     };
     typeNextSentence();
   };
@@ -168,6 +162,7 @@ export function createTutorialScene(
   };
 
   const typeFinal = (): void => {
+    view.clearStory();
     typeSentences(tutorialSentences.final, view.setFinalText, completeTutorial);
   };
 

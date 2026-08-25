@@ -46,7 +46,7 @@ describe("게임 SFX", () => {
       }
     }
 
-    const fetch = vi.fn(() =>
+    const fetch = vi.fn((_url: string) =>
       Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve(new ArrayBuffer(1)) }),
     );
     vi.stubGlobal("AudioContext", FakeAudioContext);
@@ -54,13 +54,14 @@ describe("게임 SFX", () => {
     const { playSfx, preloadSfx } = await import("@/src/game/sfx");
 
     preloadSfx();
-    await vi.waitFor(() => expect(audio?.decodeAudioData).toHaveBeenCalledTimes(5));
+    await vi.waitFor(() => expect(audio?.decodeAudioData).toHaveBeenCalledTimes(6));
     playSfx("typing");
     await vi.waitFor(() => expect(sources).toHaveLength(1));
     playSfx("typing");
     await vi.waitFor(() => expect(sources).toHaveLength(2));
 
-    expect(fetch).toHaveBeenCalledTimes(5);
+    expect(fetch).toHaveBeenCalledTimes(6);
+    expect(fetch.mock.calls.some(([url]) => String(url).includes("sfx.swoosh.mp3"))).toBe(true);
     expect(audio?.resume).toHaveBeenCalledOnce();
     expect(sources[0]?.stop).toHaveBeenCalledOnce();
     expect(sources[0]?.start).toHaveBeenCalledOnce();

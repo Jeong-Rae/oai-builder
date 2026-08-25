@@ -315,6 +315,7 @@ export class GameApp {
         phase === "covering" ? "scene-transition covered" : "scene-transition";
       return Promise.resolve();
     }
+    if (phase === "covering") playSfx("swoosh");
     this.transitionLayer.className = `scene-transition ${phase}`;
     return new Promise((resolve) => {
       const band = this.transitionLayer.querySelector(".transition-band");

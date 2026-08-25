@@ -46,7 +46,7 @@ describe("게임 BGM", () => {
     preloadBgm();
     expect(players).toHaveLength(1);
     const entire = players[0]!;
-    expect(entire.src).toContain("Entire.mp3");
+    expect(entire.src).toContain("bgm.entire.mp3");
     expect(entire.load).toHaveBeenCalledOnce();
 
     entire.dispatch("canplay");
@@ -65,7 +65,7 @@ describe("게임 BGM", () => {
     now += 300;
     frames.shift()?.(now);
 
-    const aries = players.find((player) => player.src.includes("Aries.mp3"))!;
+    const aries = players.find((player) => player.src.includes("bgm.aries.mp3"))!;
     expect(entire.volume).toBe(0);
     expect(entire.pause).toHaveBeenCalledOnce();
     expect(aries.volume).toBe(0.5);

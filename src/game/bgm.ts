@@ -1,7 +1,7 @@
-import ariesUrl from "@/assets/sfx/bgm/Aries.mp3";
-import entireUrl from "@/assets/sfx/bgm/Entire.mp3";
-import taurusUrl from "@/assets/sfx/bgm/Taurus.mp3";
-import tutorialUrl from "@/assets/sfx/bgm/Tutorial.mp3";
+import ariesUrl from "@/assets/sfx/bgm/bgm.aries.mp3";
+import entireUrl from "@/assets/sfx/bgm/bgm.entire.mp3";
+import taurusUrl from "@/assets/sfx/bgm/bgm.taurus.mp3";
+import tutorialUrl from "@/assets/sfx/bgm/bgm.tutorial.mp3";
 import type { ZodiacSign } from "@/src/game/stages";
 
 const urls = {

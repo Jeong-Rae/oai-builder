@@ -21,7 +21,7 @@
     0 0.15em 0.6em #000,
     0 0 1.1em rgb(121 225 255 / 18%);
   transform: translateX(-50%);
-  white-space: pre-line;
+  white-space: nowrap;
   width: 76%;
   z-index: 2;
 }
@@ -35,7 +35,7 @@
 }
 
 .story::after {
-  animation: story-caret 900ms ease-in-out infinite;
+  animation: story-caret 92000ms cubic-bezier(0.96, 0.2, 0.1, 0.85) infinite;
   background: currentcolor;
   box-shadow: 0 0 0.65em rgb(121 225 255 / 90%);
   content: "";
@@ -44,6 +44,10 @@
   margin-left: 0.08em;
   vertical-align: -0.1em;
   width: 0.11em;
+}
+
+.story:empty::after {
+  display: none;
 }
 
 .story.blurred {

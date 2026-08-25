@@ -2,6 +2,7 @@ import buttonUrl from "@/assets/sfx/button/sfx.button.mp3";
 import clearUrl from "@/assets/sfx/clear/sfx.clear.mp3";
 import clickUrl from "@/assets/sfx/click/sfx.click.mp3";
 import moveUrl from "@/assets/sfx/move/sfx.move.mp3";
+import swooshUrl from "@/assets/sfx/swoosh/sfx.swoosh.mp3";
 import typingUrl from "@/assets/sfx/typing/sfx.typing.mp3";
 
 const urls = {
@@ -9,6 +10,7 @@ const urls = {
   clear: clearUrl,
   click: clickUrl,
   move: moveUrl,
+  swoosh: swooshUrl,
   typing: typingUrl,
 } as const;
 type SfxName = keyof typeof urls;
