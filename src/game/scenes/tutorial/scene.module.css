@@ -20,15 +20,14 @@
   text-shadow:
     0 0.15em 0.6em #000,
     0 0 1.1em rgb(121 225 255 / 18%);
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   white-space: nowrap;
   width: 76%;
   z-index: 2;
 }
 
 .story {
-  top: 50%;
-  transform: translate(-50%, -50%);
   transition:
     filter 800ms ease,
     opacity 800ms ease;
@@ -57,8 +56,6 @@
 
 .second .story {
   font-size: clamp(0.9rem, 1.7cqw, 2.15rem);
-  top: 6%;
-  transform: translateX(-50%);
 }
 
 .mascot {
@@ -83,23 +80,22 @@
 .mascotTop {
   --mascot-rotation: 0deg;
   left: 50%;
-  top: 38%;
+  top: 35%;
 }
 
 .mascotLeft {
   --mascot-rotation: -7deg;
   left: 42%;
-  top: 58%;
+  top: 65%;
 }
 
 .mascotRight {
   --mascot-rotation: 7deg;
   left: 58%;
-  top: 58%;
+  top: 65%;
 }
 
 .finalLine {
-  bottom: 12%;
   color: #ffd866;
   font-size: clamp(1.2rem, 2.55cqw, 3.2rem);
   min-height: 1.65em;
