@@ -62,10 +62,14 @@ describe("게임 BGM", () => {
     expect(entire.play).toHaveBeenCalledOnce();
 
     setBgm("aries");
+    frames.shift()?.(now - 5);
+
+    const aries = players.find((player) => player.src.includes("bgm.aries.mp3"))!;
+    expect(aries.volume).toBe(0);
+
     now += 300;
     frames.shift()?.(now);
 
-    const aries = players.find((player) => player.src.includes("bgm.aries.mp3"))!;
     expect(entire.volume).toBe(0);
     expect(entire.pause).toHaveBeenCalledOnce();
     expect(aries.volume).toBe(0.5);

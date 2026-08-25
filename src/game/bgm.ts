@@ -20,6 +20,10 @@ const loadedTracks = new Set<BgmTrack>();
 let targetTrack: BgmTrack | undefined;
 let fadeFrame: number | undefined;
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
 function playerFor(track: BgmTrack): HTMLAudioElement {
   let player = players.get(track);
   if (!player) {
@@ -74,7 +78,7 @@ export function setBgm(track: BgmTrack): void {
     [...players].map(([name, player]) => [name, player.volume] as const),
   );
   const fade = (now: number): void => {
-    const progress = Math.min((now - startedAt) / fadeDuration, 1);
+    const progress = clamp((now - startedAt) / fadeDuration, 0, 1);
     players.forEach((player, name) => {
       const start = startingVolumes.get(name) ?? 0;
       player.volume = start + ((name === track ? volume : 0) - start) * progress;
