@@ -6,7 +6,7 @@ export interface GameDataStore {
   remove(key: string): Promise<void>;
 }
 
-export class LocalGameDataStore implements GameDataStore {
+export class FakeGameDataServer implements GameDataStore {
   constructor(
     private readonly storage: BrowserStorage,
     private readonly playerId: PlayerId,
@@ -28,3 +28,5 @@ export class LocalGameDataStore implements GameDataStore {
     return `players/${this.playerId}/${key}`;
   }
 }
+
+export { FakeGameDataServer as LocalGameDataStore };

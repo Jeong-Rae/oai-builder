@@ -6,7 +6,7 @@ import {
   PLAYER_REGISTRY_KEY,
   type BrowserStorage,
 } from "@/src/game/auth";
-import { LocalGameDataStore } from "@/src/game/dataStore";
+import { FakeGameDataServer } from "@/src/game/dataStore";
 
 function memoryStorage(): BrowserStorage & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -70,8 +70,8 @@ describe("Local Login", () => {
 
   it("PlayerId별로 게임 데이터를 격리한다", async () => {
     const storage = memoryStorage();
-    const firstPlayer = new LocalGameDataStore(storage, "local:first");
-    const secondPlayer = new LocalGameDataStore(storage, "local:second");
+    const firstPlayer = new FakeGameDataServer(storage, "local:first");
+    const secondPlayer = new FakeGameDataServer(storage, "local:second");
 
     await firstPlayer.set("progress", '{"stage":1}');
     await secondPlayer.set("progress", '{"stage":4}');

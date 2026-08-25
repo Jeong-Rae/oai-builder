@@ -83,6 +83,20 @@ describe("튜토리얼 안내 규칙", () => {
     ]);
   });
 
+  it("1-1에서 골에 도착하면 완료 안내를 표시한다", () => {
+    const definition = firstPlayTutorials[0];
+    const before = game([player]);
+    const signal = createMoveTutorialSignal(before, before, "right", {
+      events: [{ type: "game/completed" }],
+    });
+
+    expect(selectTutorialRule(definition.rules, signal, new Set())?.cue).toEqual({
+      id: "well-done",
+      mascot: "happy",
+      lines: [[{ text: "잘했어!" }]],
+    });
+  });
+
   it("1-2에서 노말 블록에 컨트롤이 옮겨지면 왼쪽 이동을 안내한다", () => {
     const definition = firstPlayTutorials[1];
     const playerAtRight = { ...player, position: { x: 2, y: 1 } };
@@ -132,6 +146,11 @@ describe("튜토리얼 안내 규칙", () => {
       ],
     });
     expect(matchesTutorialConditions(definition.completion.when, moveSignal)).toBe(true);
+    expect(selectTutorialRule(definition.rules, moveSignal, new Set())?.cue).toEqual({
+      id: "well-done",
+      mascot: "happy",
+      lines: [[{ text: "잘했어!" }]],
+    });
   });
 
   it("1-3에서 노말 블록이 플레이어에게 왼쪽 컨트롤을 전달하면 안내를 바꾼다", () => {

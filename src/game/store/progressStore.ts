@@ -5,6 +5,7 @@ export type StageStatus = "cleared" | "current" | "available" | "locked";
 
 const STORAGE_KEY = "progress";
 const TUTORIAL_STORAGE_KEY = "tutorial-completed";
+const TUTORIAL_STAGE_STORAGE_KEY = "tutorial-stage";
 
 function storageKey(chapterIndex: number, stageIndex: number): string {
   return `${chapterIndex}:${stageIndex}`;
@@ -12,8 +13,10 @@ function storageKey(chapterIndex: number, stageIndex: number): string {
 
 export interface ProgressStore {
   isTutorialCompleted(): boolean;
+  tutorialStageIndex(): number;
   isCleared(chapterIndex: number, stageIndex: number): boolean;
   clearedStages(chapterIndex: number, stageCount: number): ReadonlySet<number>;
+  markTutorialStageCompleted(stageIndex: number): Promise<void>;
   markTutorialCompleted(): Promise<void>;
   markCleared(chapterIndex: number, stageIndex: number): Promise<void>;
   reset(): Promise<void>;
@@ -22,6 +25,11 @@ export interface ProgressStore {
 export async function createProgressStore(storage?: GameDataStore): Promise<ProgressStore> {
   let cleared = new Set<string>();
   let tutorialCompleted = (await storage?.get(TUTORIAL_STORAGE_KEY)) === "true";
+  const storedTutorialStage = await storage?.get(TUTORIAL_STAGE_STORAGE_KEY);
+  let tutorialStage = storedTutorialStage == null ? 0 : Number(storedTutorialStage);
+  if (!Number.isSafeInteger(tutorialStage) || tutorialStage < 0) {
+    throw new Error("저장된 튜토리얼 진행 상태를 읽을 수 없습니다.");
+  }
   if (storage) {
     const raw = await storage.get(STORAGE_KEY);
     if (raw !== null) {
@@ -46,6 +54,9 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
     isTutorialCompleted() {
       return tutorialCompleted;
     },
+    tutorialStageIndex() {
+      return tutorialStage;
+    },
     isCleared(chapterIndex, stageIndex) {
       return cleared.has(storageKey(chapterIndex, stageIndex));
     },
@@ -55,6 +66,12 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
         if (cleared.has(storageKey(chapterIndex, stageIndex))) indices.add(stageIndex);
       }
       return indices;
+    },
+    async markTutorialStageCompleted(stageIndex) {
+      const nextStage = stageIndex + 1;
+      if (nextStage <= tutorialStage) return;
+      await storage?.set(TUTORIAL_STAGE_STORAGE_KEY, String(nextStage));
+      tutorialStage = nextStage;
     },
     async markTutorialCompleted() {
       if (tutorialCompleted) return;
@@ -72,8 +89,10 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
       const next = new Set<string>();
       await persist(next);
       await storage?.remove(TUTORIAL_STORAGE_KEY);
+      await storage?.remove(TUTORIAL_STAGE_STORAGE_KEY);
       cleared = next;
       tutorialCompleted = false;
+      tutorialStage = 0;
     },
   };
 }

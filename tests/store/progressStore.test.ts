@@ -72,17 +72,31 @@ describe("스테이지 진행 상태", () => {
     expect((await createProgressStore(storage)).isTutorialCompleted()).toBe(true);
   });
 
+  it("완료한 튜토리얼 스테이지 다음부터 이어서 진행한다", async () => {
+    const storage = memoryStorage();
+    const store = await createProgressStore(storage);
+
+    await store.markTutorialStageCompleted(0);
+    await store.markTutorialStageCompleted(1);
+
+    expect(store.tutorialStageIndex()).toBe(2);
+    expect((await createProgressStore(storage)).tutorialStageIndex()).toBe(2);
+  });
+
   it("초기화하면 스테이지 진행도와 튜토리얼 완료 상태를 함께 지운다", async () => {
     const storage = memoryStorage();
     const store = await createProgressStore(storage);
     await store.markCleared(0, 0);
+    await store.markTutorialStageCompleted(0);
     await store.markTutorialCompleted();
 
     await store.reset();
 
     expect(store.isCleared(0, 0)).toBe(false);
     expect(store.isTutorialCompleted()).toBe(false);
+    expect(store.tutorialStageIndex()).toBe(0);
     expect(storage.data.has("tutorial-completed")).toBe(false);
+    expect(storage.data.has("tutorial-stage")).toBe(false);
   });
 
   it("손상된 진행 상태를 정상 데이터로 사용하지 않는다", async () => {
@@ -112,5 +126,14 @@ describe("스테이지 진행 상태", () => {
 
     await expect(store.markTutorialCompleted()).rejects.toThrow("quota exceeded");
     expect(store.isTutorialCompleted()).toBe(false);
+  });
+
+  it("손상된 튜토리얼 진행 상태를 정상 데이터로 사용하지 않는다", async () => {
+    const storage = memoryStorage();
+    storage.data.set("tutorial-stage", "잘못된 값");
+
+    await expect(createProgressStore(storage)).rejects.toThrow(
+      "저장된 튜토리얼 진행 상태를 읽을 수 없습니다.",
+    );
   });
 });

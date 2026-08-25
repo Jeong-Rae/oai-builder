@@ -12,7 +12,7 @@ import {
   type ChallengeGateway,
   type DailyChallenge,
 } from "@/src/game/challenge";
-import { LocalGameDataStore } from "@/src/game/dataStore";
+import { FakeGameDataServer } from "@/src/game/dataStore";
 import { preloadAssets } from "@/src/game/preload";
 import { createChapterScene } from "@/src/game/scenes/chapter/controller";
 import { createChallengeResultScene } from "@/src/game/scenes/challenge-result/controller";
@@ -168,7 +168,7 @@ export class GameApp {
       playerId: authSession.playerId,
       displayName: authSession.displayName,
     };
-    await initializeProgressStore(new LocalGameDataStore(this.storage, session.playerId));
+    await initializeProgressStore(new FakeGameDataServer(this.storage, session.playerId));
     this.session = session;
   }
 
@@ -197,6 +197,11 @@ export class GameApp {
       this.showGroups();
       return;
     }
+    const stageIndex = progressStore.tutorialStageIndex();
+    if (stageIndex > 0) {
+      this.showPlayTutorial(stageIndex);
+      return;
+    }
     void this.show(createTutorialScene(this.showPlayTutorial));
   }
 
@@ -209,12 +214,21 @@ export class GameApp {
     void this.show(
       createTutorialGameScene(
         tutorial,
-        () => this.showPlayTutorial(stageIndex + 1),
+        () => void this.completeTutorialStage(stageIndex),
         () => void this.show(this.createIntroScene(true), true),
         () => void this.completeTutorial(),
       ),
       true,
     );
+  };
+
+  private completeTutorialStage = async (stageIndex: number): Promise<void> => {
+    try {
+      await progressStore.markTutorialStageCompleted(stageIndex);
+    } catch {
+      window.alert("튜토리얼 진행 상태를 저장하지 못했습니다. 다음 실행에서 다시 표시됩니다.");
+    }
+    this.showPlayTutorial(stageIndex + 1);
   };
 
   private completeTutorial = async (): Promise<void> => {

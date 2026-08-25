@@ -10,7 +10,18 @@ export const firstPlayTutorials = [
       lines: [[{ text: "별을 얻어 별자리를 되찾을 수 있도록 도와줘!" }]],
     },
     pathGuidance: { afterInitialMs: 2_000, mascot: "flag" },
-    rules: [],
+    rules: [
+      {
+        id: "goal-reached",
+        once: true,
+        when: [{ type: "event", event: "game/completed" }],
+        cue: {
+          id: "well-done",
+          mascot: "happy",
+          lines: [[{ text: "잘했어!" }]],
+        },
+      },
+    ],
   },
   {
     completion: {
@@ -50,6 +61,24 @@ export const firstPlayTutorials = [
           mascot: "flag",
           keyHint: "left",
           lines: [[{ text: "A/←", emphasis: true }, { text: "를 눌러서 사물을 움직여봐!" }]],
+        },
+      },
+      {
+        id: "normal-moved-left",
+        once: true,
+        when: [
+          { type: "direction", direction: "left" },
+          { type: "outcome", outcome: "moved" },
+          { type: "event", event: "entity/moved" },
+          {
+            type: "object",
+            entity: { role: "actor", id: "normal-1", kind: "normal" },
+          },
+        ],
+        cue: {
+          id: "well-done",
+          mascot: "happy",
+          lines: [[{ text: "잘했어!" }]],
         },
       },
     ],
