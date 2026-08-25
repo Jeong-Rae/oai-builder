@@ -110,7 +110,10 @@ export const firstPlayTutorials = [
         cue: {
           id: "left-control-restored",
           mascot: "flag",
-          lines: [[{ text: "이제 움직일 수 있어!" }]],
+          lines: [
+            [{ text: "사물이 나에게 부딪히면 방향키가 돌아오네!" }],
+            [{ text: "이제 움직일 수 있어!" }],
+          ],
         },
       },
     ],
@@ -174,7 +177,7 @@ export const firstPlayTutorials = [
           lines: [
             [{ text: "와! 레이저가 초록색이 됐어!" }],
             [{ text: "이제 지나갈 수 있겠어!" }],
-            [{ text: "어떤 게이트는 사물을 여러 개 올려둬야 하니, 기억하자!" }],
+            [{ text: "어떤 레이저는 사물을 여러 개 올려둬야 하니, 기억하자!" }],
           ],
         },
       },
