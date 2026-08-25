@@ -6,6 +6,7 @@ import {
   type AuthSession,
   type GameSession,
 } from "@/src/game/auth";
+import { bgmForChapter, type BgmTrack, preloadBgm, resumeBgm, setBgm } from "@/src/game/bgm";
 import {
   dailyChallenge,
   FakeChallengeServer,
@@ -26,7 +27,7 @@ import { attachClickStars } from "@/src/game/scenes/shared/backgroundStars";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
 import { createTutorialScene } from "@/src/game/scenes/tutorial/controller";
-import { nextSelection, type PlaySelection } from "@/src/game/stages";
+import { chapters, nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 import { playSfx, preloadSfx } from "@/src/game/sfx";
 import { firstPlayTutorials } from "@/src/game/tutorial/definitions";
@@ -110,6 +111,7 @@ export class GameApp {
   constructor(private readonly root: HTMLElement) {
     this.root.addEventListener("dragstart", (event) => event.preventDefault());
     this.root.addEventListener("click", this.handleButtonSound);
+    preloadBgm();
     preloadSfx();
     // TODO: 배포 확인이 끝나면 개발 환경에서만 단축키를 등록하도록 되돌립니다.
     // if (import.meta.env.DEV)
@@ -117,6 +119,7 @@ export class GameApp {
     this.transitionLayer = createSceneTransition();
     this.initialStartScene = this.createIntroScene(false);
     this.mount(this.initialStartScene);
+    setBgm("entire");
     const [introAssets, ...laterAssets] = gameAssetUrlGroups();
     this.preloadPromise = preloadAssets(
       [[() => document.fonts.load('1em "온글잎 박다현체"'), ...introAssets!], ...laterAssets],
@@ -136,6 +139,7 @@ export class GameApp {
   }
 
   private handleButtonSound = (event: MouseEvent): void => {
+    resumeBgm();
     if (!(event.target instanceof Element)) return;
     const button = event.target.closest<HTMLButtonElement>("button");
     if (!button || button.disabled || button.getAttribute("aria-disabled") === "true") return;
@@ -219,6 +223,7 @@ export class GameApp {
         () => void this.completeTutorial(),
       ),
       true,
+      "tutorial",
     );
   };
 
@@ -268,7 +273,7 @@ export class GameApp {
     }
   };
 
-  private async show(scene: Scene, wave = false): Promise<void> {
+  private async show(scene: Scene, wave = false, bgm: BgmTrack = "entire"): Promise<void> {
     const transitionId = ++this.transitionId;
     const previousFrame = this.frame;
     this.blockTransitionInput(previousFrame);
@@ -283,6 +288,7 @@ export class GameApp {
         return;
       }
       this.mount(scene);
+      setBgm(bgm);
       if (wave) await this.playWaveTransition("revealing");
       this.releaseTransitionInput();
     } catch (error) {
@@ -359,6 +365,7 @@ export class GameApp {
       overlay.append(scene.view);
       frame?.append(overlay);
       scene.activate?.();
+      setBgm("entire");
       this.releaseTransitionInput(frame);
     } catch (error) {
       scene.dispose();
@@ -399,7 +406,11 @@ export class GameApp {
   }
 
   private showGame = (selection: PlaySelection, wave = false): Promise<void> =>
-    this.show(this.prepareGame(selection), wave);
+    this.show(
+      this.prepareGame(selection),
+      wave,
+      bgmForChapter(chapters[selection.chapterIndex]!.sign),
+    );
   private showChallenge = (): void => {
     const challenge = dailyChallenge();
     void this.show(
@@ -448,7 +459,7 @@ export class GameApp {
       const clear = createClearScene(
         () => {
           nextClaimed = true;
-          void this.show(preparedNext);
+          void this.show(preparedNext, false, bgmForChapter(chapters[next.chapterIndex]!.sign));
         },
         () => {
           disposeNext();
