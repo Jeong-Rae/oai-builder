@@ -23,7 +23,7 @@ export function createDemoEndView(onBack: () => void): HTMLElement {
   const thanks = document.createElement("p");
   thanks.textContent = "같이 별을 찾아줘서 고마워!";
   const ending = document.createElement("p");
-  ending.textContent = "데모 버전은 여기까지야! 다음에 또 같이 찾아줘";
+  ending.textContent = "데모 버전은 여기까지야! 다음에도 같이 찾아줄거지?";
   message.append(thanks, ending);
 
   const mascotLayer = document.createElement("div");
