@@ -25,4 +25,5 @@
   position: absolute;
   top: 63.153%;
   width: 10.156%;
+  z-index: 999;
 }
