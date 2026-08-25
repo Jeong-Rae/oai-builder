@@ -48,11 +48,13 @@ const normal: Entity = {
 };
 
 describe("튜토리얼 안내 규칙", () => {
-  it("1-1부터 1-3까지 순서대로 준비한다", () => {
+  it("1-1부터 2-2까지 순서대로 준비한다", () => {
     expect(firstPlayTutorials.map(({ id }) => id)).toEqual([
       "tutorial-01.stage-01",
       "tutorial-01.stage-02",
       "tutorial-01.stage-03",
+      "tutorial-02.stage-01",
+      "tutorial-02.stage-02",
     ]);
   });
 
@@ -175,6 +177,87 @@ describe("튜토리얼 안내 규칙", () => {
     ).toMatchObject({
       mascot: "flag",
       lines: [[{ text: "이제 움직일 수 있어!" }]],
+    });
+  });
+
+  it("2-1에서 왼쪽 컨트롤로 포탈 진입까지만 안내한다", () => {
+    const definition = firstPlayTutorials[3];
+    const before = game([{ ...player, controls: ["left"] }]);
+    const signal = createMoveTutorialSignal(before, before, "left", {
+      events: [
+        {
+          type: "entity/moved",
+          entityId: "player",
+          from: { x: 0, y: 1 },
+          wormhole: { x: 1, y: 1 },
+          to: { x: 2, y: 1 },
+        },
+      ],
+    });
+
+    expect(definition).toMatchObject({
+      initialControls: { player: ["left"] },
+      initialCue: {
+        mascot: "lens",
+        lines: [
+          [{ text: "별까지 가려면 왼쪽 방향키가 필요한데…" }],
+          [{ text: "여기 똑같이 생긴 포탈이 두 개가 있어!" }],
+          [{ text: "한번 가까운 포탈로 이동해볼까?" }],
+        ],
+      },
+      pathGuidance: { mascot: "flag", until: [{ type: "wormhole" }] },
+    });
+    expect(matchesTutorialConditions(definition.pathGuidance.until, signal)).toBe(true);
+    expect(selectTutorialRule(definition.rules, signal, new Set())?.cue).toMatchObject({
+      mascot: "lens",
+      lines: [
+        [{ text: "똑같은 색의 포탈끼리 이어지는구나." }],
+        [{ text: "포탈을 이용하면 방향키로 갈 수 없는 곳에도 갈 수 있어!" }],
+        [{ text: "별까지 이동해보자!" }],
+      ],
+    });
+  });
+
+  it("2-2에서 노말 블록이 발판을 누르면 게이트 안내를 바꾼다", () => {
+    const definition = firstPlayTutorials[4];
+    const normalControlling = {
+      ...normal,
+      position: { x: 2, y: 1 },
+      controls: ["left"] as Direction[],
+    };
+    const before = game([{ ...player, controls: [] }, normalControlling]);
+    const signal = createMoveTutorialSignal(before, before, "left", {
+      events: [
+        {
+          type: "entity/moved",
+          entityId: "normal-1",
+          from: { x: 2, y: 1 },
+          to: { x: 1, y: 1 },
+        },
+        { type: "plate/activated", position: { x: 1, y: 1 } },
+      ],
+    });
+
+    expect(definition).toMatchObject({
+      initialCue: {
+        mascot: "lens",
+        lines: [
+          [{ text: "별까지 가야 하는데 레이저 때문에 지나갈 수가 없잖아." }],
+          [{ text: "레이저를 지나가려면" }],
+          [{ text: "발판 위에 사물을 올려놔야 하는데…" }],
+          [{ text: "사물을 어떻게 올려둘 수 있을까?" }],
+        ],
+      },
+    });
+    expect(definition).not.toHaveProperty("pathGuidance");
+    expect(selectTutorialRule(definition.rules, signal, new Set())?.cue).toMatchObject({
+      mascot: "happy",
+      lines: [
+        [{ text: "와! 레이저가 초록색이 됐어!" }],
+        [{ text: "이제 지나갈 수 있겠어!" }],
+        [{ text: "어떤 게이트는 사물을 여러 개 올려둬야 할 수도 있으니," }],
+        [{ text: "기억해두자고!" }],
+      ],
     });
   });
 

@@ -82,4 +82,73 @@ export const firstPlayTutorials = [
       },
     ],
   },
+  {
+    id: "tutorial-02.stage-01",
+    initialControls: { player: ["left"] },
+    mapUrl: new URL("@/maps/tutorial-02.stage-01.map", import.meta.url).href,
+    initialCue: {
+      id: "find-wormhole",
+      mascot: "lens",
+      lines: [
+        [{ text: "별까지 가려면 왼쪽 방향키가 필요한데…" }],
+        [{ text: "여기 똑같이 생긴 포탈이 두 개가 있어!" }],
+        [{ text: "한번 가까운 포탈로 이동해볼까?" }],
+      ],
+    },
+    pathGuidance: {
+      afterInitialMs: 2_000,
+      mascot: "flag",
+      until: [{ type: "wormhole" }],
+    },
+    rules: [
+      {
+        id: "wormhole-entered",
+        once: true,
+        when: [{ type: "wormhole" }],
+        cue: {
+          id: "wormhole-entered",
+          mascot: "lens",
+          lines: [
+            [{ text: "똑같은 색의 포탈끼리 이어지는구나." }],
+            [{ text: "포탈을 이용하면 방향키로 갈 수 없는 곳에도 갈 수 있어!" }],
+            [{ text: "별까지 이동해보자!" }],
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "tutorial-02.stage-02",
+    mapUrl: new URL("@/maps/tutorial-02.stage-02.map", import.meta.url).href,
+    initialCue: {
+      id: "open-gate",
+      mascot: "lens",
+      lines: [
+        [{ text: "별까지 가야 하는데 레이저 때문에 지나갈 수가 없잖아." }],
+        [{ text: "레이저를 지나가려면" }],
+        [{ text: "발판 위에 사물을 올려놔야 하는데…" }],
+        [{ text: "사물을 어떻게 올려둘 수 있을까?" }],
+      ],
+    },
+    rules: [
+      {
+        id: "gate-opened",
+        once: true,
+        when: [
+          { type: "event", event: "plate/activated" },
+          { type: "object", entity: { role: "actor", id: "normal-1", kind: "normal" } },
+        ],
+        cue: {
+          id: "gate-opened",
+          mascot: "happy",
+          lines: [
+            [{ text: "와! 레이저가 초록색이 됐어!" }],
+            [{ text: "이제 지나갈 수 있겠어!" }],
+            [{ text: "어떤 게이트는 사물을 여러 개 올려둬야 할 수도 있으니," }],
+            [{ text: "기억해두자고!" }],
+          ],
+        },
+      },
+    ],
+  },
 ] as const satisfies readonly TutorialDefinition[];

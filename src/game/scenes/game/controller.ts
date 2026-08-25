@@ -75,6 +75,7 @@ function createMapGameScene(
   const shownTutorialRuleIds = new Set<string>();
   let tutorialCueId = tutorialDefinition?.initialCue.id;
   let tutorialGuidanceActive = false;
+  let tutorialGuidanceCompleted = false;
   let tutorialGuidanceTimer: number | undefined;
   const renderPathGuidance = (game: GameState) => {
     const guidance = tutorialDefinition?.pathGuidance;
@@ -88,6 +89,13 @@ function createMapGameScene(
   };
   const sendTutorial = (signal: TutorialSignal) => {
     if (!tutorialDefinition) return;
+    const guidanceUntil = tutorialDefinition.pathGuidance?.until;
+    if (guidanceUntil && matchesTutorialConditions(guidanceUntil, signal)) {
+      tutorialGuidanceActive = false;
+      tutorialGuidanceCompleted = true;
+      if (tutorialGuidanceTimer !== undefined) window.clearTimeout(tutorialGuidanceTimer);
+      tutorialGuidanceTimer = undefined;
+    }
     const rule = selectTutorialRule(tutorialDefinition.rules, signal, shownTutorialRuleIds);
     if (!rule) return;
     if (rule.once) shownTutorialRuleIds.add(rule.id);
@@ -165,6 +173,7 @@ function createMapGameScene(
       !active ||
       !store ||
       tutorialGuidanceActive ||
+      tutorialGuidanceCompleted ||
       tutorialGuidanceTimer !== undefined
     )
       return;

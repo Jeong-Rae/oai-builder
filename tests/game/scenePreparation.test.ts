@@ -235,6 +235,70 @@ describe("게임 장면 사전 준비", () => {
     scene.dispose();
   });
 
+  it("종료 조건을 만족하면 경로 안내를 멈추고 이벤트 안내를 유지한다", async () => {
+    vi.useFakeTimers();
+    let listener!: (state: any, previous: any) => void;
+    mocked.subscribe.mockImplementationOnce((entry) => {
+      listener = entry;
+      return vi.fn();
+    });
+    mocked.controlledEntityId = "player";
+    mocked.direction = "left";
+    mocked.pathDirection = "left";
+    mocked.dispatch.mockReturnValue({
+      events: [
+        {
+          type: "entity/moved",
+          entityId: "player",
+          from: { x: 1, y: 1 },
+          wormhole: { x: 0, y: 1 },
+          to: { x: 2, y: 1 },
+        },
+      ],
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+    const eventCue = { id: "wormhole", mascot: "lens" as const, lines: [[{ text: "도착!" }]] };
+    const definition: TutorialDefinition = {
+      id: "tutorial-path-until",
+      mapUrl: "/tutorial.map",
+      initialCue: { id: "start", mascot: "lens", lines: [[{ text: "포탈로 가자!" }]] },
+      pathGuidance: {
+        afterInitialMs: 2_000,
+        mascot: "flag",
+        until: [{ type: "wormhole" }],
+      },
+      rules: [{ id: "wormhole", when: [{ type: "wormhole" }], cue: eventCue }],
+    };
+    const scene = createTutorialGameScene(definition, vi.fn(), vi.fn());
+    await scene.ready;
+    scene.activate();
+    vi.advanceTimersByTime(2_000);
+
+    const keydown = mocked.addEventListener.mock.calls.find(
+      ([type]) => type === "keydown",
+    )?.[1] as (event: KeyboardEvent) => void;
+    keydown({ key: "ArrowLeft", preventDefault: vi.fn() } as unknown as KeyboardEvent);
+    expect(mocked.renderTutorialCue).toHaveBeenLastCalledWith(eventCue);
+
+    mocked.pathDirection = "right";
+    listener(
+      { game: { status: "playing", plateStates: {} }, eventStream: [] },
+      { game: { status: "playing", plateStates: {} }, eventStream: [] },
+    );
+    expect(mocked.renderTutorialCue).toHaveBeenLastCalledWith(eventCue);
+    scene.dispose();
+  });
+
   it("튜토리얼 완료 조건을 만족하면 goal 도달 없이 완료한다", async () => {
     vi.useFakeTimers();
     mocked.controlledEntityId = "normal-1";

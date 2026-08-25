@@ -28,6 +28,7 @@ export interface TutorialCue {
 export interface TutorialPathGuidance {
   afterInitialMs: number;
   mascot: TutorialMascotKey;
+  until?: TutorialConditions;
 }
 
 export interface TutorialEntitySelector {
@@ -41,6 +42,7 @@ export type TutorialCondition =
   | { type: "outcome"; outcome: Exclude<TutorialOutcome, "rejected"> }
   | { type: "outcome"; outcome: "rejected"; reason?: RejectionReason }
   | { type: "event"; event: GameEvent["type"] }
+  | { type: "wormhole" }
   | { type: "object"; entity: TutorialEntitySelector }
   | { type: "action"; action: TutorialAction; result?: TutorialActionResult };
 
@@ -178,6 +180,8 @@ function conditionMatches(signal: TutorialSignal, condition: TutorialCondition):
       );
     case "event":
       return signal.events.some((event) => event.type === condition.event);
+    case "wormhole":
+      return signal.events.some((event) => event.type === "entity/moved" && event.wormhole);
     case "object":
       return entityMatches(signal, condition.entity);
     case "action":
