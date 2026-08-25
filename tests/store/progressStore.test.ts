@@ -83,20 +83,35 @@ describe("스테이지 진행 상태", () => {
     expect((await createProgressStore(storage)).tutorialStageIndex()).toBe(2);
   });
 
+  it("입장 튜토리얼 완료 상태를 플레이어 저장소에 영구 저장한다", async () => {
+    const storage = memoryStorage();
+    const store = await createProgressStore(storage);
+    expect(store.isEntryTutorialCompleted(1, 0)).toBe(false);
+
+    await store.markEntryTutorialCompleted(1, 0);
+
+    expect(store.isEntryTutorialCompleted(1, 0)).toBe(true);
+    expect(store.isEntryTutorialCompleted(1, 1)).toBe(false);
+    expect((await createProgressStore(storage)).isEntryTutorialCompleted(1, 0)).toBe(true);
+  });
+
   it("초기화하면 스테이지 진행도와 튜토리얼 완료 상태를 함께 지운다", async () => {
     const storage = memoryStorage();
     const store = await createProgressStore(storage);
     await store.markCleared(0, 0);
     await store.markTutorialStageCompleted(0);
     await store.markTutorialCompleted();
+    await store.markEntryTutorialCompleted(1, 0);
 
     await store.reset();
 
     expect(store.isCleared(0, 0)).toBe(false);
     expect(store.isTutorialCompleted()).toBe(false);
     expect(store.tutorialStageIndex()).toBe(0);
+    expect(store.isEntryTutorialCompleted(1, 0)).toBe(false);
     expect(storage.data.has("tutorial-completed")).toBe(false);
     expect(storage.data.has("tutorial-stage")).toBe(false);
+    expect(storage.data.has("entry-tutorial")).toBe(false);
   });
 
   it("손상된 진행 상태를 정상 데이터로 사용하지 않는다", async () => {

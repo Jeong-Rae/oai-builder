@@ -6,6 +6,7 @@ export type StageStatus = "cleared" | "current" | "available" | "locked";
 const STORAGE_KEY = "progress";
 const TUTORIAL_STORAGE_KEY = "tutorial-completed";
 const TUTORIAL_STAGE_STORAGE_KEY = "tutorial-stage";
+const ENTRY_TUTORIAL_STORAGE_KEY = "entry-tutorial";
 
 function storageKey(chapterIndex: number, stageIndex: number): string {
   return `${chapterIndex}:${stageIndex}`;
@@ -14,10 +15,12 @@ function storageKey(chapterIndex: number, stageIndex: number): string {
 export interface ProgressStore {
   isTutorialCompleted(): boolean;
   tutorialStageIndex(): number;
+  isEntryTutorialCompleted(chapterIndex: number, stageIndex: number): boolean;
   isCleared(chapterIndex: number, stageIndex: number): boolean;
   clearedStages(chapterIndex: number, stageCount: number): ReadonlySet<number>;
   markTutorialStageCompleted(stageIndex: number): Promise<void>;
   markTutorialCompleted(): Promise<void>;
+  markEntryTutorialCompleted(chapterIndex: number, stageIndex: number): Promise<void>;
   markCleared(chapterIndex: number, stageIndex: number): Promise<void>;
   reset(): Promise<void>;
 }
@@ -30,6 +33,7 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
   if (!Number.isSafeInteger(tutorialStage) || tutorialStage < 0) {
     throw new Error("저장된 튜토리얼 진행 상태를 읽을 수 없습니다.");
   }
+  let entryTutorialCompletedKeys = new Set<string>();
   if (storage) {
     const raw = await storage.get(STORAGE_KEY);
     if (raw !== null) {
@@ -44,6 +48,19 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
       }
       cleared = new Set(parsed);
     }
+    const entryRaw = await storage.get(ENTRY_TUTORIAL_STORAGE_KEY);
+    if (entryRaw !== null) {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(entryRaw);
+      } catch {
+        throw new Error("저장된 튜토리얼 진행 상태를 읽을 수 없습니다.");
+      }
+      if (!Array.isArray(parsed) || !parsed.every((entry) => typeof entry === "string")) {
+        throw new Error("저장된 튜토리얼 진행 상태를 읽을 수 없습니다.");
+      }
+      entryTutorialCompletedKeys = new Set(parsed);
+    }
   }
 
   const persist = async (next: ReadonlySet<string>): Promise<void> => {
@@ -56,6 +73,9 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
     },
     tutorialStageIndex() {
       return tutorialStage;
+    },
+    isEntryTutorialCompleted(chapterIndex, stageIndex) {
+      return entryTutorialCompletedKeys.has(storageKey(chapterIndex, stageIndex));
     },
     isCleared(chapterIndex, stageIndex) {
       return cleared.has(storageKey(chapterIndex, stageIndex));
@@ -78,6 +98,15 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
       await storage?.set(TUTORIAL_STORAGE_KEY, "true");
       tutorialCompleted = true;
     },
+    async markEntryTutorialCompleted(chapterIndex, stageIndex) {
+      const key = storageKey(chapterIndex, stageIndex);
+      if (entryTutorialCompletedKeys.has(key)) return;
+      await storage?.set(
+        ENTRY_TUTORIAL_STORAGE_KEY,
+        JSON.stringify([...entryTutorialCompletedKeys, key]),
+      );
+      entryTutorialCompletedKeys = new Set(entryTutorialCompletedKeys).add(key);
+    },
     async markCleared(chapterIndex, stageIndex) {
       const key = storageKey(chapterIndex, stageIndex);
       if (cleared.has(key)) return;
@@ -90,9 +119,11 @@ export async function createProgressStore(storage?: GameDataStore): Promise<Prog
       await persist(next);
       await storage?.remove(TUTORIAL_STORAGE_KEY);
       await storage?.remove(TUTORIAL_STAGE_STORAGE_KEY);
+      await storage?.remove(ENTRY_TUTORIAL_STORAGE_KEY);
       cleared = next;
       tutorialCompleted = false;
       tutorialStage = 0;
+      entryTutorialCompletedKeys = new Set();
     },
   };
 }

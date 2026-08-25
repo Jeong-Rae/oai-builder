@@ -184,3 +184,187 @@ export const firstPlayTutorials = [
     ],
   },
 ] as const satisfies readonly TutorialDefinition[];
+
+export function entryTutorialKey(chapterIndex: number, stageIndex: number): string {
+  return `${chapterIndex}:${stageIndex}`;
+}
+
+export const entryTutorials = {
+  [entryTutorialKey(1, 0)]: [
+    {
+      id: "tutorial-03.stage-01",
+      mapUrl: new URL("@/maps/tutorial-03.stage-01.map", import.meta.url).href,
+      initialCue: {
+        id: "meet-anchor",
+        mascot: "lens",
+        keyHint: "down",
+        lines: [[{ text: "어라, 저기 닻이 있네!" }], [{ text: "닻에 부딪혀볼까?" }]],
+      },
+      rules: [
+        {
+          id: "anchor-stores-control",
+          once: true,
+          when: [
+            { type: "direction", direction: "down" },
+            { type: "event", event: "control/transferred" },
+            { type: "object", entity: { role: "target", id: "anchor-1", kind: "anchor" } },
+          ],
+          cue: {
+            id: "anchor-stores-control",
+            mascot: "lens",
+            lines: [
+              [{ text: "이런! 아래쪽 방향키가 앵커에게 갔잖아!" }],
+              [{ text: "아래쪽 방향키를 눌러볼까?" }],
+            ],
+          },
+        },
+        {
+          id: "anchor-fixed-rejection",
+          once: true,
+          when: [
+            { type: "direction", direction: "down" },
+            { type: "outcome", outcome: "rejected" },
+          ],
+          cue: {
+            id: "anchor-fixed-rejection",
+            mascot: "lens",
+            lines: [
+              [{ text: "앵커는 방향키를 가져도 움직이지 않아." }],
+              [{ text: "방향키를 되찾으려면 앵커에 다시 부딪혀야 해!" }],
+            ],
+          },
+        },
+        {
+          id: "anchor-returns-control",
+          once: true,
+          when: [
+            { type: "direction", direction: "right" },
+            { type: "event", event: "control/transferred" },
+            { type: "object", entity: { role: "target", id: "anchor-1", kind: "anchor" } },
+          ],
+          cue: {
+            id: "anchor-returns-control",
+            mascot: "happy",
+            lines: [[{ text: "와! 방향키가 돌아왔어!" }]],
+          },
+        },
+        {
+          id: "bump-anchor-again",
+          once: true,
+          when: [{ type: "wormhole" }],
+          cue: {
+            id: "bump-anchor-again",
+            mascot: "flag",
+            keyHint: "right",
+            lines: [[{ text: "이제 앵커에 부딪혀봐!" }]],
+          },
+        },
+        {
+          id: "teleport-to-anchor",
+          once: true,
+          when: [{ type: "direction" }],
+          cue: {
+            id: "teleport-to-anchor",
+            mascot: "flag",
+            keyHint: "right",
+            lines: [[{ text: "우선 텔레포트를 타고 앵커 옆으로 이동해보자." }]],
+          },
+        },
+      ],
+      completion: {
+        waitForNext: true,
+        when: [
+          { type: "direction", direction: "right" },
+          { type: "event", event: "control/transferred" },
+          { type: "object", entity: { role: "target", id: "anchor-1", kind: "anchor" } },
+        ],
+      },
+    },
+    {
+      id: "tutorial-03.stage-02",
+      initialControls: { player: ["left", "right"], "swapper-1": ["up", "down"] },
+      mapUrl: new URL("@/maps/tutorial-03.stage-02.map", import.meta.url).href,
+      initialCue: {
+        id: "meet-swapper",
+        mascot: "lens",
+        keyHint: "right",
+        lines: [[{ text: "엇, 저건 스와퍼잖아?" }], [{ text: "스와퍼에 부딪혀볼까" }]],
+      },
+      rules: [
+        {
+          id: "swapper-swapped-controls",
+          once: true,
+          when: [
+            { type: "event", event: "controls/swapped" },
+            { type: "object", entity: { id: "swapper-1", kind: "swapper" } },
+          ],
+          cue: {
+            id: "swapper-swapped-controls",
+            mascot: "lens",
+            keyHint: "right",
+            lines: [
+              [{ text: "어라? 방향키 하나가 아니라" }],
+              [{ text: "가지고 있던 방향키가 전부 바뀌었네!" }],
+              [{ text: "오른쪽 방향키를 눌러볼까?" }],
+            ],
+          },
+        },
+        {
+          id: "swapper-moved-instead",
+          once: true,
+          when: [
+            { type: "direction", direction: "right" },
+            { type: "outcome", outcome: "moved" },
+            { type: "event", event: "entity/moved" },
+            { type: "object", entity: { role: "actor", id: "swapper-1", kind: "swapper" } },
+          ],
+          cue: {
+            id: "swapper-moved-instead",
+            mascot: "lens",
+            lines: [
+              [{ text: "이번에는 네가 아니라 스와퍼가 움직였어!" }],
+              [{ text: "스와퍼가 너의 방향키를 가져갔나봐." }],
+            ],
+          },
+        },
+        {
+          id: "controls-restored",
+          once: true,
+          when: [
+            { type: "direction", direction: "left" },
+            { type: "event", event: "controls/swapped" },
+            { type: "object", entity: { id: "swapper-1", kind: "swapper" } },
+          ],
+          cue: {
+            id: "controls-restored",
+            mascot: "happy",
+            lines: [
+              [{ text: "방향키가 다시 돌아왔어!" }],
+              [{ text: "스와퍼와 부딪히면" }],
+              [{ text: "서로 가지고 있는 방향키가 전부 교환돼." }],
+            ],
+          },
+        },
+        {
+          id: "move-swapper-back",
+          once: true,
+          when: [{ type: "direction" }],
+          cue: {
+            id: "move-swapper-back",
+            mascot: "flag",
+            keyHint: "left",
+            lines: [[{ text: "스와퍼를 다시 고양이 쪽으로 움직여봐!" }]],
+          },
+        },
+      ],
+      completion: {
+        waitForNext: true,
+        when: [
+          { type: "direction", direction: "left" },
+          { type: "event", event: "controls/swapped" },
+          { type: "object", entity: { id: "swapper-1", kind: "swapper" } },
+        ],
+      },
+    },
+  ] as const satisfies readonly TutorialDefinition[],
+} as const;

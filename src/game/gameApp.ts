@@ -42,7 +42,12 @@ import { createTutorialScene } from "@/src/game/scenes/tutorial/controller";
 import { chapters, isDemoEndStage, nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 import { playSfx, preloadSfx } from "@/src/game/sfx";
-import { firstPlayTutorials } from "@/src/game/tutorial/definitions";
+import {
+  entryTutorialKey,
+  entryTutorials,
+  firstPlayTutorials,
+} from "@/src/game/tutorial/definitions";
+import type { TutorialDefinition } from "@/src/game/tutorial/rules";
 
 interface Scene {
   view: HTMLElement;
@@ -412,12 +417,51 @@ export class GameApp {
     this.show(
       createStageSelectScene(
         chapterIndex,
-        (stageIndex) => this.showGame({ chapterIndex, stageIndex }, true),
+        (stageIndex) => void this.showEntryTutorialOrGame({ chapterIndex, stageIndex }),
         () => this.showChapter(chapterIndex + 1),
       ),
       wave,
       bgmForChapter(chapters[chapterIndex]!.sign),
     );
+  private showEntryTutorialOrGame(selection: PlaySelection): Promise<void> {
+    const tutorials =
+      entryTutorials[entryTutorialKey(selection.chapterIndex, selection.stageIndex)];
+    if (
+      !tutorials ||
+      progressStore.isEntryTutorialCompleted(selection.chapterIndex, selection.stageIndex)
+    )
+      return this.showGame(selection, true);
+    return this.showEntryTutorialStage(selection, tutorials, 0);
+  }
+  private showEntryTutorialStage = (
+    selection: PlaySelection,
+    tutorials: readonly TutorialDefinition[],
+    stageIndex: number,
+  ): Promise<void> => {
+    const tutorial = tutorials[stageIndex];
+    if (!tutorial) {
+      void this.completeEntryTutorial(selection);
+      return Promise.resolve();
+    }
+    return this.show(
+      createTutorialGameScene(
+        tutorial,
+        () => this.showEntryTutorialStage(selection, tutorials, stageIndex + 1),
+        () => void this.showStageSelect(selection.chapterIndex),
+        () => void this.completeEntryTutorial(selection),
+      ),
+      true,
+      "tutorial",
+    );
+  };
+  private completeEntryTutorial = async (selection: PlaySelection): Promise<void> => {
+    try {
+      await progressStore.markEntryTutorialCompleted(selection.chapterIndex, selection.stageIndex);
+    } catch {
+      window.alert("튜토리얼 진행 상태를 저장하지 못했습니다. 다음 실행에서 다시 표시됩니다.");
+    }
+    void this.showGame(selection, true);
+  };
   private prepareGame(selection: PlaySelection): GameScene {
     if (isDemoEndStage(selection))
       return createDemoEndScene(() => this.showStageSelect(selection.chapterIndex));

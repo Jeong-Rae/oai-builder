@@ -206,6 +206,32 @@ function createMapGameScene(
     view.setActionAvailability(false, false);
     completeTimer = window.setTimeout(() => onComplete(elapsedMs), delay);
   };
+  let awaitingTutorialConfirm = false;
+  const stopTutorialConfirm = () => {
+    if (!awaitingTutorialConfirm) return;
+    awaitingTutorialConfirm = false;
+    window.removeEventListener("keydown", confirmTutorial);
+    window.removeEventListener("pointerdown", confirmTutorialPointer);
+  };
+  const confirmTutorial = (event: KeyboardEvent) => {
+    event.preventDefault();
+    stopTutorialConfirm();
+    scheduleCompletion(0);
+  };
+  const confirmTutorialPointer = (event: PointerEvent) => {
+    if (event.target instanceof Element && event.target.closest("button")) return;
+    stopTutorialConfirm();
+    scheduleCompletion(0);
+  };
+  const beginTutorialConfirm = () => {
+    if (completeTimer !== undefined || awaitingTutorialConfirm) return;
+    awaitingTutorialConfirm = true;
+    motionLocked = true;
+    stopTimer();
+    view.setActionAvailability(false, false);
+    window.addEventListener("keydown", confirmTutorial);
+    window.addEventListener("pointerdown", confirmTutorialPointer);
+  };
   const keydown = (event: KeyboardEvent) => {
     if (!store || store.getState().game.status === "completed") return;
     const undoRequested = isUndoShortcut(event);
@@ -237,7 +263,10 @@ function createMapGameScene(
     if (tutorialCompleted || decision.events.some((entry) => entry.type === "game/completed"))
       playSfx("clear");
     view.setPlayerTexture(playerTextureForMove(game, direction, decision));
-    if (tutorialCompleted) scheduleCompletion(motionDuration(700));
+    if (tutorialCompleted) {
+      if (tutorialDefinition?.completion?.waitForNext) beginTutorialConfirm();
+      else scheduleCompletion(motionDuration(700));
+    }
     const teleport = decision.events.find(
       (entry) => entry.type === "entity/moved" && entry.wormhole,
     );
@@ -328,6 +357,7 @@ function createMapGameScene(
       unsubscribe?.();
       if (listening) window.removeEventListener("keydown", keydown);
       listening = false;
+      stopTutorialConfirm();
       if (completeTimer) window.clearTimeout(completeTimer);
       if (tutorialGuidanceTimer !== undefined) window.clearTimeout(tutorialGuidanceTimer);
       if (timerFrame !== undefined) window.cancelAnimationFrame(timerFrame);

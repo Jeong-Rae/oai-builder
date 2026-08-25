@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { Decision, Direction, Entity, GameState } from "@/src/game/domain/types";
-import { firstPlayTutorials } from "@/src/game/tutorial/definitions";
+import {
+  entryTutorialKey,
+  entryTutorials,
+  firstPlayTutorials,
+} from "@/src/game/tutorial/definitions";
 import {
   createActionTutorialSignal,
   createMoveTutorialSignal,
@@ -56,6 +60,26 @@ describe("튜토리얼 안내 규칙", () => {
       "tutorial-02.stage-01",
       "tutorial-02.stage-02",
     ]);
+  });
+
+  it("2챕터 1스테이지 입장 튜토리얼을 순서대로 준비한다", () => {
+    expect(entryTutorials[entryTutorialKey(1, 0)]?.map(({ id }) => id)).toEqual([
+      "tutorial-03.stage-01",
+      "tutorial-03.stage-02",
+    ]);
+    expect(entryTutorials[entryTutorialKey(0, 0)]).toBeUndefined();
+  });
+
+  it("입장 튜토리얼의 초기 방향키 소유를 설정한다", () => {
+    expect(entryTutorials[entryTutorialKey(1, 0)]?.[1]?.initialControls).toEqual({
+      player: ["left", "right"],
+      "swapper-1": ["up", "down"],
+    });
+  });
+
+  it("입장 튜토리얼 클리어 시 다음 상호작용을 기다린다", () => {
+    const tutorials = entryTutorials[entryTutorialKey(1, 0)] ?? [];
+    expect(tutorials.map(({ completion }) => completion?.waitForNext)).toEqual([true, true]);
   });
 
   it("방향에 맞는 WASD와 채워진 화살표 안내를 만든다", () => {
