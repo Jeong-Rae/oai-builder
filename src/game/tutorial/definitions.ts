@@ -272,7 +272,6 @@ export const entryTutorials = {
         },
       ],
       completion: {
-        waitForNext: true,
         when: [
           { type: "direction", direction: "right" },
           { type: "event", event: "control/transferred" },
@@ -358,7 +357,6 @@ export const entryTutorials = {
         },
       ],
       completion: {
-        waitForNext: true,
         when: [
           { type: "direction", direction: "left" },
           { type: "event", event: "controls/swapped" },

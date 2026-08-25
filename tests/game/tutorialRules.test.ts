@@ -77,11 +77,6 @@ describe("튜토리얼 안내 규칙", () => {
     });
   });
 
-  it("입장 튜토리얼 클리어 시 다음 상호작용을 기다린다", () => {
-    const tutorials = entryTutorials[entryTutorialKey(1, 0)] ?? [];
-    expect(tutorials.map(({ completion }) => completion?.waitForNext)).toEqual([true, true]);
-  });
-
   it("방향에 맞는 WASD와 채워진 화살표 안내를 만든다", () => {
     expect(
       (["up", "down", "left", "right"] as const).map((direction) =>

@@ -358,7 +358,7 @@ describe("게임 장면 사전 준비", () => {
     expect(mocked.dispatch).toHaveBeenCalledOnce();
     expect(mocked.setActionAvailability).toHaveBeenLastCalledWith(false, false);
     expect(onComplete).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(700);
+    vi.advanceTimersByTime(1_500);
     expect(onComplete).toHaveBeenCalledOnce();
     scene.dispose();
   });

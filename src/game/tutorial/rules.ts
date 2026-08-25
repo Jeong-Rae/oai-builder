@@ -56,7 +56,7 @@ export interface TutorialRule {
 }
 
 export interface TutorialDefinition {
-  completion?: { when: TutorialConditions; waitForNext?: boolean };
+  completion?: { when: TutorialConditions };
   id: string;
   initialControls?: Readonly<Record<string, readonly Direction[]>>;
   mapUrl: string;
