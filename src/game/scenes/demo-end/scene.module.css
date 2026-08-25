@@ -27,24 +27,39 @@
   color: #ffd866;
 }
 .mascotLayer {
-  bottom: 3%;
-  height: 48%;
-  left: 50%;
+  inset: 0;
   position: absolute;
-  transform: translateX(-50%);
-  width: 86%;
+  z-index: 1;
 }
 .mascot {
   animation:
     mascot-in 500ms ease-out calc(var(--mascot-index) * 100ms) both,
     mascot-float 3s ease-in-out calc(700ms + var(--mascot-index) * 100ms) infinite;
-  bottom: 0;
-  height: 100%;
-  left: calc(8% + var(--mascot-index) * 21%);
+  height: 27%;
   object-fit: contain;
   position: absolute;
   transform-origin: bottom center;
-  width: 22%;
+  width: 15%;
+}
+.mascot:nth-child(1) {
+  left: 11%;
+  top: 21%;
+}
+.mascot:nth-child(2) {
+  right: 11%;
+  top: 21%;
+}
+.mascot:nth-child(3) {
+  left: 25%;
+  top: 56%;
+}
+.mascot:nth-child(4) {
+  left: 42.5%;
+  top: 63%;
+}
+.mascot:nth-child(5) {
+  right: 25%;
+  top: 56%;
 }
 @keyframes mascot-in {
   from {

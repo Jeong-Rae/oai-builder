@@ -20,7 +20,9 @@ export function createChallengeResultView(
   const panel = document.createElement("section");
   panel.className = styles.panel;
   panel.style.backgroundImage = `url(${challengeDecorAssets.board})`;
+  panel.setAttribute("aria-modal", "true");
   panel.setAttribute("aria-labelledby", "challenge-result-title");
+  panel.setAttribute("role", "dialog");
   panel.append(...createCornerStars());
   const eyebrow = document.createElement("p");
   eyebrow.className = styles.eyebrow;
@@ -33,6 +35,11 @@ export function createChallengeResultView(
   const content = document.createElement("div");
   panel.append(content);
   root.append(panel, createBackButton("챕터 선택으로 돌아가기", onHome));
+  root.addEventListener("click", (event) => {
+    if (!(event.target instanceof Node) || panel.contains(event.target)) return;
+    if (event.target instanceof Element && event.target.closest("button")) return;
+    onHome();
+  });
   return {
     root,
     setLeaderboard(leaderboard) {

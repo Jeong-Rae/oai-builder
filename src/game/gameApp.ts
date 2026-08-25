@@ -341,7 +341,7 @@ export class GameApp {
   }
 
   private releaseTransitionInput(frame?: HTMLElement): void {
-    if (frame?.isConnected) frame.inert = false;
+    if (frame) frame.inert = false;
     window.removeEventListener("keydown", this.blockTransitionKeydown, true);
   }
 
@@ -374,6 +374,8 @@ export class GameApp {
         scene.dispose();
         previousDispose?.();
       };
+      const underlay = frame?.firstElementChild;
+      if (underlay instanceof HTMLElement) underlay.inert = true;
       const overlay = document.createElement("div");
       overlay.className = "game-overlay";
       overlay.append(scene.view);
@@ -383,7 +385,11 @@ export class GameApp {
       this.releaseTransitionInput(frame);
     } catch (error) {
       scene.dispose();
-      if (transitionId === this.transitionId) this.releaseTransitionInput(frame);
+      if (transitionId === this.transitionId) {
+        const underlay = frame?.firstElementChild;
+        if (underlay instanceof HTMLElement) underlay.inert = false;
+        this.releaseTransitionInput(frame);
+      }
       throw error;
     }
   };
@@ -413,7 +419,8 @@ export class GameApp {
       bgmForChapter(chapters[chapterIndex]!.sign),
     );
   private prepareGame(selection: PlaySelection): GameScene {
-    if (isDemoEndStage(selection)) return createDemoEndScene();
+    if (isDemoEndStage(selection))
+      return createDemoEndScene(() => this.showStageSelect(selection.chapterIndex));
     return createGameScene(
       selection,
       () => this.showClear(selection),
@@ -430,7 +437,7 @@ export class GameApp {
   private showChallenge = (): void => {
     const challenge = dailyChallenge();
     const result = createChallengeResultScene(challenge.date, this.session?.playerId ?? "", () =>
-      this.showChapter(0),
+      this.showGroups(true),
     );
     void this.show(
       createChallengeGameScene(

@@ -1,4 +1,5 @@
 import { backgroundUrl, startAssets, tutorialAssets } from "@/src/game/assets";
+import { createBackButton } from "@/src/game/components/BackButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/demo-end/scene.module.css";
 
@@ -10,7 +11,7 @@ const mascots = [
   tutorialAssets.mascots.lens,
 ] as const;
 
-export function createDemoEndView(): HTMLElement {
+export function createDemoEndView(onBack: () => void): HTMLElement {
   const root = document.createElement("main");
   root.className = styles.root;
   root.style.backgroundImage = `url(${backgroundUrl})`;
@@ -20,9 +21,9 @@ export function createDemoEndView(): HTMLElement {
   message.className = styles.message;
   message.setAttribute("role", "status");
   const thanks = document.createElement("p");
-  thanks.textContent = "플레이해주셔서 감사합니다.";
+  thanks.textContent = "같이 별을 찾아줘서 고마워!";
   const ending = document.createElement("p");
-  ending.textContent = "데모버전은 여기까지입니다.";
+  ending.textContent = "데모 버전은 여기까지야! 다음에 또 같이 찾아줘";
   message.append(thanks, ending);
 
   const mascotLayer = document.createElement("div");
@@ -36,6 +37,6 @@ export function createDemoEndView(): HTMLElement {
     mascotLayer.append(mascot);
   });
 
-  root.append(message, mascotLayer);
+  root.append(createBackButton("스테이지 선택으로 돌아가기", onBack), message, mascotLayer);
   return root;
 }
