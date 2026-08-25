@@ -1,68 +1,90 @@
 {
-  "version": 1,
-  "columns": 8,
+  "version": 2,
+  "columns": 9,
   "rows": 6,
   "tiles": [
     [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall"
     ],
     [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
-    ],
-    [
-      "blank",
+      "wall",
       "wormhole",
       "plate",
       "floor",
       "floor",
       "floor",
       "floor",
-      "exit"
+      "exit",
+      "wall"
+    ],
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "floor",
+      "wall",
+      "wall",
+      "wall",
+      "wall"
     ],
     [
       "blank",
       "blank",
       "blank",
-      "blank",
+      "wall",
       "gate",
-      "blank",
+      "wall",
+      "wall",
       "blank",
       "blank"
     ],
     [
       "blank",
       "blank",
-      "blank",
+      "wall",
       "floor",
       "floor",
       "floor",
       "wormhole",
+      "wall",
       "blank"
     ],
     [
       "blank",
       "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
       "blank"
     ]
+  ],
+  "wormholePairs": [
+    {
+      "id": 1,
+      "variant": 2,
+      "positions": [
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 6,
+          "y": 4
+        }
+      ]
+    }
   ],
   "objects": [
     {
@@ -70,14 +92,6 @@
       "kind": "player",
       "position": {
         "x": 3,
-        "y": 4
-      }
-    },
-    {
-      "id": "normal-1",
-      "kind": "normal",
-      "position": {
-        "x": 5,
         "y": 4
       }
     }

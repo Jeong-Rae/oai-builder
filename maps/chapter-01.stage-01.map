@@ -1,64 +1,85 @@
 {
   "version": 2,
-  "columns": 6,
-  "rows": 3,
+  "columns": 7,
+  "rows": 5,
   "tiles": [
     [
       "blank",
       "blank",
-      "wormhole",
-      "blank",
-      "blank",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
       "blank"
     ],
     [
+      "wall",
+      "wall",
+      "wall",
+      "wormhole",
+      "floor",
+      "wall",
+      "wall"
+    ],
+    [
+      "wall",
       "exit",
       "gate",
       "floor",
       "floor",
       "plate",
-      "blank"
+      "wall"
+    ],
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wormhole",
+      "floor",
+      "wall",
+      "wall"
     ],
     [
       "blank",
       "blank",
-      "wormhole",
-      "floor",
-      "blank",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
       "blank"
     ]
   ],
   "wormholePairs": [
     {
-      "id": 1,
-      "variant": 1,
+      "id": 2,
+      "variant": 4,
       "positions": [
         {
-          "x": 2,
-          "y": 0
+          "x": 3,
+          "y": 1
         },
         {
-          "x": 2,
-          "y": 2
+          "x": 3,
+          "y": 3
         }
       ]
     }
   ],
   "objects": [
     {
-      "id": "player",
-      "kind": "player",
+      "id": "normal-1",
+      "kind": "normal",
       "position": {
-        "x": 3,
+        "x": 4,
         "y": 2
       }
     },
     {
-      "id": "normal-1",
-      "kind": "normal",
+      "id": "player",
+      "kind": "player",
       "position": {
-        "x": 3,
-        "y": 1
+        "x": 4,
+        "y": 3
       }
     }
   ]

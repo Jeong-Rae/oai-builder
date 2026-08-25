@@ -1,27 +1,17 @@
 {
-  "version": 1,
-  "columns": 9,
-  "rows": 7,
+  "version": 2,
+  "columns": 10,
+  "rows": 6,
   "tiles": [
     [
       "blank",
       "blank",
       "blank",
       "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
-    ],
-    [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
       "blank",
       "blank"
     ],
@@ -30,25 +20,27 @@
       "blank",
       "blank",
       "blank",
-      "blank",
+      "wall",
       "exit",
       "floor",
+      "wall",
       "blank",
       "blank"
     ],
     [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "floor",
       "gate",
-      "blank",
+      "wall",
+      "wall",
       "blank"
     ],
     [
-      "blank",
+      "wall",
       "floor",
       "floor",
       "floor",
@@ -56,38 +48,57 @@
       "floor",
       "floor",
       "floor",
-      "blank"
+      "wall",
+      "wall"
     ],
     [
-      "blank",
-      "blank",
+      "wall",
+      "wall",
       "wormhole",
       "floor",
       "floor",
       "plate",
       "floor",
       "floor",
-      "wormhole"
+      "wormhole",
+      "wall"
     ],
     [
       "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall"
     ]
+  ],
+  "wormholePairs": [
+    {
+      "id": 9,
+      "variant": 4,
+      "positions": [
+        {
+          "x": 8,
+          "y": 4
+        },
+        {
+          "x": 2,
+          "y": 4
+        }
+      ]
+    }
   ],
   "objects": [
     {
-      "id": "normal-1",
-      "kind": "normal",
+      "id": "player",
+      "kind": "player",
       "position": {
-        "x": 6,
-        "y": 5
+        "x": 1,
+        "y": 3
       }
     },
     {
@@ -95,14 +106,14 @@
       "kind": "anchor",
       "position": {
         "x": 4,
-        "y": 5
+        "y": 4
       }
     },
     {
-      "id": "player",
-      "kind": "player",
+      "id": "normal-1",
+      "kind": "normal",
       "position": {
-        "x": 1,
+        "x": 6,
         "y": 4
       }
     }

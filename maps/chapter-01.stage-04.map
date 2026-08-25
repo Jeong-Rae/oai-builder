@@ -1,29 +1,16 @@
 {
   "version": 2,
-  "columns": 9,
-  "rows": 9,
+  "columns": 7,
+  "rows": 7,
   "tiles": [
     [
       "blank",
       "blank",
       "blank",
       "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
-    ],
-    [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
       "wall",
       "wall",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "blank",
@@ -32,9 +19,7 @@
       "blank",
       "wall",
       "exit",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -43,9 +28,7 @@
       "wall",
       "wall",
       "gate",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -54,9 +37,7 @@
       "floor",
       "floor",
       "floor",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -65,9 +46,7 @@
       "floor",
       "floor",
       "floor",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -76,9 +55,7 @@
       "plate",
       "floor",
       "wormhole",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -87,34 +64,21 @@
       "wall",
       "wall",
       "wall",
-      "wall",
-      "blank",
-      "blank"
-    ],
-    [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
+      "wall"
     ]
   ],
   "wormholePairs": [
     {
-      "id": 2,
-      "variant": 4,
+      "id": 1,
+      "variant": 1,
       "positions": [
         {
           "x": 1,
-          "y": 4
+          "y": 3
         },
         {
           "x": 5,
-          "y": 6
+          "y": 5
         }
       ]
     }
@@ -124,8 +88,16 @@
       "id": "normal-1",
       "kind": "normal",
       "position": {
+        "x": 4,
+        "y": 3
+      }
+    },
+    {
+      "id": "normal-2",
+      "kind": "normal",
+      "position": {
         "x": 5,
-        "y": 5
+        "y": 4
       }
     },
     {
@@ -133,15 +105,7 @@
       "kind": "player",
       "position": {
         "x": 5,
-        "y": 4
-      }
-    },
-    {
-      "id": "normal-3",
-      "kind": "normal",
-      "position": {
-        "x": 4,
-        "y": 4
+        "y": 3
       }
     }
   ]

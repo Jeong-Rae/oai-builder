@@ -1,29 +1,16 @@
 {
-  "version": 1,
-  "columns": 9,
-  "rows": 9,
+  "version": 2,
+  "columns": 7,
+  "rows": 7,
   "tiles": [
     [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
-    ],
-    [
       "wall",
       "wall",
       "wall",
       "wall",
       "wall",
       "wall",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -32,9 +19,7 @@
       "floor",
       "floor",
       "wormhole",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -43,9 +28,7 @@
       "wall",
       "wall",
       "floor",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -54,9 +37,7 @@
       "exit",
       "wall",
       "floor",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -65,9 +46,7 @@
       "gate",
       "wall",
       "floor",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -76,9 +55,7 @@
       "floor",
       "floor",
       "floor",
-      "wall",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
@@ -87,37 +64,40 @@
       "wall",
       "wall",
       "wall",
-      "wall",
-      "blank",
-      "blank"
-    ],
-    [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "blank"
+      "wall"
     ]
   ],
-  "objects": [
+  "wormholePairs": [
     {
-      "id": "normal-1",
-      "kind": "normal",
-      "position": {
-        "x": 3,
-        "y": 2
-      }
-    },
+      "id": 2,
+      "variant": 4,
+      "positions": [
+        {
+          "x": 5,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": 5
+        }
+      ]
+    }
+  ],
+  "objects": [
     {
       "id": "player",
       "kind": "player",
       "position": {
         "x": 4,
-        "y": 6
+        "y": 5
+      }
+    },
+    {
+      "id": "normal-1",
+      "kind": "normal",
+      "position": {
+        "x": 3,
+        "y": 1
       }
     }
   ]
