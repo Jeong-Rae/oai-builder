@@ -514,42 +514,15 @@ export class GameApp {
   };
   private showClear = async (selection: PlaySelection): Promise<void> => {
     const next = nextSelection(selection);
-    const preparedNext = this.prepareGame(next);
-    let nextClaimed = false;
-    let nextDisposed = false;
-    const disposeNext = () => {
-      if (nextClaimed || nextDisposed) return;
-      nextDisposed = true;
-      preparedNext.dispose();
-    };
     try {
       await progressStore.markCleared(selection.chapterIndex, selection.stageIndex);
       const clear = createClearScene(
-        () => {
-          nextClaimed = true;
-          void this.show(preparedNext, false, bgmForChapter(chapters[next.chapterIndex]!.sign));
-        },
-        () => {
-          disposeNext();
-          void this.showGame(selection);
-        },
-        () => {
-          disposeNext();
-          void this.showStageSelect(selection.chapterIndex);
-        },
+        () => void this.showEntryTutorialOrGame(next),
+        () => void this.showGame(selection),
+        () => void this.showStageSelect(selection.chapterIndex),
       );
-      await this.showOverlay(
-        {
-          ...clear,
-          dispose: () => {
-            clear.dispose();
-            disposeNext();
-          },
-        },
-        bgmForChapter(chapters[selection.chapterIndex]!.sign),
-      );
+      await this.showOverlay(clear, bgmForChapter(chapters[selection.chapterIndex]!.sign));
     } catch {
-      disposeNext();
       window.alert("진행 상태를 저장하지 못했습니다. 브라우저 저장소를 확인해 주세요.");
     }
   };

@@ -4,9 +4,9 @@
   "rows": 9,
   "tiles": [
     [
-      "floor",
-      "floor",
-      "floor",
+      "blank",
+      "blank",
+      "blank",
       "floor",
       "wall",
       "wall",
@@ -14,9 +14,9 @@
       "wall"
     ],
     [
-      "floor",
-      "floor",
-      "floor",
+      "blank",
+      "blank",
+      "blank",
       "wall",
       "wall",
       "floor",
@@ -24,9 +24,9 @@
       "wall"
     ],
     [
-      "floor",
-      "floor",
-      "floor",
+      "blank",
+      "blank",
+      "blank",
       "wall",
       "plate",
       "floor",

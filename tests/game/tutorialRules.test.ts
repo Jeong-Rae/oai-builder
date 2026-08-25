@@ -62,19 +62,11 @@ describe("튜토리얼 안내 규칙", () => {
     ]);
   });
 
-  it("2챕터 1스테이지 입장 튜토리얼을 순서대로 준비한다", () => {
+  it("2챕터 1스테이지에서는 3-1 입장 튜토리얼만 준비한다", () => {
     expect(entryTutorials[entryTutorialKey(1, 0)]?.map(({ id }) => id)).toEqual([
       "tutorial-03.stage-01",
-      "tutorial-03.stage-02",
     ]);
     expect(entryTutorials[entryTutorialKey(0, 0)]).toBeUndefined();
-  });
-
-  it("입장 튜토리얼의 초기 방향키 소유를 설정한다", () => {
-    expect(entryTutorials[entryTutorialKey(1, 0)]?.[1]?.initialControls).toEqual({
-      player: ["left", "right"],
-      "swapper-1": ["up", "down"],
-    });
   });
 
   it("방향에 맞는 WASD와 채워진 화살표 안내를 만든다", () => {
