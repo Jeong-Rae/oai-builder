@@ -161,6 +161,10 @@ export function stageFor({ chapterIndex, stageIndex }: PlaySelection): StageDefi
   return chapters[chapterIndex]!.stages[stageIndex]!;
 }
 
+export function isDemoEndStage({ chapterIndex, stageIndex }: PlaySelection): boolean {
+  return chapterIndex === 1 && stageIndex === 7;
+}
+
 export function nextSelection({ chapterIndex, stageIndex }: PlaySelection): PlaySelection {
   if (stageIndex + 1 < chapters[chapterIndex]!.stages.length) {
     return { chapterIndex, stageIndex: stageIndex + 1 };

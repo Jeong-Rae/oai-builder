@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   chapters,
   isChapterCleared,
+  isDemoEndStage,
   isChapterUnlocked,
   nextSelection,
   nextStage,
@@ -156,5 +157,11 @@ describe("스테이지 선택", () => {
       stageIndex: 0,
     });
     expect(stageFor({ chapterIndex: 2, stageIndex: 1 }).label).toBe("STAGE 2");
+  });
+
+  it("황소자리 2.8을 데모 종료 스테이지로 식별한다", () => {
+    expect(isDemoEndStage({ chapterIndex: 1, stageIndex: 7 })).toBe(true);
+    expect(isDemoEndStage({ chapterIndex: 1, stageIndex: 6 })).toBe(false);
+    expect(isDemoEndStage({ chapterIndex: 0, stageIndex: 7 })).toBe(false);
   });
 });

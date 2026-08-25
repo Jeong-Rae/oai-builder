@@ -28,16 +28,18 @@ import {
   type ChallengeResultScene,
 } from "@/src/game/scenes/challenge-result/controller";
 import { createClearScene } from "@/src/game/scenes/clear/controller";
+import { createDemoEndScene } from "@/src/game/scenes/demo-end/controller";
 import {
   createChallengeGameScene,
   createGameScene,
   createTutorialGameScene,
+  type GameScene,
 } from "@/src/game/scenes/game/controller";
 import { attachClickStars } from "@/src/game/scenes/shared/backgroundStars";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
 import { createTutorialScene } from "@/src/game/scenes/tutorial/controller";
-import { chapters, nextSelection, type PlaySelection } from "@/src/game/stages";
+import { chapters, isDemoEndStage, nextSelection, type PlaySelection } from "@/src/game/stages";
 import { initializeProgressStore, progressStore } from "@/src/game/store/progressStore";
 import { playSfx, preloadSfx } from "@/src/game/sfx";
 import { firstPlayTutorials } from "@/src/game/tutorial/definitions";
@@ -410,7 +412,8 @@ export class GameApp {
       wave,
       bgmForChapter(chapters[chapterIndex]!.sign),
     );
-  private prepareGame(selection: PlaySelection): ReturnType<typeof createGameScene> {
+  private prepareGame(selection: PlaySelection): GameScene {
+    if (isDemoEndStage(selection)) return createDemoEndScene();
     return createGameScene(
       selection,
       () => this.showClear(selection),
