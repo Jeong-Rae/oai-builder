@@ -9,7 +9,6 @@
 .story,
 .finalLine {
   color: #fff;
-  font-size: clamp(1rem, 2.05cqw, 2.6rem);
   font-weight: 500;
   left: 50%;
   letter-spacing: 0.045em;
@@ -28,6 +27,7 @@
 }
 
 .story {
+  font-size: clamp(0.9rem, 1.7cqw, 2.15rem);
   transition:
     filter 800ms ease,
     opacity 800ms ease;
@@ -52,10 +52,6 @@
 .story.blurred {
   filter: blur(1.3cqw);
   opacity: 0;
-}
-
-.second .story {
-  font-size: clamp(0.9rem, 1.7cqw, 2.15rem);
 }
 
 .mascot {
