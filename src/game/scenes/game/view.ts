@@ -468,6 +468,26 @@ export function createGameView(
     animation.cancel();
     animations.delete(animation);
   };
+  const playWormholePulse = (cell: HTMLElement) => {
+    const effect = document.createElement("span");
+    effect.className = styles.wormholeTravelEffect;
+    effect.setAttribute("aria-hidden", "true");
+    cell.append(effect);
+    const pulse = track(
+      effect.animate(
+        [
+          { opacity: 0, transform: "scale(0.72)" },
+          { opacity: 1, transform: "scale(1)" },
+          { opacity: 0, transform: "scale(1.22)" },
+        ],
+        { duration: 400, easing: "ease-out" },
+      ),
+    );
+    void finish(pulse).then(() => {
+      stop(pulse);
+      effect.remove();
+    });
+  };
   const stopHintWarnings = () => {
     hintWarnings.forEach(stop);
     hintWarnings = [];
@@ -524,6 +544,9 @@ export function createGameView(
 
       const generation = animationGeneration;
       entryCell.append(layer);
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      if (generation !== animationGeneration) return;
+      playWormholePulse(entryCell);
       const disappear = track(
         layer.animate(
           [
@@ -538,6 +561,7 @@ export function createGameView(
       if (generation !== animationGeneration) return;
 
       destinationCell.append(layer);
+      playWormholePulse(destinationCell);
       const appear = track(
         layer.animate(
           [
