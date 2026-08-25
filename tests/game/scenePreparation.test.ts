@@ -24,6 +24,7 @@ const mocked = vi.hoisted(() => ({
   onReset: undefined as (() => void) | undefined,
   onUndo: undefined as (() => void) | undefined,
   onHint: undefined as (() => void) | undefined,
+  onSkip: undefined as (() => void) | undefined,
   playWormhole: vi.fn(() => Promise.resolve()),
   removeEventListener: vi.fn(),
   setActionAvailability: vi.fn(),
@@ -45,10 +46,12 @@ vi.mock("@/src/game/scenes/game/view", () => ({
     onReset: () => void,
     onHint: () => void,
     mode: "stage" | "challenge" | "tutorial" = "stage",
+    onSkip?: () => void,
   ) => {
     mocked.onUndo = onUndo;
     mocked.onReset = onReset;
     mocked.onHint = onHint;
+    mocked.onSkip = onSkip;
     mocked.mode = mode;
     return {
       root: {} as HTMLElement,
@@ -140,6 +143,7 @@ describe("게임 장면 사전 준비", () => {
     mocked.onReset = undefined;
     mocked.onUndo = undefined;
     mocked.onHint = undefined;
+    mocked.onSkip = undefined;
     mocked.dispatch.mockReturnValue({ events: [] });
     mocked.playWormhole.mockImplementation(() => Promise.resolve());
     mocked.undo.mockReturnValue(true);
@@ -171,10 +175,12 @@ describe("게임 장면 사전 준비", () => {
       rules: [],
     };
 
-    const scene = createTutorialGameScene(definition, vi.fn(), vi.fn());
+    const onSkip = vi.fn();
+    const scene = createTutorialGameScene(definition, vi.fn(), vi.fn(), onSkip);
     await scene.ready;
 
     expect(mocked.mode).toBe("tutorial");
+    expect(mocked.onSkip).toBe(onSkip);
     expect(mocked.renderTutorialCue).toHaveBeenCalledWith(definition.initialCue);
     expect(fetch).toHaveBeenCalledWith(
       "/tutorial.map",

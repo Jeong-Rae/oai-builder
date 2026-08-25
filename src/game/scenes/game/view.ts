@@ -209,6 +209,7 @@ export function createGameView(
   onReset: () => void,
   onHint: () => void,
   mode: GameViewMode = "stage",
+  onSkip?: () => void,
 ): GameView {
   const root = document.createElement("main");
   root.className = `${styles.root} ${mode === "tutorial" ? styles.tutorial : ""}`;
@@ -247,6 +248,18 @@ export function createGameView(
   hintStatus.setAttribute("aria-live", "polite");
   navigation.append(undo, reset, hint, hintStatus);
   root.append(back, navigation);
+  if (mode === "tutorial" && onSkip) {
+    const skip = document.createElement("button");
+    skip.className = styles.skipButton;
+    skip.type = "button";
+    skip.textContent = "Skip";
+    skip.setAttribute("aria-label", "튜토리얼 건너뛰기");
+    skip.addEventListener("click", () => {
+      skip.disabled = true;
+      onSkip();
+    });
+    root.append(skip);
+  }
   const timer = document.createElement("output");
   timer.className = styles.timer;
   timer.setAttribute("aria-label", "챌린지 경과 시간");

@@ -45,8 +45,16 @@ export function createTutorialGameScene(
   definition: TutorialDefinition,
   onComplete: () => void,
   onBack: () => void,
+  onSkip?: () => void,
 ): GameScene {
-  return createMapGameScene(definition.mapUrl, () => onComplete(), onBack, "tutorial", definition);
+  return createMapGameScene(
+    definition.mapUrl,
+    () => onComplete(),
+    onBack,
+    "tutorial",
+    definition,
+    onSkip,
+  );
 }
 
 export interface GameScene {
@@ -62,6 +70,7 @@ function createMapGameScene(
   onBack: () => void,
   mode: GameViewMode,
   tutorialDefinition?: TutorialDefinition,
+  onSkip?: () => void,
 ): GameScene {
   const timed = mode === "challenge";
   const timers = new Map<string, number[]>();
@@ -143,7 +152,7 @@ function createMapGameScene(
     sendHint({ type: "hint/requested", result });
     sendTutorialAction("hint", result.status === "available" ? "succeeded" : "unavailable", game);
   };
-  const view = createGameView(onBack, undo, reset, hint, mode);
+  const view = createGameView(onBack, undo, reset, hint, mode, onSkip);
   if (tutorialDefinition) view.renderTutorialCue(tutorialDefinition.initialCue);
   const abort = new AbortController();
   let active = false;

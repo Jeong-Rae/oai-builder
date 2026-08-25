@@ -84,6 +84,37 @@
   white-space: nowrap;
   width: 1px;
 }
+.skipButton {
+  background: rgb(8 14 20 / 72%);
+  border: 0.14cqw solid #f8edd8;
+  border-radius: 999px;
+  color: #f8edd8;
+  cursor: pointer;
+  font:
+    700 clamp(0.9rem, 1.45cqw, 1.8rem) "온글잎 박다현체",
+    monospace;
+  letter-spacing: 0.08em;
+  padding: 0.45cqw 1.4cqw 0.35cqw;
+  position: absolute;
+  right: 4%;
+  top: 4%;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    filter 150ms ease;
+  z-index: 4;
+}
+.skipButton:hover:not(:disabled),
+.skipButton:focus-visible:not(:disabled) {
+  background: #f8edd8;
+  color: #101d34;
+  filter: drop-shadow(0 0 0.35cqw rgb(215 249 255 / 55%));
+  outline: none;
+}
+.skipButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
 .timer {
   color: #ffd866;
   font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;

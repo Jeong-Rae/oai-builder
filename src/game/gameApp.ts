@@ -211,6 +211,7 @@ export class GameApp {
         tutorial,
         () => this.showPlayTutorial(stageIndex + 1),
         () => void this.show(this.createIntroScene(true), true),
+        () => void this.completeTutorial(),
       ),
       true,
     );
