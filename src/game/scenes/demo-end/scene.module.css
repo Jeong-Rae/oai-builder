@@ -51,7 +51,7 @@
 }
 .mascot:nth-child(3) {
   left: 25%;
-  top: 56%;
+  top: 50%;
 }
 .mascot:nth-child(4) {
   left: 42.5%;
@@ -59,7 +59,7 @@
 }
 .mascot:nth-child(5) {
   right: 25%;
-  top: 56%;
+  top: 50%;
 }
 @keyframes mascot-in {
   from {

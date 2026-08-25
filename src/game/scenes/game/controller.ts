@@ -153,6 +153,8 @@ function createMapGameScene(
     sendTutorialAction("hint", result.status === "available" ? "succeeded" : "unavailable", game);
   };
   const view = createGameView(onBack, undo, reset, hint, mode, onSkip);
+  const secretClearCode = mode === "stage" && !tutorialDefinition ? "wswwswswws" : undefined;
+  let secretBuffer = "";
   if (tutorialDefinition) view.renderTutorialCue(tutorialDefinition.initialCue);
   const abort = new AbortController();
   let active = false;
@@ -208,6 +210,18 @@ function createMapGameScene(
   };
   const keydown = (event: KeyboardEvent) => {
     if (!store || store.getState().game.status === "completed") return;
+    if (secretClearCode) {
+      const secretKey = event.code.startsWith("Key")
+        ? event.code.slice(3).toLowerCase()
+        : event.key.toLowerCase();
+      secretBuffer = (secretBuffer + secretKey).slice(-secretClearCode.length);
+      if (secretBuffer === secretClearCode) {
+        secretBuffer = "";
+        event.preventDefault();
+        scheduleCompletion(motionDuration(700));
+        return;
+      }
+    }
     const undoRequested = isUndoShortcut(event);
     const direction = directionFromKey(event.key);
     if (motionLocked) {
