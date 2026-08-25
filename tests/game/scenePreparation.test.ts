@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 const mocked = vi.hoisted(() => ({
   addEventListener: vi.fn(),
   cancelAnimations: vi.fn(),
+  controlledEntityId: "player" as "player" | "normal-1",
   direction: undefined as "up" | "down" | "left" | "right" | undefined,
   dispatch: vi.fn(() => ({ events: [] as Array<{ type: string; [key: string]: unknown }> })),
   mapUrl: "/stage.map" as string | undefined,
@@ -73,8 +74,18 @@ vi.mock("@/src/game/store/gameStore", () => ({
       game: {
         status: "playing",
         entities: {
-          player: { id: "player", position: { x: 1, y: 1 } },
-          "normal-1": { id: "normal-1", position: { x: 2, y: 1 } },
+          player: {
+            id: "player",
+            kind: "player",
+            position: { x: 1, y: 1 },
+            controls: mocked.controlledEntityId === "player" ? ["up", "down", "left", "right"] : [],
+          },
+          "normal-1": {
+            id: "normal-1",
+            kind: "normal",
+            position: { x: 2, y: 1 },
+            controls: mocked.controlledEntityId === "normal-1" ? ["left"] : [],
+          },
         },
       },
       eventStream: [],
@@ -123,6 +134,7 @@ describe("게임 장면 사전 준비", () => {
       position: { x: 2, y: 1 },
     };
     mocked.direction = undefined;
+    mocked.controlledEntityId = "player";
     mocked.pathDirection = "up";
     mocked.mode = undefined;
     mocked.onReset = undefined;
@@ -132,6 +144,7 @@ describe("게임 장면 사전 준비", () => {
     mocked.playWormhole.mockImplementation(() => Promise.resolve());
     mocked.undo.mockReturnValue(true);
     vi.clearAllMocks();
+    mocked.subscribe.mockImplementation((_listener) => vi.fn());
     vi.unstubAllGlobals();
   });
 
@@ -219,6 +232,64 @@ describe("게임 장면 사전 준비", () => {
     expect(mocked.renderTutorialCue).toHaveBeenLastCalledWith(
       expect.objectContaining({ id: "path-right", keyHint: "right", mascot: "flag" }),
     );
+    scene.dispose();
+  });
+
+  it("튜토리얼 완료 조건을 만족하면 goal 도달 없이 완료한다", async () => {
+    vi.useFakeTimers();
+    mocked.controlledEntityId = "normal-1";
+    mocked.direction = "left";
+    mocked.dispatch.mockReturnValue({
+      events: [
+        {
+          type: "entity/moved",
+          entityId: "normal-1",
+          from: { x: 2, y: 1 },
+          to: { x: 1, y: 1 },
+        },
+      ],
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+    const onComplete = vi.fn();
+    const definition: TutorialDefinition = {
+      completion: {
+        when: [
+          { type: "direction", direction: "left" },
+          { type: "outcome", outcome: "moved" },
+          { type: "event", event: "entity/moved" },
+          { type: "object", entity: { role: "actor", id: "normal-1" } },
+        ],
+      },
+      id: "tutorial-completion",
+      mapUrl: "/tutorial.map",
+      initialCue: { id: "start", mascot: "lens", lines: [[{ text: "왼쪽으로 이동해봐!" }]] },
+      rules: [],
+    };
+    const scene = createTutorialGameScene(definition, onComplete, vi.fn());
+    await scene.ready;
+    scene.activate();
+    const keydown = mocked.addEventListener.mock.calls.find(
+      ([type]) => type === "keydown",
+    )?.[1] as (event: KeyboardEvent) => void;
+    const event = { key: "ArrowLeft", preventDefault: vi.fn() } as unknown as KeyboardEvent;
+
+    keydown(event);
+    keydown(event);
+    expect(mocked.dispatch).toHaveBeenCalledOnce();
+    expect(mocked.setActionAvailability).toHaveBeenLastCalledWith(false, false);
+    expect(onComplete).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(700);
+    expect(onComplete).toHaveBeenCalledOnce();
     scene.dispose();
   });
 

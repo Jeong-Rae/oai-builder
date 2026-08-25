@@ -7,12 +7,23 @@ export const firstPlayTutorials = [
     initialCue: {
       id: "restore-constellation",
       mascot: "flag",
-      lines: [[{ text: "별을 얻어 별자리를 되찾을 수 있도록 도와주세요!" }]],
+      lines: [[{ text: "별을 얻어 별자리를 되찾을 수 있도록 도와줘!" }]],
     },
     pathGuidance: { afterInitialMs: 2_000, mascot: "flag" },
     rules: [],
   },
   {
+    completion: {
+      when: [
+        { type: "direction", direction: "left" },
+        { type: "outcome", outcome: "moved" },
+        { type: "event", event: "entity/moved" },
+        {
+          type: "object",
+          entity: { role: "actor", id: "normal-1", kind: "normal" },
+        },
+      ],
+    },
     id: "tutorial-01.stage-02",
     mapUrl: new URL("@/maps/tutorial-01.stage-02.map", import.meta.url).href,
     initialCue: {

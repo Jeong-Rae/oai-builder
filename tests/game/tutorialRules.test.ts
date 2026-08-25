@@ -6,6 +6,7 @@ import {
   createActionTutorialSignal,
   createMoveTutorialSignal,
   createPathTutorialCue,
+  matchesTutorialConditions,
   selectTutorialRule,
   type TutorialCue,
   type TutorialRule,
@@ -63,19 +64,19 @@ describe("튜토리얼 안내 규칙", () => {
     ).toEqual([
       expect.objectContaining({
         keyHint: "up",
-        lines: [[{ text: "W▲", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+        lines: [[{ text: "W/↑", emphasis: true }, { text: "를 눌러서 나를 움직여줘!" }]],
       }),
       expect.objectContaining({
         keyHint: "down",
-        lines: [[{ text: "S▼", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+        lines: [[{ text: "S/↓", emphasis: true }, { text: "를 눌러서 나를 움직여줘!" }]],
       }),
       expect.objectContaining({
         keyHint: "left",
-        lines: [[{ text: "A◀", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+        lines: [[{ text: "A/←", emphasis: true }, { text: "를 눌러서 나를 움직여줘!" }]],
       }),
       expect.objectContaining({
         keyHint: "right",
-        lines: [[{ text: "D▶", emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }]],
+        lines: [[{ text: "D/→", emphasis: true }, { text: "를 눌러서 나를 움직여줘!" }]],
       }),
     ]);
   });
@@ -104,13 +105,31 @@ describe("튜토리얼 안내 규칙", () => {
         [{ text: "이제 왼쪽으로 이동해봐!" }],
       ],
     });
-    expect(
-      selectTutorialRule(
-        definition.rules,
-        createMoveTutorialSignal(before, before, "left", decision),
-        new Set(),
-      )?.cue,
-    ).toMatchObject({ mascot: "flag", keyHint: "left", id: "path-left" });
+    const transferSignal = createMoveTutorialSignal(before, before, "left", decision);
+    expect(selectTutorialRule(definition.rules, transferSignal, new Set())?.cue).toMatchObject({
+      mascot: "flag",
+      keyHint: "left",
+      id: "path-left",
+    });
+    expect(matchesTutorialConditions(definition.completion.when, transferSignal)).toBe(false);
+
+    const normalControlling = {
+      ...normal,
+      position: { x: 2, y: 1 },
+      controls: ["left"] as Direction[],
+    };
+    const moveBefore = game([{ ...player, controls: [] }, normalControlling]);
+    const moveSignal = createMoveTutorialSignal(moveBefore, moveBefore, "left", {
+      events: [
+        {
+          type: "entity/moved",
+          entityId: "normal-1",
+          from: { x: 2, y: 1 },
+          to: { x: 1, y: 1 },
+        },
+      ],
+    });
+    expect(matchesTutorialConditions(definition.completion.when, moveSignal)).toBe(true);
   });
 
   it("1-3에서 노말 블록이 플레이어에게 왼쪽 컨트롤을 전달하면 안내를 바꾼다", () => {
@@ -153,7 +172,10 @@ describe("튜토리얼 안내 규칙", () => {
         createMoveTutorialSignal(before, before, "left", decision),
         new Set(),
       )?.cue,
-    ).toMatchObject({ mascot: "flag", lines: [[{ text: "이제 움직일 수 있어!" }]] });
+    ).toMatchObject({
+      mascot: "flag",
+      lines: [[{ text: "이제 움직일 수 있어!" }]],
+    });
   });
 
   it("방향, 상호작용 결과와 특정 대상 오브젝트를 함께 판정한다", () => {

@@ -155,16 +155,17 @@
   letter-spacing: 0.035em;
   line-height: 1.28;
   margin: 0;
-  text-align: center;
+  text-align: left;
+  width: 100%;
 }
 .tutorialLine {
   display: block;
 }
 .tutorialLineWithKey {
   align-items: center;
-  display: inline-flex;
+  display: flex;
   gap: 0.8cqw;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .tutorialEmphasis {
   color: #ef6570;

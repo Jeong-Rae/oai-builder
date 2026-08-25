@@ -17,6 +17,7 @@ import {
   createActionTutorialSignal,
   createMoveTutorialSignal,
   createPathTutorialCue,
+  matchesTutorialConditions,
   selectTutorialRule,
   type TutorialAction,
   type TutorialActionResult,
@@ -181,7 +182,10 @@ function createMapGameScene(
     view.setElapsedMs(elapsedMs);
   };
   const scheduleCompletion = (delay: number) => {
+    if (completeTimer !== undefined) return;
+    motionLocked = true;
     stopTimer();
+    view.setActionAvailability(false, false);
     completeTimer = window.setTimeout(() => onComplete(elapsedMs), delay);
   };
   const keydown = (event: KeyboardEvent) => {
@@ -201,12 +205,21 @@ function createMapGameScene(
     event.preventDefault();
     const game = store.getState().game;
     const decision = store.getState().dispatch({ type: "player/move", direction });
-    if (tutorialDefinition)
-      sendTutorial(createMoveTutorialSignal(game, store.getState().game, direction, decision));
+    let tutorialCompleted = false;
+    if (tutorialDefinition) {
+      const signal = createMoveTutorialSignal(game, store.getState().game, direction, decision);
+      sendTutorial(signal);
+      tutorialCompleted = Boolean(
+        tutorialDefinition.completion &&
+        matchesTutorialConditions(tutorialDefinition.completion.when, signal),
+      );
+    }
     sendHint({ type: "game/events", events: decision.events });
     if (decision.events.some((entry) => entry.type === "entity/moved")) playSfx("move");
-    if (decision.events.some((entry) => entry.type === "game/completed")) playSfx("clear");
+    if (tutorialCompleted || decision.events.some((entry) => entry.type === "game/completed"))
+      playSfx("clear");
     view.setPlayerTexture(playerTextureForMove(game, direction, decision));
+    if (tutorialCompleted) scheduleCompletion(motionDuration(700));
     const teleport = decision.events.find(
       (entry) => entry.type === "entity/moved" && entry.wormhole,
     );

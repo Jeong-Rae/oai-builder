@@ -44,14 +44,17 @@ export type TutorialCondition =
   | { type: "object"; entity: TutorialEntitySelector }
   | { type: "action"; action: TutorialAction; result?: TutorialActionResult };
 
+export type TutorialConditions = readonly [TutorialCondition, ...TutorialCondition[]];
+
 export interface TutorialRule {
   id: string;
-  when: readonly [TutorialCondition, ...TutorialCondition[]];
+  when: TutorialConditions;
   cue: TutorialCue;
   once?: boolean;
 }
 
 export interface TutorialDefinition {
+  completion?: { when: TutorialConditions };
   id: string;
   initialControls?: Readonly<Record<string, readonly Direction[]>>;
   mapUrl: string;
@@ -81,10 +84,10 @@ const offsets: Record<Direction, readonly [number, number]> = {
 };
 
 const pathCueLabels: Record<Direction, string> = {
-  up: "W▲",
-  down: "S▼",
-  left: "A◀",
-  right: "D▶",
+  up: "W/↑",
+  down: "S/↓",
+  left: "A/←",
+  right: "D/→",
 };
 
 export function createPathTutorialCue(
@@ -96,7 +99,7 @@ export function createPathTutorialCue(
     mascot,
     keyHint: direction,
     lines: [
-      [{ text: pathCueLabels[direction], emphasis: true }, { text: "를 눌러서 이동할 수 있어요!" }],
+      [{ text: pathCueLabels[direction], emphasis: true }, { text: "를 눌러서 나를 움직여줘!" }],
     ],
   };
 }
@@ -185,6 +188,13 @@ function conditionMatches(signal: TutorialSignal, condition: TutorialCondition):
   }
 }
 
+export function matchesTutorialConditions(
+  conditions: TutorialConditions,
+  signal: TutorialSignal,
+): boolean {
+  return conditions.every((condition) => conditionMatches(signal, condition));
+}
+
 export function selectTutorialRule(
   rules: readonly TutorialRule[],
   signal: TutorialSignal,
@@ -192,7 +202,6 @@ export function selectTutorialRule(
 ): TutorialRule | undefined {
   return rules.find(
     (rule) =>
-      !(rule.once && shownRuleIds.has(rule.id)) &&
-      rule.when.every((condition) => conditionMatches(signal, condition)),
+      !(rule.once && shownRuleIds.has(rule.id)) && matchesTutorialConditions(rule.when, signal),
   );
 }
