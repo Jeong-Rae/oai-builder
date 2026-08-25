@@ -16,6 +16,7 @@ export type BgmTrack = keyof typeof urls;
 const volume = 0.5;
 const fadeDuration = 300;
 const players = new Map<BgmTrack, HTMLAudioElement>();
+const loadedTracks = new Set<BgmTrack>();
 let targetTrack: BgmTrack | undefined;
 let fadeFrame: number | undefined;
 
@@ -31,12 +32,27 @@ function playerFor(track: BgmTrack): HTMLAudioElement {
   return player;
 }
 
+function loadTrack(track: BgmTrack): HTMLAudioElement {
+  const player = playerFor(track);
+  if (!loadedTracks.has(track)) {
+    loadedTracks.add(track);
+    player.load();
+  }
+  return player;
+}
+
 function tryPlay(player: HTMLAudioElement): void {
   void player.play().catch(() => {});
 }
 
 export function preloadBgm(): void {
-  (Object.keys(urls) as BgmTrack[]).forEach((track) => playerFor(track).load());
+  const intro = playerFor("entire");
+  intro.addEventListener("canplay", preloadRemainingBgm, { once: true });
+  loadTrack("entire");
+}
+
+export function preloadRemainingBgm(): void {
+  (Object.keys(urls) as BgmTrack[]).filter((track) => track !== "entire").forEach(loadTrack);
 }
 
 export function setBgm(track: BgmTrack): void {
@@ -44,7 +60,7 @@ export function setBgm(track: BgmTrack): void {
 
   const firstTrack = targetTrack === undefined;
   targetTrack = track;
-  const target = playerFor(track);
+  const target = loadTrack(track);
   tryPlay(target);
 
   if (fadeFrame !== undefined) cancelAnimationFrame(fadeFrame);
@@ -76,7 +92,7 @@ export function setBgm(track: BgmTrack): void {
 }
 
 export function resumeBgm(): void {
-  if (targetTrack) tryPlay(playerFor(targetTrack));
+  if (targetTrack) tryPlay(loadTrack(targetTrack));
 }
 
 export function bgmForChapter(sign: ZodiacSign): BgmTrack {

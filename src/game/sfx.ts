@@ -13,6 +13,7 @@ const urls = {
 } as const;
 type SfxName = keyof typeof urls;
 
+const volume = 0.5;
 let context: AudioContext | undefined;
 const buffers = new Map<SfxName, Promise<AudioBuffer>>();
 const activeSources = new Map<SfxName, AudioBufferSourceNode>();
@@ -54,8 +55,11 @@ export function playSfx(name: SfxName): void {
 
       activeSources.get(name)?.stop();
       const source = audio.createBufferSource();
+      const gain = audio.createGain();
       source.buffer = buffer;
-      source.connect(audio.destination);
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(audio.destination);
       source.addEventListener("ended", () => {
         if (activeSources.get(name) === source) activeSources.delete(name);
       });

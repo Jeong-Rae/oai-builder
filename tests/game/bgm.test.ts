@@ -11,6 +11,7 @@ describe("게임 BGM", () => {
     const frames: FrameRequestCallback[] = [];
     let now = 1_000;
     class FakeAudio {
+      private readonly listeners = new Map<string, EventListener>();
       currentTime = 12;
       loop = false;
       preload = "";
@@ -18,9 +19,16 @@ describe("게임 BGM", () => {
       load = vi.fn();
       pause = vi.fn();
       play = vi.fn(() => Promise.resolve());
+      addEventListener = vi.fn((name: string, listener: EventListener) => {
+        this.listeners.set(name, listener);
+      });
 
       constructor(readonly src: string) {
         players.push(this);
+      }
+
+      dispatch(name: string): void {
+        this.listeners.get(name)?.(new Event(name));
       }
     }
     vi.stubGlobal("Audio", FakeAudio);
@@ -33,16 +41,22 @@ describe("게임 BGM", () => {
       }),
     );
     vi.stubGlobal("cancelAnimationFrame", vi.fn());
-    const { preloadBgm, setBgm } = await import("@/src/game/bgm");
+    const { preloadBgm, preloadRemainingBgm, setBgm } = await import("@/src/game/bgm");
 
     preloadBgm();
+    expect(players).toHaveLength(1);
+    const entire = players[0]!;
+    expect(entire.src).toContain("Entire.mp3");
+    expect(entire.load).toHaveBeenCalledOnce();
+
+    entire.dispatch("canplay");
+    preloadRemainingBgm();
     setBgm("entire");
     setBgm("entire");
 
     expect(players).toHaveLength(4);
     expect(players.every((player) => player.loop && player.preload === "auto")).toBe(true);
     expect(players.every((player) => player.load.mock.calls.length === 1)).toBe(true);
-    const entire = players.find((player) => player.src.includes("Entire.mp3"))!;
     expect(entire.volume).toBe(0.5);
     expect(entire.currentTime).toBe(12);
     expect(entire.play).toHaveBeenCalledOnce();

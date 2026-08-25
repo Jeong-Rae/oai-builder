@@ -6,7 +6,14 @@ import {
   type AuthSession,
   type GameSession,
 } from "@/src/game/auth";
-import { bgmForChapter, type BgmTrack, preloadBgm, resumeBgm, setBgm } from "@/src/game/bgm";
+import {
+  bgmForChapter,
+  type BgmTrack,
+  preloadBgm,
+  preloadRemainingBgm,
+  resumeBgm,
+  setBgm,
+} from "@/src/game/bgm";
 import {
   dailyChallenge,
   FakeChallengeServer,
@@ -125,6 +132,7 @@ export class GameApp {
       [[() => document.fonts.load('1em "온글잎 박다현체"'), ...introAssets!], ...laterAssets],
       this.initialStartScene.updateLoading,
     );
+    void this.preloadPromise.then(preloadRemainingBgm);
     try {
       this.storage = window.localStorage;
       this.authGateway = new LocalAuthAdapter(this.storage);
@@ -396,6 +404,7 @@ export class GameApp {
         () => this.showChapter(chapterIndex + 1),
       ),
       wave,
+      bgmForChapter(chapters[chapterIndex]!.sign),
     );
   private prepareGame(selection: PlaySelection): ReturnType<typeof createGameScene> {
     return createGameScene(

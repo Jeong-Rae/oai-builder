@@ -8,12 +8,17 @@ describe("게임 SFX", () => {
 
   it("사운드를 디코딩하고 같은 효과음을 다시 요청할 때 새 노드로 교체한다", async () => {
     const sources: FakeSource[] = [];
+    const gains: FakeGain[] = [];
     class FakeSource {
       buffer?: AudioBuffer;
       connect = vi.fn();
       start = vi.fn();
       stop = vi.fn();
       addEventListener = vi.fn();
+    }
+    class FakeGain {
+      gain = { value: 1 };
+      connect = vi.fn();
     }
 
     const decodedBuffer = {} as AudioBuffer;
@@ -29,6 +34,11 @@ describe("게임 SFX", () => {
         const source = new FakeSource();
         sources.push(source);
         return source;
+      });
+      createGain = vi.fn(() => {
+        const gain = new FakeGain();
+        gains.push(gain);
+        return gain;
       });
 
       constructor() {
@@ -55,7 +65,9 @@ describe("게임 SFX", () => {
     expect(sources[0]?.stop).toHaveBeenCalledOnce();
     expect(sources[0]?.start).toHaveBeenCalledOnce();
     expect(sources[1]?.buffer).toBe(decodedBuffer);
-    expect(sources[1]?.connect).toHaveBeenCalledWith(audio?.destination);
+    expect(gains[1]?.gain.value).toBe(0.5);
+    expect(sources[1]?.connect).toHaveBeenCalledWith(gains[1]);
+    expect(gains[1]?.connect).toHaveBeenCalledWith(audio?.destination);
     expect(sources[1]?.start).toHaveBeenCalledOnce();
   });
 });
