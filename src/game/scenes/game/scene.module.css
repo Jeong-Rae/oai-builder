@@ -173,7 +173,7 @@
   box-sizing: border-box;
   display: grid;
   left: 50%;
-  padding: 0 8% 0 22%;
+  padding: 0 64px 0 220px;
   place-items: center;
   position: absolute;
   transform: translateX(-50%);
