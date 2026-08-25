@@ -23,7 +23,10 @@ import {
 import { FakeGameDataServer } from "@/src/game/dataStore";
 import { preloadAssets } from "@/src/game/preload";
 import { createChapterScene } from "@/src/game/scenes/chapter/controller";
-import { createChallengeResultScene } from "@/src/game/scenes/challenge-result/controller";
+import {
+  createChallengeResultScene,
+  type ChallengeResultScene,
+} from "@/src/game/scenes/challenge-result/controller";
 import { createClearScene } from "@/src/game/scenes/clear/controller";
 import {
   createChallengeGameScene,
@@ -423,16 +426,20 @@ export class GameApp {
     );
   private showChallenge = (): void => {
     const challenge = dailyChallenge();
+    const result = createChallengeResultScene(challenge.date, this.session?.playerId ?? "", () =>
+      this.showChapter(0),
+    );
     void this.show(
       createChallengeGameScene(
         challenge.mapUrl,
-        (durationMs) => void this.showChallengeResult(challenge, durationMs),
+        (durationMs) => void this.showChallengeResult(result, challenge, durationMs),
         () => this.showChapter(0),
       ),
       true,
     );
   };
   private showChallengeResult = async (
+    result: ChallengeResultScene,
     challenge: DailyChallenge,
     durationMs: number,
   ): Promise<void> => {
@@ -448,11 +455,8 @@ export class GameApp {
     } catch {
       leaderboard = undefined;
     }
-    await this.showOverlay(
-      createChallengeResultScene(challenge.date, this.session?.playerId ?? "", leaderboard, () =>
-        this.showChapter(0),
-      ),
-    );
+    result.setLeaderboard(leaderboard);
+    await this.showOverlay(result);
   };
   private showClear = async (selection: PlaySelection): Promise<void> => {
     const next = nextSelection(selection);

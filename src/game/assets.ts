@@ -21,6 +21,9 @@ import decorStarSmallUrl from "@/assets/star/star.cross.small.webp";
 import decorStarMediumUrl from "@/assets/star/star.cross.medium.webp";
 import decorStarLargeUrl from "@/assets/star/star.cross.large.webp";
 import challengeStarStellSmallUrl from "@/assets/star/star.stell.small.color-gold.webp";
+import challengeBoardUrl from "@/assets/background/background.board.webp";
+import challengeRecordRowUrl from "@/assets/box/box.color-gold.webp";
+import challengeRuleUrl from "@/assets/line/line.color-white.webp";
 import decorMoonUrl from "@/assets/moon/moon.eclipse.trimmed.webp";
 import decorMascotUrl from "@/assets/mascot/mascot.angle-135.webp";
 import tutorialDialogueUrl from "@/assets/dialogue/dialogue.panel.webp";
@@ -64,6 +67,9 @@ export const chapterAssets = {
 } as const;
 
 export const challengeDecorAssets = {
+  board: challengeBoardUrl,
+  recordRow: challengeRecordRowUrl,
+  rule: challengeRuleUrl,
   plus: clearSparkUrl,
   stellSmall: challengeStarStellSmallUrl,
 } as const;

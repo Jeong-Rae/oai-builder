@@ -9,135 +9,133 @@
   width: 100%;
 }
 .panel {
-  background: linear-gradient(150deg, rgb(16 27 39 / 96%), rgb(8 14 20 / 92%));
-  border: 1px solid rgb(215 249 255 / 28%);
-  box-shadow:
-    0 0 0 0.25cqw rgb(8 14 20 / 75%),
-    0 0 3cqw rgb(92 168 190 / 18%);
-  padding: 2.4cqw 3.3cqw 2cqw;
+  background: center / 100% 100% no-repeat;
+  box-sizing: border-box;
+  height: 70%;
+  padding: 6.8cqw 5.55cqw 5.3cqw;
   position: relative;
-  width: 40cqw;
+  width: 70%;
   z-index: 1;
 }
-.panel::before,
-.panel::after {
-  background: #ffd866;
-  content: "";
-  height: 0.12cqw;
+.cornerStar {
+  height: 1.35cqw;
+  pointer-events: none;
   position: absolute;
-  top: -0.12cqw;
-  width: 8cqw;
+  width: 1.35cqw;
 }
-.panel::before {
-  left: 3cqw;
+.topLeft {
+  left: 4.25%;
+  top: 6.5%;
 }
-.panel::after {
-  right: 3cqw;
+.topRight {
+  right: 4.25%;
+  top: 6.5%;
+}
+.bottomLeft {
+  bottom: 6.5%;
+  left: 4.25%;
+}
+.bottomRight {
+  bottom: 6.5%;
+  right: 4.25%;
 }
 .eyebrow {
-  color: #83909a;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 0.72cqw;
-  letter-spacing: 0.18em;
+  color: #a7bdd2;
+  font-size: 0.86cqw;
+  letter-spacing: 0.15em;
   margin: 0;
   text-align: center;
 }
 .title {
-  color: #fff;
-  font-size: 2.35cqw;
-  letter-spacing: 0.14em;
-  margin: 0.35cqw 0 1.15cqw;
+  color: #f2ecdc;
+  font-size: 3.15cqw;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  margin: 0.9cqw 0 2.8cqw;
   text-align: center;
 }
 .summary {
   display: flex;
-  gap: 2.5cqw;
+  gap: 8.5cqw;
   justify-content: center;
-  margin: 0 0 1.2cqw;
+  margin: 0 0 3.45cqw;
 }
 .summary div {
   align-items: baseline;
   display: flex;
-  gap: 0.7cqw;
+  gap: 1.25cqw;
 }
 .summary dt {
-  color: #83909a;
-  font-size: 0.78cqw;
+  color: #9aaec0;
+  font-size: 2cqw;
 }
 .summary dd {
-  color: #d7f9ff;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 1.15cqw;
-  font-variant-numeric: tabular-nums;
+  color: #e9c45d;
+  font-size: 2cqw;
   margin: 0;
 }
 .ranking {
-  border-block: 1px solid rgb(131 144 154 / 28%);
-  padding: 0.75cqw 0;
+  position: relative;
 }
 .list {
   display: grid;
-  gap: 0.42cqw;
+  gap: 0.45cqw;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .row {
   align-items: center;
-  color: #d7f9ff;
+  color: #f2ecdc;
   display: grid;
-  font-size: 1.05cqw;
-  grid-template-columns: 2.4cqw 1.25cqw 1fr auto auto;
-  min-height: 2.5cqw;
-  padding: 0 0.8cqw;
+  font-size: 1.55cqw;
+  grid-template-columns: 4.6cqw 2.25cqw minmax(0, 1fr) 11.2cqw;
+  min-height: 5.3cqw;
+  padding: 0 2.15cqw;
   position: relative;
 }
-.rank,
-.duration {
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-variant-numeric: tabular-nums;
+.row:not(.own)::after {
+  background: var(--ranking-rule) center / 100% 100% no-repeat;
+  bottom: -0.32cqw;
+  content: "";
+  height: 0.18cqw;
+  left: 0;
+  opacity: 0.48;
+  position: absolute;
+  right: 0;
 }
 .rank {
-  color: #83909a;
+  color: #91a9c4;
 }
 .star {
-  height: 1cqw;
-  width: 1cqw;
+  height: 1.75cqw;
+  width: 1.75cqw;
 }
 .name {
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .duration {
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
+  text-align: right;
 }
 .own {
-  background: linear-gradient(90deg, rgb(255 216 102 / 18%), transparent 78%);
-  color: #ffd866;
-  outline: 1px solid rgb(255 216 102 / 42%);
-  text-shadow: 0 0 0.7cqw rgb(255 216 102 / 38%);
-}
-.badge {
-  border: 1px solid rgb(255 216 102 / 55%);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 0.5cqw;
-  letter-spacing: 0.08em;
-  margin-left: 0.8cqw;
-  padding: 0.18cqw 0.35cqw;
+  background: var(--record-row) center / 100% 100% no-repeat;
+  color: #f2c84e;
+  text-shadow: 0 0 0.6cqw rgb(242 200 78 / 28%);
 }
 .divider {
-  border-top: 1px dashed rgb(131 144 154 / 48%);
-  margin: 0.62cqw 0;
-}
-.home {
-  display: block;
-  font-size: 1.05cqw;
-  margin: 1.25cqw auto 0;
-  width: 13.5cqw;
+  border-top: 0.12cqw dashed rgb(159 183 205 / 45%);
+  margin: 1.2cqw 0;
 }
 .error {
-  color: #d7f9ff;
-  font-size: 1.1cqw;
-  margin: 2cqw auto;
+  color: #d7e7ef;
+  font-size: 1.35cqw;
+  margin: 5cqw auto;
   text-align: center;
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -147,7 +145,7 @@
 }
 @keyframes record-pulse {
   to {
-    filter: drop-shadow(0 0 0.55cqw #ffd866);
+    filter: drop-shadow(0 0 0.55cqw #f2c84e);
     transform: scale(1.12);
   }
 }

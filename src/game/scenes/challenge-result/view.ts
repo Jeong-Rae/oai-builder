@@ -1,50 +1,65 @@
-import { backgroundUrl, starNodeAssets } from "@/src/game/assets";
+import { backgroundUrl, challengeDecorAssets, starNodeAssets } from "@/src/game/assets";
 import {
   formatDuration,
   type ChallengeEntry,
   type ChallengeLeaderboard,
 } from "@/src/game/challenge";
-import { createPlateButton } from "@/src/game/components/PlateButton";
+import { createBackButton } from "@/src/game/components/BackButton";
 import { createBackgroundStars } from "@/src/game/scenes/shared/backgroundStars";
 import styles from "@/src/game/scenes/challenge-result/scene.module.css";
 
 export function createChallengeResultView(
   date: string,
   playerId: string,
-  leaderboard: ChallengeLeaderboard | undefined,
   onHome: () => void,
-): HTMLElement {
+): { root: HTMLElement; setLeaderboard(leaderboard: ChallengeLeaderboard | undefined): void } {
   const root = document.createElement("main");
   root.className = styles.root;
   root.style.backgroundImage = `url(${backgroundUrl})`;
   root.append(createBackgroundStars());
   const panel = document.createElement("section");
   panel.className = styles.panel;
+  panel.style.backgroundImage = `url(${challengeDecorAssets.board})`;
   panel.setAttribute("aria-labelledby", "challenge-result-title");
+  panel.append(...createCornerStars());
   const eyebrow = document.createElement("p");
   eyebrow.className = styles.eyebrow;
   eyebrow.textContent = `${date} · DAILY CHALLENGE`;
   const title = document.createElement("h1");
   title.id = "challenge-result-title";
   title.className = styles.title;
-  title.textContent = leaderboard ? "LEADERBOARD" : "기록을 저장하지 못했습니다";
+  title.textContent = "LEADERBOARD";
   panel.append(eyebrow, title);
+  const content = document.createElement("div");
+  panel.append(content);
+  root.append(panel, createBackButton("챕터 선택으로 돌아가기", onHome));
+  return {
+    root,
+    setLeaderboard(leaderboard) {
+      content.replaceChildren();
+      if (leaderboard) {
+        title.textContent = "LEADERBOARD";
+        content.append(createSummary(leaderboard), createRanking(leaderboard, playerId));
+        return;
+      }
+      title.textContent = "기록을 저장하지 못했습니다";
+      const error = document.createElement("p");
+      error.className = styles.error;
+      error.setAttribute("role", "alert");
+      error.textContent = "브라우저 저장소를 확인한 뒤 다음 챌린지에서 다시 시도해 주세요.";
+      content.append(error);
+    },
+  };
+}
 
-  if (leaderboard) {
-    panel.append(createSummary(leaderboard), createRanking(leaderboard, playerId));
-  } else {
-    const error = document.createElement("p");
-    error.className = styles.error;
-    error.setAttribute("role", "alert");
-    error.textContent = "브라우저 저장소를 확인한 뒤 다음 챌린지에서 다시 시도해 주세요.";
-    panel.append(error);
-  }
-
-  const home = createPlateButton("CHAPTER SELECT", onHome);
-  home.classList.add(styles.home);
-  panel.append(home);
-  root.append(panel);
-  return root;
+function createCornerStars(): HTMLImageElement[] {
+  return ["topLeft", "topRight", "bottomLeft", "bottomRight"].map((corner) => {
+    const star = document.createElement("img");
+    star.className = `${styles.cornerStar} ${styles[corner]!}`;
+    star.src = challengeDecorAssets.plus;
+    star.alt = "";
+    return star;
+  });
 }
 
 function createSummary(leaderboard: ChallengeLeaderboard): HTMLElement {
@@ -68,6 +83,7 @@ function createSummary(leaderboard: ChallengeLeaderboard): HTMLElement {
 function createRanking(leaderboard: ChallengeLeaderboard, playerId: string): HTMLElement {
   const ranking = document.createElement("div");
   ranking.className = styles.ranking;
+  ranking.style.setProperty("--ranking-rule", `url(${challengeDecorAssets.rule})`);
   const list = document.createElement("ol");
   list.className = styles.list;
   leaderboard.topThree.forEach((entry) => list.append(createEntry(entry, playerId)));
@@ -88,6 +104,7 @@ function createEntry(entry: ChallengeEntry, playerId: string): HTMLLIElement {
   const own = entry.playerId === playerId;
   const row = document.createElement("li");
   row.className = `${styles.row} ${own ? styles.own : ""}`;
+  if (own) row.style.setProperty("--record-row", `url(${challengeDecorAssets.recordRow})`);
   row.value = entry.rank;
   const rank = document.createElement("span");
   rank.className = styles.rank;
@@ -103,11 +120,5 @@ function createEntry(entry: ChallengeEntry, playerId: string): HTMLLIElement {
   duration.className = styles.duration;
   duration.textContent = formatDuration(entry.durationMs);
   row.append(rank, star, name, duration);
-  if (own) {
-    const badge = document.createElement("span");
-    badge.className = styles.badge;
-    badge.textContent = "MY RECORD";
-    row.append(badge);
-  }
   return row;
 }

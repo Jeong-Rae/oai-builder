@@ -1,18 +1,34 @@
 import type { ChallengeLeaderboard } from "@/src/game/challenge";
 import { createChallengeResultView } from "@/src/game/scenes/challenge-result/view";
 
+export interface ChallengeResultScene {
+  view: HTMLElement;
+  activate(): void;
+  setLeaderboard(leaderboard: ChallengeLeaderboard | undefined): void;
+  dispose(): void;
+}
+
 export function createChallengeResultScene(
   date: string,
   playerId: string,
-  leaderboard: ChallengeLeaderboard | undefined,
   onHome: () => void,
-): { view: HTMLElement; dispose(): void } {
+): ChallengeResultScene {
+  const result = createChallengeResultView(date, playerId, onHome);
+  let active = false;
   const keydown = (event: KeyboardEvent) => {
     if (event.key === "Enter" || event.key === "Escape") onHome();
   };
-  window.addEventListener("keydown", keydown);
   return {
-    view: createChallengeResultView(date, playerId, leaderboard, onHome),
-    dispose: () => window.removeEventListener("keydown", keydown),
+    view: result.root,
+    activate() {
+      if (active) return;
+      active = true;
+      window.addEventListener("keydown", keydown);
+    },
+    setLeaderboard: result.setLeaderboard,
+    dispose() {
+      active = false;
+      window.removeEventListener("keydown", keydown);
+    },
   };
 }
