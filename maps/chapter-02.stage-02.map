@@ -1,69 +1,65 @@
 {
   "version": 2,
-  "columns": 10,
+  "columns": 9,
   "rows": 6,
   "tiles": [
     [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "wall",
-      "wall",
-      "wall",
-      "wall",
-      "blank",
-      "blank"
-    ],
-    [
-      "blank",
-      "blank",
-      "blank",
-      "blank",
-      "wall",
-      "exit",
-      "floor",
-      "wall",
-      "blank",
-      "blank"
-    ],
-    [
       "wall",
       "wall",
       "wall",
       "wall",
       "wall",
-      "floor",
-      "gate",
       "wall",
       "wall",
-      "blank"
-    ],
-    [
-      "wall",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
       "wall",
       "wall"
     ],
     [
       "wall",
-      "wall",
       "wormhole",
-      "floor",
-      "floor",
       "plate",
       "floor",
       "floor",
-      "wormhole",
+      "floor",
+      "floor",
+      "exit",
       "wall"
     ],
     [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "floor",
+      "wall",
+      "wall",
+      "wall",
+      "wall"
+    ],
+    [
+      "blank",
+      "blank",
+      "blank",
+      "wall",
+      "gate",
+      "wall",
+      "wall",
+      "blank",
+      "blank"
+    ],
+    [
+      "blank",
+      "blank",
+      "wall",
+      "floor",
+      "floor",
+      "floor",
+      "wormhole",
+      "wall",
+      "blank"
+    ],
+    [
+      "blank",
       "blank",
       "wall",
       "wall",
@@ -71,22 +67,20 @@
       "wall",
       "wall",
       "wall",
-      "wall",
-      "wall",
-      "wall"
+      "blank"
     ]
   ],
   "wormholePairs": [
     {
-      "id": 9,
-      "variant": 4,
+      "id": 2,
+      "variant": 2,
       "positions": [
         {
-          "x": 8,
-          "y": 4
+          "x": 1,
+          "y": 1
         },
         {
-          "x": 2,
+          "x": 6,
           "y": 4
         }
       ]
@@ -97,15 +91,7 @@
       "id": "player",
       "kind": "player",
       "position": {
-        "x": 1,
-        "y": 3
-      }
-    },
-    {
-      "id": "anchor-1",
-      "kind": "anchor",
-      "position": {
-        "x": 4,
+        "x": 3,
         "y": 4
       }
     },
@@ -113,7 +99,7 @@
       "id": "normal-1",
       "kind": "normal",
       "position": {
-        "x": 6,
+        "x": 5,
         "y": 4
       }
     }
