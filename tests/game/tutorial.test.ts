@@ -121,11 +121,20 @@ describe("최초 실행 튜토리얼", () => {
 
   it("단어가 길수록 더 빠르게 입력하고 공백 뒤에는 추가로 기다린다", () => {
     const characters = Array.from("가 나나나나 아주아주아주아주");
+    const noJitter = () => 0.5;
 
-    expect(typingDelay(characters, 0)).toBe(100);
-    expect(typingDelay(characters, 1)).toBe(300);
-    expect(typingDelay(characters, 2)).toBe(60);
-    expect(typingDelay(characters, 7)).toBe(60);
+    expect(typingDelay(characters, 0, noJitter)).toBe(100);
+    expect(typingDelay(characters, 1, noJitter)).toBe(300);
+    expect(typingDelay(characters, 2, noJitter)).toBe(60);
+    expect(typingDelay(characters, 7, noJitter)).toBe(60);
+  });
+
+  it("글자마다 ±15ms 범위의 지터를 적용하고 공백의 대기 시간은 유지한다", () => {
+    const characters = Array.from("가 나");
+
+    expect(typingDelay(characters, 0, () => 0)).toBe(85);
+    expect(typingDelay(characters, 0, () => 1)).toBe(115);
+    expect(typingDelay(characters, 1, () => 0)).toBe(300);
   });
 
   it("장면을 폐기하면 예약 작업과 키보드 입력을 제거한다", () => {

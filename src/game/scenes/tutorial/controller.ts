@@ -26,6 +26,7 @@ const TYPE_INTERVAL = 100;
 const SPACE_DELAY = 200;
 const WORD_LENGTH_REDUCTION = 15;
 const MIN_TYPE_INTERVAL = 60;
+const TYPE_INTERVAL_JITTER = 15;
 const BLUR_DURATION = 800;
 const MASCOT_INTERVAL = 320;
 const MASCOT_HOLD = 600;
@@ -42,7 +43,11 @@ export interface TutorialScene {
   dispose(): void;
 }
 
-export function typingDelay(characters: readonly string[], index: number): number {
+export function typingDelay(
+  characters: readonly string[],
+  index: number,
+  random: () => number = Math.random,
+): number {
   const character = characters[index];
   if (character === " ") return TYPE_INTERVAL + SPACE_DELAY;
   if (!character || /\s/.test(character)) return TYPE_INTERVAL;
@@ -53,7 +58,11 @@ export function typingDelay(characters: readonly string[], index: number): numbe
   while (wordEnd < characters.length && !/\s/.test(characters[wordEnd]!)) wordEnd += 1;
 
   const wordLength = wordEnd - wordStart;
-  return Math.max(MIN_TYPE_INTERVAL, TYPE_INTERVAL - (wordLength - 1) * WORD_LENGTH_REDUCTION);
+  const interval = Math.max(
+    MIN_TYPE_INTERVAL,
+    TYPE_INTERVAL - (wordLength - 1) * WORD_LENGTH_REDUCTION,
+  );
+  return interval + Math.round((random() * 2 - 1) * TYPE_INTERVAL_JITTER);
 }
 
 export function createTutorialScene(
