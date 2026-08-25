@@ -59,6 +59,8 @@ describe("게임 SFX", () => {
     await vi.waitFor(() => expect(sources).toHaveLength(1));
     playSfx("typing");
     await vi.waitFor(() => expect(sources).toHaveLength(2));
+    playSfx("move");
+    await vi.waitFor(() => expect(sources).toHaveLength(3));
 
     expect(fetch).toHaveBeenCalledTimes(6);
     expect(fetch.mock.calls.some(([url]) => String(url).includes("sfx.swoosh.mp3"))).toBe(true);
@@ -67,6 +69,7 @@ describe("게임 SFX", () => {
     expect(sources[0]?.start).toHaveBeenCalledOnce();
     expect(sources[1]?.buffer).toBe(decodedBuffer);
     expect(gains[1]?.gain.value).toBe(0.5);
+    expect(gains[2]?.gain.value).toBe(0.7);
     expect(sources[1]?.connect).toHaveBeenCalledWith(gains[1]);
     expect(gains[1]?.connect).toHaveBeenCalledWith(audio?.destination);
     expect(sources[1]?.start).toHaveBeenCalledOnce();
