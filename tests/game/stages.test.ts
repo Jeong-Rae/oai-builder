@@ -48,7 +48,7 @@ describe("스테이지 선택", () => {
     expect(chapters[1]!.stages).toHaveLength(12);
     expect(
       chapters.flatMap((chapter) => chapter.stages).filter((stage) => stage.mapUrl),
-    ).toHaveLength(11);
+    ).toHaveLength(13);
   });
 
   it("챕터 선택 화면에는 앞의 네 별자리만 노출한다", () => {
@@ -69,11 +69,11 @@ describe("스테이지 선택", () => {
     ]);
     expect(chapters[1]!.stages.map((stage) => stage.mapUrl?.split("/").at(-1))).toEqual([
       "chapter-02.stage-01.map",
-      undefined,
+      "chapter-02.stage-02.map",
       "chapter-02.stage-03.map",
       "chapter-02.stage-04.map",
       "chapter-02.stage-05.map",
-      undefined,
+      "chapter-02.stage-06.map",
       "chapter-02.stage-07.map",
       undefined,
       undefined,
@@ -97,9 +97,11 @@ describe("스테이지 선택", () => {
     for (const stageIndex of chapters[0]!.stages.keys()) {
       await progressStore.markCleared(0, stageIndex);
     }
-    await progressStore.markCleared(1, 0);
-    expect(chapters[1]!.stages[1]!.mapUrl).toBeUndefined();
-    expect(stageStatuses(1)[1]).toBe("current");
+    for (const stageIndex of chapters[1]!.stages.slice(0, 7).keys()) {
+      await progressStore.markCleared(1, stageIndex);
+    }
+    expect(chapters[1]!.stages[7]!.mapUrl).toBeUndefined();
+    expect(stageStatuses(1)[7]).toBe("current");
     await progressStore.reset();
   });
 

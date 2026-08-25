@@ -72,9 +72,11 @@ const stageMapUrls: Partial<Record<ZodiacSign, Readonly<Record<number, string>>>
   },
   TAURUS: {
     0: new URL("@/maps/chapter-02.stage-01.map", import.meta.url).href,
+    1: new URL("@/maps/chapter-02.stage-02.map", import.meta.url).href,
     2: new URL("@/maps/chapter-02.stage-03.map", import.meta.url).href,
     3: new URL("@/maps/chapter-02.stage-04.map", import.meta.url).href,
     4: new URL("@/maps/chapter-02.stage-05.map", import.meta.url).href,
+    5: new URL("@/maps/chapter-02.stage-06.map", import.meta.url).href,
     6: new URL("@/maps/chapter-02.stage-07.map", import.meta.url).href,
     9: new URL("@/maps/chapter-02.stage-10.map", import.meta.url).href,
   },
