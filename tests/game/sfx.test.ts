@@ -6,31 +6,56 @@ describe("게임 SFX", () => {
     vi.unstubAllGlobals();
   });
 
-  it("사운드를 미리 불러오고 요청할 때 처음부터 재생한다", async () => {
-    const players: FakeAudio[] = [];
-    class FakeAudio {
-      currentTime = 1;
-      preload = "";
-      load = vi.fn();
-      play = vi.fn(() => Promise.resolve());
+  it("사운드를 디코딩하고 같은 효과음을 다시 요청할 때 새 노드로 교체한다", async () => {
+    const sources: FakeSource[] = [];
+    class FakeSource {
+      buffer?: AudioBuffer;
+      connect = vi.fn();
+      start = vi.fn();
+      stop = vi.fn();
+      addEventListener = vi.fn();
+    }
 
-      constructor(readonly src: string) {
-        players.push(this);
+    const decodedBuffer = {} as AudioBuffer;
+    let audio: FakeAudioContext | undefined;
+    class FakeAudioContext {
+      state: AudioContextState = "suspended";
+      destination = {} as AudioDestinationNode;
+      decodeAudioData = vi.fn(() => Promise.resolve(decodedBuffer));
+      resume = vi.fn(async () => {
+        this.state = "running";
+      });
+      createBufferSource = vi.fn(() => {
+        const source = new FakeSource();
+        sources.push(source);
+        return source;
+      });
+
+      constructor() {
+        audio = this;
       }
     }
-    vi.stubGlobal("Audio", FakeAudio);
+
+    const fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve(new ArrayBuffer(1)) }),
+    );
+    vi.stubGlobal("AudioContext", FakeAudioContext);
+    vi.stubGlobal("fetch", fetch);
     const { playSfx, preloadSfx } = await import("@/src/game/sfx");
 
     preloadSfx();
-    playSfx("move");
+    await vi.waitFor(() => expect(audio?.decodeAudioData).toHaveBeenCalledTimes(5));
+    playSfx("typing");
+    await vi.waitFor(() => expect(sources).toHaveLength(1));
+    playSfx("typing");
+    await vi.waitFor(() => expect(sources).toHaveLength(2));
 
-    expect(players).toHaveLength(5);
-    expect(
-      players.every((player) => player.preload === "auto" && player.load.mock.calls.length === 1),
-    ).toBe(true);
-    const move = players.find((player) => player.src.includes("sfx.move.mp3"));
-    expect(players.some((player) => player.src.includes("sfx.typing.mp3"))).toBe(true);
-    expect(move?.currentTime).toBe(0);
-    expect(move?.play).toHaveBeenCalledOnce();
+    expect(fetch).toHaveBeenCalledTimes(5);
+    expect(audio?.resume).toHaveBeenCalledOnce();
+    expect(sources[0]?.stop).toHaveBeenCalledOnce();
+    expect(sources[0]?.start).toHaveBeenCalledOnce();
+    expect(sources[1]?.buffer).toBe(decodedBuffer);
+    expect(sources[1]?.connect).toHaveBeenCalledWith(audio?.destination);
+    expect(sources[1]?.start).toHaveBeenCalledOnce();
   });
 });
