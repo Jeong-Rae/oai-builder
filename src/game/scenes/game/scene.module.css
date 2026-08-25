@@ -170,24 +170,30 @@
   background-repeat: no-repeat;
   background-size: 100% 100%;
   bottom: 5%;
-  box-sizing: border-box;
-  display: grid;
   left: 50%;
-  padding: 0 64px 0 220px;
-  place-items: center;
   position: absolute;
   transform: translateX(-50%);
   width: 64%;
 }
+.tutorialContent {
+  align-items: center;
+  bottom: 4%;
+  display: flex;
+  gap: 24px;
+  left: calc(22% - 8.5cqw);
+  position: absolute;
+  right: calc(18% + 24px);
+}
 .tutorialMessage {
   color: #101d34;
+  flex: 1;
   font-size: clamp(1rem, 2.05cqw, 2.55rem);
   font-weight: 700;
   letter-spacing: 0.035em;
   line-height: 1.28;
   margin: 0;
+  min-width: 0;
   text-align: left;
-  width: 100%;
 }
 .tutorialLine {
   display: block;
@@ -221,20 +227,15 @@
   opacity: 0;
 }
 .tutorialMascotFrame {
-  bottom: 4%;
-  display: grid;
+  align-self: stretch;
+  display: block;
+  flex: none;
   height: 17cqw;
-  left: 22%;
-  place-items: end center;
-  position: absolute;
-  transform: translateX(-50%);
-  width: 17cqw;
 }
 .tutorialMascot {
   display: block;
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
+  height: 100%;
+  width: auto;
 }
 .tutorialNext {
   animation: tutorial-next-breathe 1.6s ease-in-out infinite;

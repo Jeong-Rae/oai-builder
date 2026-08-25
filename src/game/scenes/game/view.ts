@@ -139,8 +139,10 @@ function createTutorialGuide(): TutorialGuide {
   next.className = styles.tutorialNext;
   next.src = tutorialAssets.next;
   next.alt = "";
-  panel.append(message, next);
+  panel.append(next);
 
+  const content = document.createElement("div");
+  content.className = styles.tutorialContent;
   const mascotFrame = document.createElement("span");
   mascotFrame.className = styles.tutorialMascotFrame;
   mascotFrame.setAttribute("aria-hidden", "true");
@@ -148,7 +150,8 @@ function createTutorialGuide(): TutorialGuide {
   mascot.className = styles.tutorialMascot;
   mascot.alt = "";
   mascotFrame.append(mascot);
-  root.append(panel, mascotFrame);
+  content.append(mascotFrame, message);
+  root.append(panel, content);
 
   return {
     root,
