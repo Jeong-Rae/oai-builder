@@ -1,109 +1,79 @@
 {
   "version": 2,
-  "columns": 9,
-  "rows": 10,
+  "columns": 8,
+  "rows": 8,
   "tiles": [
     [
-      "blank",
-      "blank",
       "wall",
       "wall",
       "wall",
       "wall",
-      "blank",
-      "blank",
-      "blank"
+      "wall",
+      "wall",
+      "wall",
+      "wall"
     ],
     [
-      "blank",
-      "blank",
       "wall",
-      "exit",
+      "wormhole",
       "floor",
-      "wall",
-      "blank",
-      "blank",
-      "blank"
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "wall"
     ],
     [
+      "wall",
+      "floor",
+      "floor",
+      "wormhole",
+      "floor",
+      "floor",
+      "floor",
+      "wall"
+    ],
+    [
+      "wall",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "wall"
+    ],
+    [
+      "wall",
+      "wall",
       "wall",
       "wall",
       "wall",
       "gate",
       "wall",
-      "wall",
-      "blank",
-      "blank",
-      "blank"
+      "wall"
     ],
     [
       "wall",
       "wormhole",
-      "wall",
-      "wormhole",
-      "floor",
-      "wall",
-      "blank",
-      "blank",
-      "blank"
-    ],
-    [
-      "wall",
-      "floor",
-      "wall",
-      "floor",
       "plate",
-      "wall",
-      "blank",
-      "blank",
-      "blank"
-    ],
-    [
-      "wall",
       "floor",
       "wall",
-      "wall",
-      "floor",
-      "wall",
-      "wall",
-      "wall",
-      "wall"
-    ],
-    [
-      "wall",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
       "floor",
       "floor",
       "wall"
     ],
     [
       "wall",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "floor",
-      "wall"
-    ],
-    [
-      "wall",
-      "floor",
-      "floor",
-      "floor",
       "floor",
       "floor",
       "wormhole",
-      "wormhole",
+      "wall",
+      "floor",
+      "exit",
       "wall"
     ],
     [
-      "wall",
       "wall",
       "wall",
       "wall",
@@ -116,57 +86,57 @@
   ],
   "wormholePairs": [
     {
-      "id": 1,
+      "id": 5,
       "variant": 2,
       "positions": [
         {
-          "x": 6,
-          "y": 8
+          "x": 3,
+          "y": 2
         },
         {
-          "x": 3,
-          "y": 3
+          "x": 1,
+          "y": 5
         }
       ]
     },
     {
-      "id": 2,
-      "variant": 3,
+      "id": 6,
+      "variant": 5,
       "positions": [
         {
-          "x": 7,
-          "y": 8
+          "x": 3,
+          "y": 6
         },
         {
           "x": 1,
-          "y": 3
+          "y": 1
         }
       ]
     }
   ],
   "objects": [
     {
-      "id": "anchor-1",
-      "kind": "anchor",
+      "id": "player",
+      "kind": "player",
       "position": {
         "x": 4,
-        "y": 5
+        "y": 1
       }
     },
     {
       "id": "normal-1",
       "kind": "normal",
       "position": {
-        "x": 4,
-        "y": 7
+        "x": 2,
+        "y": 2
       }
     },
     {
-      "id": "player",
-      "kind": "player",
+      "id": "anchor-1",
+      "kind": "anchor",
       "position": {
-        "x": 4,
-        "y": 3
+        "x": 3,
+        "y": 5
       }
     }
   ]
