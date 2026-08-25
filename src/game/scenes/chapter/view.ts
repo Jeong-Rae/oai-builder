@@ -30,7 +30,7 @@ export function chapterMoveFromDrag(distance: number, width: number): -1 | 0 | 1
 }
 
 export function createChapterView(
-  onMove: (offset: -1 | 1) => void,
+  onMove: (offset: -1 | 1) => boolean,
   onSelect: (index: number) => void,
   onBack: () => void,
 ): { root: HTMLElement; setActive(index: number): void } {
@@ -87,9 +87,13 @@ export function createChapterView(
       if (!valid) {
         card.onclick = null;
       } else if (offset === 1) {
-        card.onclick = () => onMove(-1);
+        card.onclick = (event) => {
+          if (!onMove(-1)) event.stopPropagation();
+        };
       } else if (offset === 3) {
-        card.onclick = () => onMove(1);
+        card.onclick = (event) => {
+          if (!onMove(1)) event.stopPropagation();
+        };
       } else if (offset === 2) {
         card.onclick = () => onSelect(choiceIndex);
       } else {
@@ -109,7 +113,7 @@ export function createChapterView(
 function attachDrag(
   carousel: HTMLElement,
   activeIndex: () => number,
-  onMove: (offset: -1 | 1) => void,
+  onMove: (offset: -1 | 1) => boolean,
 ): void {
   let pointerId: number | undefined;
   let startX = 0;
@@ -169,14 +173,16 @@ function attachDrag(
 function arrow(
   label: string,
   source: string,
-  onClick: () => void,
+  onClick: () => boolean,
   position: string,
 ): HTMLButtonElement {
   const button = document.createElement("button");
   button.type = "button";
   button.className = `${styles.arrow} ${position}`;
   button.setAttribute("aria-label", label);
-  button.addEventListener("click", onClick);
+  button.addEventListener("click", (event) => {
+    if (!onClick()) event.stopPropagation();
+  });
   const image = document.createElement("img");
   image.src = source;
   image.alt = "";

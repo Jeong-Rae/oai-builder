@@ -10,10 +10,10 @@ export function createChapterScene(
   let active = initialIndex;
   let moving = false;
   let timer: number | undefined;
-  const move = (offset: -1 | 1) => {
-    if (moving) return;
+  const move = (offset: -1 | 1): boolean => {
+    if (moving) return false;
     const next = active + offset;
-    if (next < 0 || next > visibleChapters.length) return;
+    if (next < 0 || next > visibleChapters.length) return false;
     moving = true;
     active = next;
     view.setActive(active);
@@ -23,6 +23,7 @@ export function createChapterScene(
       },
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 420,
     );
+    return true;
   };
   const view = createChapterView(
     move,

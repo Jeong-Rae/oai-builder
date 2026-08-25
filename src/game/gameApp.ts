@@ -353,7 +353,7 @@ export class GameApp {
     scene.activate?.();
   }
 
-  private showOverlay = async (scene: Scene): Promise<void> => {
+  private showOverlay = async (scene: Scene, bgm: BgmTrack = "entire"): Promise<void> => {
     const transitionId = ++this.transitionId;
     const frame = this.frame;
     this.blockTransitionInput(frame);
@@ -374,7 +374,7 @@ export class GameApp {
       overlay.append(scene.view);
       frame?.append(overlay);
       scene.activate?.();
-      setBgm("entire");
+      setBgm(bgm);
       this.releaseTransitionInput(frame);
     } catch (error) {
       scene.dispose();
@@ -480,13 +480,16 @@ export class GameApp {
           void this.showStageSelect(selection.chapterIndex);
         },
       );
-      await this.showOverlay({
-        ...clear,
-        dispose: () => {
-          clear.dispose();
-          disposeNext();
+      await this.showOverlay(
+        {
+          ...clear,
+          dispose: () => {
+            clear.dispose();
+            disposeNext();
+          },
         },
-      });
+        bgmForChapter(chapters[selection.chapterIndex]!.sign),
+      );
     } catch {
       disposeNext();
       window.alert("진행 상태를 저장하지 못했습니다. 브라우저 저장소를 확인해 주세요.");
