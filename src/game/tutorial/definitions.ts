@@ -42,7 +42,7 @@ export const firstPlayTutorials = [
       mascot: "lens",
       lines: [
         [{ text: "사물과 부딪혀 봐!" }],
-        [{ text: "사물과 부딪히면, 부딪힌 방향의 방향키가 사물에게 옮겨갈 거야." }],
+        [{ text: "사물과 부딪히면, 부딪힌 방향의 방향키가 사물에게 옮겨 가." }],
       ],
     },
     rules: [
@@ -123,7 +123,6 @@ export const firstPlayTutorials = [
       id: "find-wormhole",
       mascot: "lens",
       lines: [
-        [{ text: "별까지 가려면 왼쪽 방향키가 필요한데…" }],
         [{ text: "여기 똑같이 생긴 포탈이 두 개가 있어!" }],
         [{ text: "한번 가까운 포탈로 이동해볼까?" }],
       ],
@@ -158,9 +157,7 @@ export const firstPlayTutorials = [
       mascot: "lens",
       lines: [
         [{ text: "별까지 가야 하는데 레이저 때문에 지나갈 수가 없잖아." }],
-        [{ text: "레이저를 지나가려면" }],
-        [{ text: "발판 위에 사물을 올려놔야 하는데…" }],
-        [{ text: "사물을 어떻게 올려둘 수 있을까?" }],
+        [{ text: "레이저를 지나가려면 발판 위에 사물을 올려놔야 해..." }],
       ],
     },
     rules: [
@@ -177,8 +174,7 @@ export const firstPlayTutorials = [
           lines: [
             [{ text: "와! 레이저가 초록색이 됐어!" }],
             [{ text: "이제 지나갈 수 있겠어!" }],
-            [{ text: "어떤 게이트는 사물을 여러 개 올려둬야 할 수도 있으니," }],
-            [{ text: "기억해두자고!" }],
+            [{ text: "어떤 게이트는 사물을 여러 개 올려둬야 하니, 기억하자!" }],
           ],
         },
       },
