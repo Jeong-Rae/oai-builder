@@ -1,4 +1,4 @@
-import { createPathTutorialCue, type TutorialDefinition } from "@/src/game/tutorial/rules";
+import type { TutorialDefinition } from "@/src/game/tutorial/rules";
 
 export const firstPlayTutorials = [
   {
@@ -32,7 +32,6 @@ export const firstPlayTutorials = [
       lines: [
         [{ text: "사물과 부딪혀 봐!" }],
         [{ text: "사물과 부딪히면, 부딪힌 방향의 방향키가 사물에게 옮겨갈 거야." }],
-        [{ text: "이제 왼쪽으로 이동해봐!" }],
       ],
     },
     rules: [
@@ -46,7 +45,12 @@ export const firstPlayTutorials = [
             entity: { role: "target", id: "normal-1", kind: "normal" },
           },
         ],
-        cue: createPathTutorialCue("left", "flag"),
+        cue: {
+          id: "move-normal-left",
+          mascot: "flag",
+          keyHint: "left",
+          lines: [[{ text: "A/←", emphasis: true }, { text: "를 눌러서 사물을 움직여봐!" }]],
+        },
       },
     ],
   },

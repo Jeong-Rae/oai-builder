@@ -104,14 +104,14 @@ describe("튜토리얼 안내 규칙", () => {
       lines: [
         [{ text: "사물과 부딪혀 봐!" }],
         [{ text: "사물과 부딪히면, 부딪힌 방향의 방향키가 사물에게 옮겨갈 거야." }],
-        [{ text: "이제 왼쪽으로 이동해봐!" }],
       ],
     });
     const transferSignal = createMoveTutorialSignal(before, before, "left", decision);
     expect(selectTutorialRule(definition.rules, transferSignal, new Set())?.cue).toMatchObject({
       mascot: "flag",
       keyHint: "left",
-      id: "path-left",
+      id: "move-normal-left",
+      lines: [[{ text: "A/←", emphasis: true }, { text: "를 눌러서 사물을 움직여봐!" }]],
     });
     expect(matchesTutorialConditions(definition.completion.when, transferSignal)).toBe(false);
 
