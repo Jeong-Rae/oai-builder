@@ -9,6 +9,14 @@ export const playerTextureKeys: Record<"default" | Direction, AssetSlot> = {
   right: "playerRight",
 };
 
+export const playerTextureFrames = [
+  playerTextureKeys.up,
+  playerTextureKeys.down,
+  playerTextureKeys.left,
+  playerTextureKeys.right,
+  "playerHappy",
+] satisfies readonly AssetSlot[];
+
 export function playerTextureForMove(
   game: GameState,
   direction: Direction,
@@ -63,7 +71,7 @@ export const playerPresentation = {
     },
   },
   toolAsset: "playerDown",
-  gameTextures: [...Object.values(playerTextureKeys), "playerHappy"],
+  gameTextures: playerTextureFrames,
   editorAsset: "playerDown",
   gameTexture: (game) => (game.status === "completed" ? "playerHappy" : "playerDown"),
 } satisfies ObjectPresentation;

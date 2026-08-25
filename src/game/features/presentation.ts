@@ -19,7 +19,11 @@ import type {
   ObjectPresentation,
 } from "./presentationTypes";
 
-export { playerTextureForMove, playerTextureKeys } from "./objects/player/presentation";
+export {
+  playerTextureForMove,
+  playerTextureFrames,
+  playerTextureKeys,
+} from "./objects/player/presentation";
 export type { AssetSlot } from "./presentationTypes";
 
 export const fieldPresentations: Record<TileKind, FieldPresentation> = {

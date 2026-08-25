@@ -4,11 +4,23 @@ import { decide } from "@/src/game/domain/decider";
 import { createInitialState } from "@/src/game/domain/level";
 import {
   playerTextureForMove,
+  playerTextureFrames,
   playerTextureKeys,
   textureForEntity,
 } from "@/src/game/features/presentation";
 
 describe("플레이어 방향 스프라이트", () => {
+  it("모든 플레이어 이미지를 중복 없이 미리 렌더링한다", () => {
+    expect(playerTextureFrames).toEqual([
+      playerTextureKeys.up,
+      playerTextureKeys.down,
+      playerTextureKeys.left,
+      playerTextureKeys.right,
+      "playerHappy",
+    ]);
+    expect(new Set(playerTextureFrames).size).toBe(playerTextureFrames.length);
+  });
+
   it("기본 상태에서 아래쪽을 바라본다", () => {
     expect(playerTextureKeys.default).toBe(playerTextureKeys.down);
   });

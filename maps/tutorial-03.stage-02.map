@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "columns": 7,
+  "rows": 3,
+  "tiles": [
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall"
+    ],
+    [
+      "wall",
+      "exit",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "wall"
+    ],
+    [
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall",
+      "wall"
+    ]
+  ],
+  "wormholePairs": [],
+  "objects": [
+    {
+      "id": "player",
+      "kind": "player",
+      "position": {
+        "x": 3,
+        "y": 1
+      }
+    },
+    {
+      "id": "swapper-1",
+      "kind": "swapper",
+      "position": {
+        "x": 5,
+        "y": 1
+      }
+    }
+  ]
+}

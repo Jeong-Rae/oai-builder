@@ -5,6 +5,7 @@ import {
   assetForDirection,
   assetUrls,
   overlayForField,
+  playerTextureFrames,
   textureForEntity,
   textureForField,
 } from "@/src/game/features/presentation";
@@ -412,7 +413,14 @@ export function createGameView(
                 `${styles.entity} ${styles.normal}`,
                 entity.kind,
               )
-            : document.createElement("img");
+            : entity.kind === "player"
+              ? createStateAsset(
+                  playerTextureFrames,
+                  textureForEntity(entity, game),
+                  styles.entity,
+                  "플레이어",
+                )
+              : document.createElement("img");
         if (image instanceof HTMLImageElement) {
           image.className = styles.entity;
           image.alt = entity.kind === "player" ? "플레이어" : entity.kind;
@@ -426,7 +434,7 @@ export function createGameView(
         entity.kind === "player" && game.status === "completed",
       );
       const texture = textureForEntity(entity, game);
-      if (entity.kind === "normal") selectStateAsset(image, texture);
+      if (entity.kind === "normal" || entity.kind === "player") selectStateAsset(image, texture);
       else (image as HTMLImageElement).src = assetUrls[texture];
       syncEntityControls(layer!, entity);
       cells.get(key(entity.position))!.append(layer!);
@@ -583,8 +591,7 @@ export function createGameView(
     },
     setPlayerTexture: (source) => {
       const player = entityNodes.get("player");
-      if (player instanceof HTMLImageElement)
-        player.src = assetUrls[source as keyof typeof assetUrls] ?? source;
+      if (player) selectStateAsset(player, source);
     },
     setPlateFrame: (position, source) => {
       const overlay = overlays.get(key(position));
