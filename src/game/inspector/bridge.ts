@@ -1,47 +1,41 @@
-import type { InspectorTarget, WrapperToGameMessage } from "@/src/game/inspector/types";
+import {
+  advanceCandidateIndex,
+  buildInspectorTarget,
+  type InspectableHtmlElement,
+} from "@/src/game/inspector/domTarget";
+import type { WrapperToGameMessage } from "@/src/game/inspector/types";
 
 const HIGHLIGHT_ID = "inspector-highlight-overlay";
 
-interface InspectableElement extends HTMLElement {
-  dataset: DOMStringMap & {
-    inspectorId?: string;
-    inspectorKind?: string;
-    inspectorLabel?: string;
-    inspectorSourceFile?: string;
-    inspectorSourceSymbol?: string;
-  };
+const EXCLUDED_TAGS = new Set(["HTML", "SCRIPT", "STYLE", "META", "LINK", "HEAD"]);
+
+function asHtmlElement(element: Element): HTMLElement | null {
+  if (element instanceof HTMLElement) return element;
+  return element.parentElement;
 }
 
-function findInspectable(target: EventTarget | null): InspectableElement | null {
-  if (!(target instanceof Element)) return null;
-  const element = target.closest<HTMLElement>("[data-inspector-id]");
-  return element ? (element as InspectableElement) : null;
-}
-
-function buildTarget(element: InspectableElement): InspectorTarget {
-  const rect = element.getBoundingClientRect();
-  const target: InspectorTarget = {
-    id: element.dataset.inspectorId!,
-    kind: "dom",
+function collectCandidates(x: number, y: number): InspectableHtmlElement[] {
+  const candidates: InspectableHtmlElement[] = [];
+  const seen = new Set<HTMLElement>();
+  const append = (element: HTMLElement): void => {
+    if (element.id === HIGHLIGHT_ID || EXCLUDED_TAGS.has(element.tagName) || seen.has(element)) {
+      return;
+    }
+    seen.add(element);
+    candidates.push(element as InspectableHtmlElement);
   };
-  const kind = element.dataset.inspectorKind;
-  if (kind === "game-object" || kind === "map-cell") {
-    target.kind = kind;
+  for (const hit of document.elementsFromPoint(x, y)) {
+    let current = asHtmlElement(hit);
+    const ancestry: HTMLElement[] = [];
+    while (current) {
+      ancestry.push(current);
+      current = current.parentElement;
+    }
+    const explicitlyInspectable = ancestry.find((element) => element.dataset.inspectorId?.trim());
+    if (explicitlyInspectable) append(explicitlyInspectable);
+    ancestry.forEach(append);
   }
-  const label = element.dataset.inspectorLabel;
-  if (label) target.label = label;
-  target.bounds = {
-    x: Math.round(rect.x),
-    y: Math.round(rect.y),
-    width: Math.round(rect.width),
-    height: Math.round(rect.height),
-  };
-  const file = element.dataset.inspectorSourceFile;
-  const symbol = element.dataset.inspectorSourceSymbol;
-  if (file || symbol) {
-    target.source = { file, symbol };
-  }
-  return target;
+  return candidates;
 }
 
 function ensureHighlight(): HTMLDivElement {
@@ -76,25 +70,59 @@ function hideHighlight(): void {
 
 export function installInspectorBridge(): () => void {
   let enabled = false;
+  let candidates: InspectableHtmlElement[] = [];
+  let candidateIndex = -1;
+  let pointerX = -1;
+  let pointerY = -1;
 
   const postToWrapper = (message: unknown): void => {
     if (window.parent === window) return;
     window.parent.postMessage(message, "*");
   };
 
-  const onPointerMove = (event: PointerEvent): void => {
-    const element = findInspectable(event.target);
-    if (element) moveHighlight(element);
+  const showCandidate = (): void => {
+    const candidate = candidates[candidateIndex];
+    if (candidate) moveHighlight(candidate);
     else hideHighlight();
   };
 
+  const refreshCandidates = (x: number, y: number): void => {
+    pointerX = x;
+    pointerY = y;
+    candidates = collectCandidates(x, y);
+    candidateIndex = candidates.length > 0 ? 0 : -1;
+    showCandidate();
+  };
+
+  const onPointerMove = (event: PointerEvent): void => {
+    refreshCandidates(event.clientX, event.clientY);
+  };
+
+  const onWheel = (event: WheelEvent): void => {
+    if (!event.shiftKey) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (event.clientX !== pointerX || event.clientY !== pointerY) {
+      refreshCandidates(event.clientX, event.clientY);
+    }
+    candidateIndex = advanceCandidateIndex(
+      candidateIndex,
+      event.deltaY || event.deltaX,
+      candidates.length,
+    );
+    showCandidate();
+  };
+
   const onClick = (event: MouseEvent): void => {
-    const element = findInspectable(event.target);
+    if (event.clientX !== pointerX || event.clientY !== pointerY) {
+      refreshCandidates(event.clientX, event.clientY);
+    }
+    const element = candidates[candidateIndex];
     hideHighlight();
     event.preventDefault();
     event.stopImmediatePropagation();
     if (element) {
-      postToWrapper({ type: "inspector:selected", target: buildTarget(element) });
+      postToWrapper({ type: "inspector:selected", target: buildInspectorTarget(element) });
     }
   };
 
@@ -103,20 +131,26 @@ export function installInspectorBridge(): () => void {
   };
 
   const enable = (): void => {
+    if (enabled) return;
     enabled = true;
     document.body.dataset.inspectorMode = "on";
     document.addEventListener("pointermove", onPointerMove, true);
+    document.addEventListener("wheel", onWheel, { capture: true, passive: false });
     document.addEventListener("click", onClick, true);
     document.addEventListener("keydown", onKeyDown, true);
   };
 
   const disable = (): void => {
+    if (!enabled) return;
     enabled = false;
     delete document.body.dataset.inspectorMode;
     document.removeEventListener("pointermove", onPointerMove, true);
+    document.removeEventListener("wheel", onWheel, true);
     document.removeEventListener("click", onClick, true);
     document.removeEventListener("keydown", onKeyDown, true);
     hideHighlight();
+    candidates = [];
+    candidateIndex = -1;
   };
 
   const onMessage = (event: MessageEvent): void => {

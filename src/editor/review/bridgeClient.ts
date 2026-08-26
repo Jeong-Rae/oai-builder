@@ -20,6 +20,7 @@ export function createBridgeClient(
   iframe.title = "Game Live";
   iframe.allow = "fullscreen";
   container.append(iframe);
+  let commentModeEnabled = false;
 
   const postToGame = (message: unknown): void => {
     iframe.contentWindow?.postMessage(message, new URL(gameUrl).origin);
@@ -27,6 +28,15 @@ export function createBridgeClient(
 
   const onMessage = (event: MessageEvent<WrapperToGameMessage | GameToWrapperMessage>): void => {
     if (event.source !== iframe.contentWindow) return;
+    if (event.origin !== new URL(gameUrl).origin) return;
+    if (!event.data || typeof event.data !== "object" || !("type" in event.data)) return;
+    if (event.data.type === "inspector:ready") {
+      postToGame({
+        type: "inspector:mode",
+        enabled: commentModeEnabled,
+      } satisfies WrapperToGameMessage);
+      return;
+    }
     if (event.data.type === "inspector:selected") {
       onTargetSelected(event.data.target);
     }
@@ -36,6 +46,7 @@ export function createBridgeClient(
 
   return {
     setCommentMode(enabled) {
+      commentModeEnabled = enabled;
       postToGame({ type: "inspector:mode", enabled } satisfies WrapperToGameMessage);
     },
     destroy() {
