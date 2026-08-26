@@ -351,6 +351,104 @@
   border-bottom-left-radius: 4px;
 }
 
+.review-root .task-card {
+  align-self: stretch;
+  padding: 12px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.review-root .task-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.review-root .task-card-id {
+  min-width: 0;
+  overflow: hidden;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-root .task-card-badge {
+  flex: none;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--success);
+  background: #e9f9f0;
+  border-radius: 9999px;
+}
+
+.review-root .task-card.is-failed .task-card-badge {
+  color: var(--error);
+  background: #fff1f1;
+}
+
+.review-root .task-card.is-retrying .task-card-badge {
+  color: #9a6700;
+  background: #fff8c5;
+}
+
+.review-root .task-progress {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-root .task-progress li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--border-strong);
+}
+
+.review-root .task-progress li.is-complete,
+.review-root .task-progress li.is-current {
+  color: var(--body);
+}
+
+.review-root .task-progress li.is-current {
+  font-weight: 750;
+}
+
+.review-root .task-step-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--border);
+  border-radius: 50%;
+}
+
+.review-root .task-progress li.is-complete .task-step-dot {
+  background: var(--success);
+}
+
+.review-root .task-progress li.is-current .task-step-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--pale-purple);
+}
+
+.review-root .task-card-detail {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.review-root .task-card.is-failed .task-card-detail {
+  color: var(--error);
+}
+
 .review-root .composer {
   display: flex;
   flex-direction: column;

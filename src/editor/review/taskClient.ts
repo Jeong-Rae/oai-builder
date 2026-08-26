@@ -1,4 +1,4 @@
-import type { TaskSubmissionRecord, VisualTask } from "@/src/editor/review/types";
+import type { TaskStatusRecord, TaskSubmissionRecord, VisualTask } from "@/src/editor/review/types";
 import { resolveSiblingUrl } from "@/src/editor/review/urls";
 
 const gatewayUrl =
@@ -15,4 +15,13 @@ export async function submitVisualTask(task: VisualTask): Promise<TaskSubmission
     throw new Error(`gateway ${response.status}: ${detail}`);
   }
   return (await response.json()) as TaskSubmissionRecord;
+}
+
+export async function getVisualTask(taskId: string): Promise<TaskStatusRecord> {
+  const response = await fetch(`${gatewayUrl}/api/tasks/${encodeURIComponent(taskId)}`);
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`gateway ${response.status}: ${detail}`);
+  }
+  return (await response.json()) as TaskStatusRecord;
 }

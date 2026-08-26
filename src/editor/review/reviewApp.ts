@@ -1,7 +1,13 @@
 import { createBridgeClient } from "@/src/editor/review/bridgeClient";
-import { submitVisualTask } from "@/src/editor/review/taskClient";
+import { getVisualTask, submitVisualTask } from "@/src/editor/review/taskClient";
 import { resolveSiblingUrl } from "@/src/editor/review/urls";
-import type { ChatEntry, InspectorTarget, VisualTask } from "@/src/editor/review/types";
+import type {
+  ChatEntry,
+  InspectorTarget,
+  TaskStatus,
+  TaskStatusRecord,
+  VisualTask,
+} from "@/src/editor/review/types";
 import { isCommentModeShortcut } from "@/src/game/inspector/shortcut";
 import "@/src/editor/review/review.css";
 
@@ -12,6 +18,13 @@ interface TargetItem {
   target: InspectorTarget;
   selectedAt: string;
 }
+
+const TASK_STEPS: ReadonlyArray<{ status: Exclude<TaskStatus, "failed">; label: string }> = [
+  { status: "accepted", label: "요청 성공" },
+  { status: "reviewing", label: "Task 검토중" },
+  { status: "editing", label: "코드 수정 중" },
+  { status: "completed", label: "작업 완료" },
+];
 
 export function mountReviewApp(root: HTMLElement): () => void {
   root.classList.add("review-root");
@@ -85,6 +98,8 @@ export function mountReviewApp(root: HTMLElement): () => void {
   let bridge: ReturnType<typeof createBridgeClient> | null = null;
   let commentMode = false;
   let submitting = false;
+  let destroyed = false;
+  const pollTimers = new Set<number>();
 
   const renderChatEntry = (entry: ChatEntry): void => {
     const bubble = document.createElement("div");
@@ -107,6 +122,84 @@ export function mountReviewApp(root: HTMLElement): () => void {
     chatLog.append(skeleton);
     chatLog.scrollTop = chatLog.scrollHeight;
     return skeleton;
+  };
+
+  const renderTaskCard = (taskId: string): HTMLElement => {
+    const card = document.createElement("article");
+    card.className = "task-card";
+    card.dataset.taskId = taskId;
+    card.innerHTML = `
+      <header class="task-card-header">
+        <span class="task-card-id"></span>
+        <span class="task-card-badge">SUCCESS</span>
+      </header>
+      <ol class="task-progress">
+        ${TASK_STEPS.map(
+          (step) => `
+            <li data-task-step="${step.status}">
+              <span class="task-step-dot" aria-hidden="true"></span>
+              <span>${step.label}</span>
+            </li>`,
+        ).join("")}
+      </ol>
+      <p class="task-card-detail" aria-live="polite"></p>
+    `;
+    card.querySelector<HTMLElement>(".task-card-id")!.textContent = taskId;
+    chatLog.append(card);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return card;
+  };
+
+  const updateTaskCard = (
+    card: HTMLElement,
+    record: Pick<TaskStatusRecord, "status" | "taskFile" | "error">,
+    retrying = false,
+  ): void => {
+    const badge = card.querySelector<HTMLElement>(".task-card-badge")!;
+    const detail = card.querySelector<HTMLElement>(".task-card-detail")!;
+    card.classList.toggle("is-failed", record.status === "failed");
+    card.classList.toggle("is-retrying", retrying);
+    badge.textContent = record.status === "failed" ? "FAIL" : retrying ? "RETRYING" : "SUCCESS";
+
+    const currentIndex = TASK_STEPS.findIndex((step) => step.status === record.status);
+    for (const [index, step] of TASK_STEPS.entries()) {
+      const node = card.querySelector<HTMLElement>(`[data-task-step="${step.status}"]`)!;
+      node.classList.toggle("is-complete", currentIndex >= 0 && index < currentIndex);
+      node.classList.toggle("is-current", currentIndex === index);
+    }
+
+    if (record.status === "failed")
+      detail.textContent = record.error ?? "작업 처리에 실패했습니다.";
+    else if (retrying) detail.textContent = "Gateway 연결을 다시 확인하고 있습니다.";
+    else if (record.status === "completed")
+      detail.textContent = record.taskFile ?? "Task 저장 완료";
+    else detail.textContent = TASK_STEPS[currentIndex]?.label ?? "요청을 처리하고 있습니다.";
+  };
+
+  const pollTask = (taskId: string, card: HTMLElement): void => {
+    let lastRecord: Pick<TaskStatusRecord, "status" | "taskFile" | "error"> = {
+      status: "accepted",
+    };
+    const schedule = (): void => {
+      if (destroyed) return;
+      const timer = window.setTimeout(async () => {
+        pollTimers.delete(timer);
+        if (destroyed) return;
+        try {
+          const record = await getVisualTask(taskId);
+          if (destroyed) return;
+          lastRecord = record;
+          updateTaskCard(card, record);
+          if (record.status !== "completed" && record.status !== "failed") schedule();
+        } catch {
+          if (destroyed) return;
+          updateTaskCard(card, lastRecord, true);
+          schedule();
+        }
+      }, 1_000);
+      pollTimers.add(timer);
+    };
+    schedule();
   };
 
   const setActiveTarget = (id: string): void => {
@@ -223,16 +316,14 @@ export function mountReviewApp(root: HTMLElement): () => void {
     const pendingEntry = renderPendingEntry();
     try {
       const record = await submitVisualTask(task);
-      renderChatEntry({
-        role: "system",
-        text: `[${record.task.id}] ${record.task.status ?? "queued"} · codex prompt 생성 완료 (${record.codexPrompt.length} chars)`,
-        at: record.receivedAt,
-      });
+      const card = renderTaskCard(record.taskId);
+      updateTaskCard(card, { status: record.status });
+      pollTask(record.taskId, card);
     } catch (error) {
-      renderChatEntry({
-        role: "error",
-        text: error instanceof Error ? error.message : String(error),
-        at: new Date().toISOString(),
+      const card = renderTaskCard(task.id);
+      updateTaskCard(card, {
+        status: "failed",
+        error: error instanceof Error ? error.message : String(error),
       });
     } finally {
       pendingEntry.remove();
@@ -272,6 +363,9 @@ export function mountReviewApp(root: HTMLElement): () => void {
   bridge = createBridgeClient(stage, gameUrl, addTarget, toggleCommentMode);
 
   return () => {
+    destroyed = true;
+    for (const timer of pollTimers) window.clearTimeout(timer);
+    pollTimers.clear();
     bridge?.destroy();
     bridge = null;
     window.removeEventListener("keydown", onShortcut);

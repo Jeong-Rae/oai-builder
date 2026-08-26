@@ -19,10 +19,21 @@ export interface VisualTask {
   };
 }
 
+export type TaskStatus = "accepted" | "reviewing" | "editing" | "completed" | "failed";
+
 export interface TaskSubmissionRecord {
-  task: VisualTask & { status?: string };
-  codexPrompt: string;
+  taskId: string;
+  status: "accepted";
   receivedAt: string;
+}
+
+export interface TaskStatusRecord {
+  taskId: string;
+  status: TaskStatus;
+  receivedAt: string;
+  updatedAt: string;
+  taskFile?: string;
+  error?: string;
 }
 
 export interface ChatEntry {

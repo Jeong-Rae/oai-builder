@@ -6,15 +6,15 @@ This bundle is an additive implementation scaffold for `Jeong-Rae/oai-builder`.
 
 1. A game-side Inspector Bridge communicates with a wrapper over `postMessage`.
 2. The wrapper can enable Comment mode, hover/select inspectable elements, write a comment, and generate a `VisualTask`.
-3. A local Node Task Gateway validates the task and converts it into a deterministic `$game-comment-flow` Codex prompt.
-4. A repo-scoped Codex skill lives at `.agents/skills/game-comment-flow`.
-5. The skill defines validation → context resolution → implementation → verification → result.
+3. A local Node Task Gateway validates the task and submits it to Codex App Server over stdio JSONL.
+4. Codex organizes the request into a read-only Markdown response.
+5. The gateway stores the response at `task/<task-id>.md` and exposes progress through the task API.
 
-## Intentional V1 boundary
+## Current boundary
 
-The gateway does **not yet open a Codex App Server thread/turn automatically**. It emits the exact prompt payload that the App Server adapter should send next.
-
-That boundary is intentional because App Server process/auth/transport integration should be implemented and tested in the developer's actual local Codex environment.
+Codex App Server runs with a read-only sandbox and does not modify game source in this version. The
+gateway is the only component that writes the generated Task Markdown. Code implementation and
+verification remain a later workflow stage even though the VP progress label retains `코드 수정 중`.
 
 ## Integration status
 
@@ -58,6 +58,11 @@ Expected endpoint:
 
 - `GET http://127.0.0.1:8787/health`
 - `POST http://127.0.0.1:8787/api/tasks`
+- `GET http://127.0.0.1:8787/api/tasks/:id`
+
+The gateway starts `codex app-server` automatically and uses the existing local Codex login. A POST
+returns after the App Server accepts the thread and turn. The review console then polls the Task GET
+endpoint until the Markdown is saved or the turn fails. Only one Task is active at a time.
 
 The review wrapper resolves sibling ports from its own origin (works on localhost and Codespaces forwarded HTTPS hosts):
 
