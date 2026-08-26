@@ -1,6 +1,9 @@
 import {
   advanceCandidateIndex,
   buildInspectorTarget,
+  createDomPath,
+  isVisibleCandidateAtPoint,
+  orderInspectorCandidates,
   type InspectableHtmlElement,
 } from "@/src/game/inspector/domTarget";
 import type { WrapperToGameMessage } from "@/src/game/inspector/types";
@@ -14,7 +17,7 @@ function asHtmlElement(element: Element): HTMLElement | null {
   return element.parentElement;
 }
 
-function collectCandidates(x: number, y: number): InspectableHtmlElement[] {
+function collectHitCandidates(x: number, y: number): InspectableHtmlElement[] {
   const candidates: InspectableHtmlElement[] = [];
   const seen = new Set<HTMLElement>();
   const append = (element: HTMLElement): void => {
@@ -36,6 +39,18 @@ function collectCandidates(x: number, y: number): InspectableHtmlElement[] {
     ancestry.forEach(append);
   }
   return candidates;
+}
+
+function collectExpandedCandidates(x: number, y: number): InspectableHtmlElement[] {
+  const hitCandidates = collectHitCandidates(x, y);
+  const geometricCandidates: HTMLElement[] = [];
+  for (const element of document.querySelectorAll("*")) {
+    if (!(element instanceof HTMLElement)) continue;
+    if (element.id === HIGHLIGHT_ID || EXCLUDED_TAGS.has(element.tagName)) continue;
+    if (!isVisibleCandidateAtPoint(element, x, y, getComputedStyle(element))) continue;
+    geometricCandidates.push(element);
+  }
+  return orderInspectorCandidates([...hitCandidates, ...geometricCandidates], hitCandidates);
 }
 
 function ensureHighlight(): HTMLDivElement {
@@ -89,7 +104,7 @@ export function installInspectorBridge(): () => void {
   const refreshCandidates = (x: number, y: number): void => {
     pointerX = x;
     pointerY = y;
-    candidates = collectCandidates(x, y);
+    candidates = collectHitCandidates(x, y);
     candidateIndex = candidates.length > 0 ? 0 : -1;
     showCandidate();
   };
@@ -105,12 +120,41 @@ export function installInspectorBridge(): () => void {
     if (event.clientX !== pointerX || event.clientY !== pointerY) {
       refreshCandidates(event.clientX, event.clientY);
     }
+    const currentCandidate = candidates[candidateIndex];
+    candidates = collectExpandedCandidates(event.clientX, event.clientY);
+    candidateIndex = currentCandidate ? candidates.indexOf(currentCandidate) : -1;
+    if (candidateIndex < 0 && candidates.length > 0) candidateIndex = 0;
     candidateIndex = advanceCandidateIndex(
       candidateIndex,
       event.deltaY || event.deltaX,
       candidates.length,
     );
     showCandidate();
+    if (import.meta.env.DEV) {
+      const direction = event.deltaY || event.deltaX;
+      const selected = candidates[candidateIndex];
+      console.groupCollapsed(
+        `[VisualTask Inspector] Shift+Wheel ${direction >= 0 ? "down" : "up"} · ${candidateIndex + 1}/${candidates.length}`,
+      );
+      console.log("Pointer:", { x: event.clientX, y: event.clientY });
+      console.table(
+        candidates.map((candidate, index) => {
+          const rect = candidate.getBoundingClientRect();
+          return {
+            selected: index === candidateIndex ? "▶" : "",
+            index,
+            tag: candidate.tagName.toLowerCase(),
+            id: candidate.dataset.inspectorId || candidate.id || `dom:${createDomPath(candidate)}`,
+            class: candidate.className,
+            depth: createDomPath(candidate).split(" > ").length,
+            pointerEvents: getComputedStyle(candidate).pointerEvents,
+            bounds: `${Math.round(rect.x)},${Math.round(rect.y)} ${Math.round(rect.width)}×${Math.round(rect.height)}`,
+          };
+        }),
+      );
+      console.log("Selected candidate:", selected ?? null);
+      console.groupEnd();
+    }
   };
 
   const onClick = (event: MouseEvent): void => {

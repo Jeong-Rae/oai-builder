@@ -12,6 +12,12 @@ export interface InspectableHtmlElement extends HTMLElement {
   dataset: InspectorDataset;
 }
 
+export interface InspectorCandidateStyle {
+  display: string;
+  visibility: string;
+  opacity: string;
+}
+
 const MAX_DESCRIPTION_LENGTH = 80;
 const FALLBACK_DATA_ATTRIBUTES = ["data-testid", "data-test", "data-role"] as const;
 
@@ -140,4 +146,49 @@ export function advanceCandidateIndex(current: number, deltaY: number, length: n
   if (deltaY === 0) return Math.max(0, Math.min(current, length - 1));
   const direction = deltaY >= 0 ? 1 : -1;
   return (current + direction + length) % length;
+}
+
+export function isVisibleCandidateAtPoint(
+  element: HTMLElement,
+  x: number,
+  y: number,
+  style: InspectorCandidateStyle,
+): boolean {
+  if (style.display === "none") return false;
+  if (style.visibility === "hidden" || style.visibility === "collapse") return false;
+  if (Number.parseFloat(style.opacity) === 0) return false;
+
+  const rect = element.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return false;
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function domDepth(element: HTMLElement): number {
+  let depth = 0;
+  let current: HTMLElement | null = element;
+  while (current) {
+    depth += 1;
+    current = current.parentElement;
+  }
+  return depth;
+}
+
+export function orderInspectorCandidates(
+  elements: readonly HTMLElement[],
+  hitElements: readonly HTMLElement[],
+): InspectableHtmlElement[] {
+  const unique = Array.from(new Set(elements));
+  const inputOrder = new Map(unique.map((element, index) => [element, index]));
+  const hitOrder = new Map(hitElements.map((element, index) => [element, index]));
+
+  unique.sort((left, right) => {
+    const depthDifference = domDepth(left) - domDepth(right);
+    if (depthDifference !== 0) return depthDifference;
+
+    const leftHit = hitOrder.get(left) ?? Number.POSITIVE_INFINITY;
+    const rightHit = hitOrder.get(right) ?? Number.POSITIVE_INFINITY;
+    if (leftHit !== rightHit) return leftHit - rightHit;
+    return inputOrder.get(left)! - inputOrder.get(right)!;
+  });
+  return unique as InspectableHtmlElement[];
 }

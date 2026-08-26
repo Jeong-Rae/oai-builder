@@ -4,6 +4,8 @@ import {
   advanceCandidateIndex,
   buildInspectorTarget,
   createDomPath,
+  isVisibleCandidateAtPoint,
+  orderInspectorCandidates,
   type InspectableHtmlElement,
 } from "@/src/game/inspector/domTarget";
 
@@ -45,7 +47,16 @@ class FakeElement {
   }
 
   getBoundingClientRect(): DOMRect {
-    return { x: 10.4, y: 20.6, width: 100.2, height: 40.8 } as DOMRect;
+    return {
+      x: 10.4,
+      y: 20.6,
+      left: 10.4,
+      top: 20.6,
+      right: 110.6,
+      bottom: 61.4,
+      width: 100.2,
+      height: 40.8,
+    } as DOMRect;
   }
 }
 
@@ -106,5 +117,32 @@ describe("Inspector 후보 순환", () => {
     expect(advanceCandidateIndex(0, -1, 3)).toBe(2);
     expect(advanceCandidateIndex(1, 0, 3)).toBe(1);
     expect(advanceCandidateIndex(-1, 1, 0)).toBe(-1);
+  });
+
+  it("pointer-events와 무관하게 좌표 안의 가시 요소를 후보로 인정한다", () => {
+    const title = new FakeElement({ tag: "img" });
+    const visible = { display: "block", visibility: "visible", opacity: "1" };
+
+    expect(isVisibleCandidateAtPoint(inspectable(title), 50, 40, visible)).toBe(true);
+    expect(
+      isVisibleCandidateAtPoint(inspectable(title), 50, 40, {
+        ...visible,
+        visibility: "hidden",
+      }),
+    ).toBe(false);
+    expect(isVisibleCandidateAtPoint(inspectable(title), 500, 400, visible)).toBe(false);
+  });
+
+  it("부모 다음에 포인터 이벤트가 없는 자식 후보를 배치한다", () => {
+    const body = new FakeElement({ tag: "body" });
+    const main = new FakeElement({ tag: "main", parent: body });
+    const title = new FakeElement({ tag: "img", classes: ["title"], parent: main });
+
+    const ordered = orderInspectorCandidates(
+      [inspectable(main), inspectable(body), inspectable(title)],
+      [inspectable(main), inspectable(body)],
+    );
+    expect(ordered).toEqual([inspectable(body), inspectable(main), inspectable(title)]);
+    expect(advanceCandidateIndex(ordered.indexOf(inspectable(main)), 1, ordered.length)).toBe(2);
   });
 });
