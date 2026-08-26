@@ -149,6 +149,22 @@ pnpm run build:editor
 Gateway는 기존 로컬 Codex 로그인을 사용한다. 로그인되어 있지 않거나 App Server 초기화가
 실패하면 `/health`는 `503`을 반환하고 Task 제출도 `codex_unavailable`로 실패한다.
 
+## VT 전용 Vite cache
+
+game(5173)과 review(5175)가 동일한 기본 dependency cache를 사용하면서 review 쪽의 빈
+optimizer metadata가 game의 Zustand pre-bundle을 덮어쓰는 문제가 확인됐다. 이때 게임 서버는
+이미 사라진 `zustand_vanilla.js` hash를 계속 참조하며 `504 Outdated Optimize Dep`를 반환했다.
+
+`tools/run-review-stack.mjs`는 두 dev script를 `--mode vt`로 실행한다. 각 Vite config는 VT
+mode에서만 다음 cache를 사용한다.
+
+- game: `node_modules/.vite-vt/game`
+- review: `node_modules/.vite-vt/review`
+
+일반 `pnpm run dev:live`와 `pnpm run dev:review`는 기존 기본 cache를 유지한다. 변경 전 stale
+cache가 남아 있다면 실행 중인 `dev:vt`를 종료한 뒤 `node_modules/.vite`를 정리하고 다시
+시작해야 한다.
+
 ## 후속 작업 시 주의 사항
 
 1. 실제 게임 코드 수정 단계를 추가하려면 현재 읽기 전용 turn과 명확히 분리하고 별도 승인 및

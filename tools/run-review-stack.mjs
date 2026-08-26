@@ -30,8 +30,8 @@ process.on("SIGINT", () => shutdown());
 process.on("SIGTERM", () => shutdown());
 
 run("node", ["tools/review-server/server.mjs"]);
-run("pnpm", ["run", "dev:live"]);
-run("pnpm", ["run", "dev:review"]);
+run("pnpm", ["run", "dev:live", "--mode", "vt"]);
+run("pnpm", ["run", "dev:review", "--mode", "vt"]);
 
 console.log("\nVisual Task review stack:");
 console.log("  review console : http://localhost:5175/");

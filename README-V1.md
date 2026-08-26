@@ -46,6 +46,11 @@ Whole stack (gateway + game + review console):
 pnpm run dev:vt
 ```
 
+`dev:vt` runs the game and review servers in `vt` mode. Their optimized dependency caches are
+isolated under `node_modules/.vite-vt/game` and `node_modules/.vite-vt/review`, so the two dev
+servers cannot overwrite each other's pre-bundled dependencies. Other dev commands keep Vite's
+default cache location.
+
 Review console: `http://localhost:5175/`
 
 Task gateway only:

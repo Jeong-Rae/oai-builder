@@ -1,17 +1,18 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
-import { aliases } from './vite.aliases';
+import { aliases } from "./vite.aliases";
 
-export default defineConfig({
-  root: 'apps/game',
+export default defineConfig(({ mode }) => ({
+  root: "apps/game",
+  ...(mode === "vt" ? { cacheDir: "../../node_modules/.vite-vt/game" } : {}),
   resolve: { alias: aliases },
   server: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     port: 5173,
     strictPort: true,
   },
   build: {
-    outDir: '../../dist/game',
+    outDir: "../../dist/game",
     emptyOutDir: true,
   },
-});
+}));
