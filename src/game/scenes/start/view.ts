@@ -101,6 +101,11 @@ export function createStartView(
     if (!ready) return;
     if (!start) {
       start = createPlateButton("START", onStart);
+      start.dataset.inspectorId = "start-button";
+      start.dataset.inspectorKind = "dom";
+      start.dataset.inspectorLabel = "START";
+      start.dataset.inspectorSourceFile = "src/game/scenes/start/view.ts";
+      start.dataset.inspectorSourceSymbol = "StartButton";
       start.classList.add(styles.start);
       googleMark = createGoogleMark();
       start.append(googleMark);

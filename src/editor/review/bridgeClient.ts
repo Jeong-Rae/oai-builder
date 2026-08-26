@@ -1,0 +1,46 @@
+import type {
+  GameToWrapperMessage,
+  InspectorTarget,
+  WrapperToGameMessage,
+} from "@/src/game/inspector/types";
+
+export interface BridgeClient {
+  setCommentMode(enabled: boolean): void;
+  destroy(): void;
+}
+
+export function createBridgeClient(
+  container: HTMLElement,
+  gameUrl: string,
+  onTargetSelected: (target: InspectorTarget) => void,
+): BridgeClient {
+  const iframe = document.createElement("iframe");
+  iframe.className = "review-game-frame";
+  iframe.src = gameUrl;
+  iframe.title = "Game Live";
+  iframe.allow = "fullscreen";
+  container.append(iframe);
+
+  const postToGame = (message: unknown): void => {
+    iframe.contentWindow?.postMessage(message, new URL(gameUrl).origin);
+  };
+
+  const onMessage = (event: MessageEvent<WrapperToGameMessage | GameToWrapperMessage>): void => {
+    if (event.source !== iframe.contentWindow) return;
+    if (event.data.type === "inspector:selected") {
+      onTargetSelected(event.data.target);
+    }
+  };
+
+  window.addEventListener("message", onMessage);
+
+  return {
+    setCommentMode(enabled) {
+      postToGame({ type: "inspector:mode", enabled } satisfies WrapperToGameMessage);
+    },
+    destroy() {
+      window.removeEventListener("message", onMessage);
+      iframe.remove();
+    },
+  };
+}
