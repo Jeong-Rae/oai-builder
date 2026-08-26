@@ -8,6 +8,7 @@ import {
   orderInspectorCandidates,
   type InspectableHtmlElement,
 } from "@/src/game/inspector/domTarget";
+import { isCommentModeShortcut } from "@/src/game/inspector/shortcut";
 
 interface FakeElementOptions {
   tag: string;
@@ -144,5 +145,23 @@ describe("Inspector 후보 순환", () => {
     );
     expect(ordered).toEqual([inspectable(body), inspectable(main), inspectable(title)]);
     expect(advanceCandidateIndex(ordered.indexOf(inspectable(main)), 1, ordered.length)).toBe(2);
+  });
+});
+
+describe("Comment Mode 단축키", () => {
+  it("수정키 충돌과 키 반복 없이 Shift+V만 허용한다", () => {
+    const base = {
+      key: "V",
+      code: "KeyV",
+      shiftKey: true,
+      ctrlKey: false,
+      metaKey: false,
+      altKey: false,
+      repeat: false,
+    };
+    expect(isCommentModeShortcut(base)).toBe(true);
+    expect(isCommentModeShortcut({ ...base, shiftKey: false })).toBe(false);
+    expect(isCommentModeShortcut({ ...base, ctrlKey: true })).toBe(false);
+    expect(isCommentModeShortcut({ ...base, repeat: true })).toBe(false);
   });
 });

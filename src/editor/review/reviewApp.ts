@@ -2,6 +2,7 @@ import { createBridgeClient } from "@/src/editor/review/bridgeClient";
 import { submitVisualTask } from "@/src/editor/review/taskClient";
 import { resolveSiblingUrl } from "@/src/editor/review/urls";
 import type { ChatEntry, InspectorTarget, VisualTask } from "@/src/editor/review/types";
+import { isCommentModeShortcut } from "@/src/game/inspector/shortcut";
 import "@/src/editor/review/review.css";
 
 const gameUrl =
@@ -28,6 +29,8 @@ export function mountReviewApp(root: HTMLElement): () => void {
           data-mode-toggle
           role="switch"
           aria-checked="false"
+          aria-keyshortcuts="Shift+V"
+          title="Comment Mode 전환 (Shift+V)"
         >
           <span class="mode-toggle-label">Comment Mode</span>
           <span class="mode-toggle-track" aria-hidden="true">
@@ -75,22 +78,35 @@ export function mountReviewApp(root: HTMLElement): () => void {
   const chatLog = root.querySelector<HTMLElement>("[data-chat-log]")!;
   const composer = root.querySelector<HTMLFormElement>("[data-composer]")!;
   const textarea = composer.querySelector<HTMLTextAreaElement>("textarea")!;
+  const sendButton = composer.querySelector<HTMLButtonElement>(".send-button")!;
 
   const items = new Map<string, TargetItem>();
   let activeTargetId: string | null = null;
   let bridge: ReturnType<typeof createBridgeClient> | null = null;
   let commentMode = false;
+  let submitting = false;
 
   const renderChatEntry = (entry: ChatEntry): void => {
     const bubble = document.createElement("div");
     bubble.className = `chat-entry is-${entry.role}`;
     bubble.textContent = entry.text;
-    const time = document.createElement("time");
-    time.className = "chat-time";
-    time.dateTime = entry.at;
-    time.textContent = new Date(entry.at).toLocaleTimeString();
-    chatLog.append(time, bubble);
+    chatLog.append(bubble);
     chatLog.scrollTop = chatLog.scrollHeight;
+  };
+
+  const renderPendingEntry = (): HTMLElement => {
+    const skeleton = document.createElement("div");
+    skeleton.className = "chat-entry chat-skeleton";
+    skeleton.setAttribute("role", "status");
+    skeleton.setAttribute("aria-label", "전송 중");
+    skeleton.innerHTML = `
+      <span class="chat-skeleton-line is-long"></span>
+      <span class="chat-skeleton-line is-medium"></span>
+      <span class="chat-skeleton-line is-short"></span>
+    `;
+    chatLog.append(skeleton);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return skeleton;
   };
 
   const setActiveTarget = (id: string): void => {
@@ -186,6 +202,7 @@ export function mountReviewApp(root: HTMLElement): () => void {
 
   composer.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (submitting) return;
     const instruction = textarea.value.trim();
     if (!instruction) return;
     let task: VisualTask;
@@ -201,6 +218,9 @@ export function mountReviewApp(root: HTMLElement): () => void {
     }
     renderChatEntry({ role: "user", text: instruction, at: task.createdAt });
     textarea.value = "";
+    submitting = true;
+    sendButton.disabled = true;
+    const pendingEntry = renderPendingEntry();
     try {
       const record = await submitVisualTask(task);
       renderChatEntry({
@@ -214,22 +234,47 @@ export function mountReviewApp(root: HTMLElement): () => void {
         text: error instanceof Error ? error.message : String(error),
         at: new Date().toISOString(),
       });
+    } finally {
+      pendingEntry.remove();
+      submitting = false;
+      sendButton.disabled = false;
     }
   });
 
-  modeToggle.addEventListener("click", () => {
-    commentMode = !commentMode;
+  const setCommentMode = (enabled: boolean): void => {
+    commentMode = enabled;
     modeToggle.setAttribute("aria-checked", String(commentMode));
     modeToggle.classList.toggle("is-on", commentMode);
     stage.classList.toggle("is-comment-mode", commentMode);
     bridge?.setCommentMode(commentMode);
-  });
+  };
 
-  bridge = createBridgeClient(stage, gameUrl, addTarget);
+  const toggleCommentMode = (): void => setCommentMode(!commentMode);
+
+  const onShortcut = (event: KeyboardEvent): void => {
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      (target.matches("input, textarea, select") || target.isContentEditable)
+    ) {
+      return;
+    }
+    if (!isCommentModeShortcut(event)) return;
+    event.preventDefault();
+    toggleCommentMode();
+  };
+
+  modeToggle.addEventListener("click", () => {
+    toggleCommentMode();
+  });
+  window.addEventListener("keydown", onShortcut);
+
+  bridge = createBridgeClient(stage, gameUrl, addTarget, toggleCommentMode);
 
   return () => {
     bridge?.destroy();
     bridge = null;
+    window.removeEventListener("keydown", onShortcut);
     root.classList.remove("review-root");
     root.innerHTML = "";
   };

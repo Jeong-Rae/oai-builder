@@ -23,6 +23,7 @@ export interface InspectorTarget {
 
 export type GameToWrapperMessage =
   | { type: "inspector:ready" }
+  | { type: "inspector:toggle-request" }
   | { type: "inspector:selected"; target: InspectorTarget };
 
 export type WrapperToGameMessage = { type: "inspector:mode"; enabled: boolean };

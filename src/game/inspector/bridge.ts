@@ -6,6 +6,7 @@ import {
   orderInspectorCandidates,
   type InspectableHtmlElement,
 } from "@/src/game/inspector/domTarget";
+import { isCommentModeShortcut } from "@/src/game/inspector/shortcut";
 import type { WrapperToGameMessage } from "@/src/game/inspector/types";
 
 const HIGHLIGHT_ID = "inspector-highlight-overlay";
@@ -171,6 +172,16 @@ export function installInspectorBridge(): () => void {
   };
 
   const onKeyDown = (event: KeyboardEvent): void => {
+    const target = event.target;
+    const isEditing =
+      target instanceof HTMLElement &&
+      (target.matches("input, textarea, select") || target.isContentEditable);
+    if (window.parent !== window && !isEditing && isCommentModeShortcut(event)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      postToWrapper({ type: "inspector:toggle-request" });
+      return;
+    }
     if (enabled) event.stopImmediatePropagation();
   };
 
@@ -181,7 +192,6 @@ export function installInspectorBridge(): () => void {
     document.addEventListener("pointermove", onPointerMove, true);
     document.addEventListener("wheel", onWheel, { capture: true, passive: false });
     document.addEventListener("click", onClick, true);
-    document.addEventListener("keydown", onKeyDown, true);
   };
 
   const disable = (): void => {
@@ -191,7 +201,6 @@ export function installInspectorBridge(): () => void {
     document.removeEventListener("pointermove", onPointerMove, true);
     document.removeEventListener("wheel", onWheel, true);
     document.removeEventListener("click", onClick, true);
-    document.removeEventListener("keydown", onKeyDown, true);
     hideHighlight();
     candidates = [];
     candidateIndex = -1;
@@ -205,11 +214,13 @@ export function installInspectorBridge(): () => void {
     }
   };
 
+  document.addEventListener("keydown", onKeyDown, true);
   window.addEventListener("message", onMessage);
   postToWrapper({ type: "inspector:ready" });
 
   return () => {
     disable();
+    document.removeEventListener("keydown", onKeyDown, true);
     window.removeEventListener("message", onMessage);
     document.getElementById(HIGHLIGHT_ID)?.remove();
   };

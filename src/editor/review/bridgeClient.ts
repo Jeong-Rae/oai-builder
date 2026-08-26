@@ -13,6 +13,7 @@ export function createBridgeClient(
   container: HTMLElement,
   gameUrl: string,
   onTargetSelected: (target: InspectorTarget) => void,
+  onToggleRequested: () => void,
 ): BridgeClient {
   const iframe = document.createElement("iframe");
   iframe.className = "review-game-frame";
@@ -35,6 +36,10 @@ export function createBridgeClient(
         type: "inspector:mode",
         enabled: commentModeEnabled,
       } satisfies WrapperToGameMessage);
+      return;
+    }
+    if (event.data.type === "inspector:toggle-request") {
+      onToggleRequested();
       return;
     }
     if (event.data.type === "inspector:selected") {
