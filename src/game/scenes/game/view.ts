@@ -28,6 +28,10 @@ const key = ({ x, y }: Position) => `${x},${y}`;
 const goalFrames = ["goalActive"] as const;
 const normalFrames = ["normalInactive", "normalActive"] as const;
 const gateFrames = ["gateWarn", "gateSafe"] as const;
+const directionPadArrowUrl = new URL(
+  "@/assets/arrow/navigation.direction-north.svg",
+  import.meta.url,
+).href;
 const goalSparks = [
   [8, 18, 0, 11],
   [45, 3, 180, 8],
@@ -140,7 +144,7 @@ function createDirectionPad(onMove: (direction: Direction) => void): HTMLElement
     button.disabled = true;
     button.setAttribute("aria-label", label);
     const image = document.createElement("img");
-    image.src = assetUrls[assetForDirection(direction)];
+    image.src = directionPadArrowUrl;
     image.alt = "";
     button.append(image);
     button.addEventListener("click", () => onMove(direction));

@@ -79,29 +79,45 @@
     scale 120ms ease;
 }
 .directionPadButton img {
+  --direction-pad-icon-offset-x: 0;
+  --direction-pad-icon-offset-y: 0;
+  --direction-pad-icon-rotation: 0deg;
   height: 100%;
   object-fit: contain;
+  transform: translate(var(--direction-pad-icon-offset-x), var(--direction-pad-icon-offset-y))
+    rotate(var(--direction-pad-icon-rotation));
   width: 100%;
 }
 .directionPadButton[data-direction="up"] {
   grid-row: 1;
 }
+.directionPadButton[data-direction="up"] img {
+  --direction-pad-icon-offset-y: -9%;
+}
 .directionPadButton[data-direction="left"] {
   grid-column: 1;
+}
+.directionPadButton[data-direction="left"] img {
+  --direction-pad-icon-offset-x: -9%;
+  --direction-pad-icon-rotation: -90deg;
 }
 .directionPadButton[data-direction="down"] {
   grid-row: 3;
 }
-.directionPadButton[data-direction="down"] img,
-.directionPadButton[data-direction="left"] img {
-  transform: rotate(180deg);
+.directionPadButton[data-direction="down"] img {
+  --direction-pad-icon-offset-y: 9%;
+  --direction-pad-icon-rotation: 180deg;
 }
 .directionPadButton[data-direction="right"] {
   grid-column: 3;
 }
+.directionPadButton[data-direction="right"] img {
+  --direction-pad-icon-offset-x: 9%;
+  --direction-pad-icon-rotation: 90deg;
+}
 .directionPadButton:not(:disabled):active {
-  background: rgb(129 240 197 / 35%);
-  filter: drop-shadow(0 0 0.45cqw rgb(129 240 197 / 72%));
+  background: rgb(255 216 102 / 35%);
+  filter: drop-shadow(0 0 0.45cqw rgb(255 216 102 / 72%));
   scale: 0.92;
 }
 .directionPadButton:focus-visible {
