@@ -11,3 +11,7 @@
 # Imports
 
 - In module specifiers resolved by Vite, use the `@` alias instead of relative paths. A relative module specifier is permitted only when it starts with `../` and contains exactly one `..` path segment; `./...` and paths containing two or more `..` segments are prohibited.
+
+# Instruction
+
+- By default, do not modify code for questions, suggestions, analysis requests, or similar prompts that are not explicit instructions. Only make changes when the request includes words such as “work on,” “implement,” or “perform,” clearly indicating that modifications are requested.

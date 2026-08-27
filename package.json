@@ -15,9 +15,10 @@
     "build": "pnpm run typecheck && pnpm run build:live && pnpm run build:editor",
     "build:live": "vp build --config vite.game.config.ts",
     "build:editor": "vp build --config vite.editor.config.ts",
-    "deploy": "pnpm run typecheck && pnpm run deploy:live && pnpm run deploy:editor",
-    "deploy:live": "pnpm run build:live && vercel deploy dist/game --prod --yes --project game-live --scope jeong-raes-projects",
-    "deploy:editor": "pnpm run build:editor && vercel deploy dist/editor --prod --yes --project game-editor --scope jeong-raes-projects",
+    "check:develop": "node scripts/assert-developable.mjs",
+    "deploy": "pnpm run check:develop && pnpm run typecheck && pnpm run deploy:live && pnpm run deploy:editor",
+    "deploy:live": "pnpm run check:develop && pnpm run build:live && vercel deploy dist/game --prod --yes --project game-live --scope jeong-raes-projects",
+    "deploy:editor": "pnpm run check:develop && pnpm run build:editor && vercel deploy dist/editor --prod --yes --project game-editor --scope jeong-raes-projects",
     "test": "vp test",
     "test:run": "vp test run",
     "prepare": "pnpm run asset:validate && vp config"
