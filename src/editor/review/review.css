@@ -449,6 +449,18 @@
   color: var(--error);
 }
 
+.review-root .task-preview-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--accent);
+}
+
+.review-root .task-preview-link[hidden] {
+  display: none;
+}
+
 .review-root .composer {
   display: flex;
   flex-direction: column;

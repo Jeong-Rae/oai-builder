@@ -6,15 +6,17 @@ This bundle is an additive implementation scaffold for `Jeong-Rae/oai-builder`.
 
 1. A game-side Inspector Bridge communicates with a wrapper over `postMessage`.
 2. The wrapper can enable Comment mode, hover/select inspectable elements, write a comment, and generate a `VisualTask`.
-3. A local Node Task Gateway validates the task and submits it to Codex App Server over stdio JSONL.
-4. Codex organizes the request into a read-only Markdown response.
-5. The gateway stores the response at `task/<task-id>.md` and exposes progress through the task API.
+3. A Task Processor validates and queues the task, then creates a read-only Markdown intake.
+4. A separate Worker process leases the job and clones the exact Git commit into an isolated checkout.
+5. Codex modifies only that checkout; the Worker independently runs typecheck and the game build.
+6. The Processor exposes progress and a temporary preview URL through the task API.
 
 ## Current boundary
 
-Codex App Server runs with a read-only sandbox and does not modify game source in this version. The
-gateway is the only component that writes the generated Task Markdown. Code implementation and
-verification remain a later workflow stage even though the VP progress label retains `코드 수정 중`.
+The local implementation uses separate Task Processor and Worker processes on one machine. Their
+contract is HTTP-based so the Worker can move to another node later. The original VT workspace is
+never modified: each job uses a detached clone at the submitted full Git SHA. Preview publishing is
+currently a fake URL adapter and does not deploy the modified build.
 
 ## Integration status
 
@@ -40,7 +42,7 @@ For richer code mapping, register them with `registerInspectable()`.
 
 ## Local run
 
-Whole stack (gateway + game + review console):
+Whole stack (processor + worker + game + review console):
 
 ```bash
 pnpm run dev:vt
@@ -53,10 +55,13 @@ default cache location.
 
 Review console: `http://localhost:5175/`
 
-Task gateway only:
+Task Processor and Worker separately:
 
 ```bash
-pnpm run review:server
+VT_WORKER_TOKEN=<shared-secret> pnpm run review:processor
+VT_WORKER_TOKEN=<shared-secret> \
+VT_REPOSITORY_URL=https://github.com/Jeong-Rae/oai-builder.git \
+pnpm run review:worker
 ```
 
 Expected endpoint:
@@ -65,14 +70,20 @@ Expected endpoint:
 - `POST http://127.0.0.1:8787/api/tasks`
 - `GET http://127.0.0.1:8787/api/tasks/:id`
 
-The gateway starts `codex app-server` automatically and uses the existing local Codex login. A POST
-returns after the App Server accepts the thread and turn. The review console then polls the Task GET
-endpoint until the Markdown is saved or the turn fails. Only one Task is active at a time.
+Both processes start their own local `codex app-server` and use the existing local Codex login. The
+Processor accepts multiple tasks into an in-memory FIFO. Intake is sequential, and the Worker leases
+one modification job at a time. `dev:vt` creates a shared worker token, uses the current repository path,
+and injects the current Git SHA/dirty state into the Review app automatically.
+
+Tasks move through `queued → reviewing → ready → editing → verifying → completed`. A clean full Git
+SHA is required. Successful Worker turns must also pass `pnpm run typecheck` and
+`pnpm run build:live`; the returned preview URL uses `https://preview.invalid` unless
+`VT_FAKE_PREVIEW_BASE_URL` is configured.
 
 The review wrapper resolves the game server as a sibling port from its own origin:
 
 - game dev server: same host on port `5173`
-- task gateway: same-origin `/api/tasks`, proxied by the review dev server to `127.0.0.1:8787`
+- task processor: same-origin `/api/tasks`, proxied by the review dev server to `127.0.0.1:8787`
 
 `VITE_REVIEW_GAME_URL` / `VITE_REVIEW_GATEWAY_URL` can override both.
 

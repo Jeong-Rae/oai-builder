@@ -10,7 +10,9 @@
     "dev:editor": "vp dev --config vite.editor.config.ts",
     "dev:review": "vp dev --config vite.review.config.ts",
     "dev:vt": "node tools/run-review-stack.mjs",
-    "review:server": "node tools/review-server/server.mjs",
+    "review:server": "pnpm run review:processor",
+    "review:processor": "node tools/review-server/server.mjs",
+    "review:worker": "node tools/review-worker/main.ts",
     "typecheck": "tsc --noEmit",
     "build": "pnpm run typecheck && pnpm run build:live && pnpm run build:editor",
     "build:live": "vp build --config vite.game.config.ts",
@@ -27,6 +29,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@types/node": "^24.13.3",
     "sharp": "^0.35.3",
     "typescript": "^7.0.2",
     "vercel": "^59.1.4",

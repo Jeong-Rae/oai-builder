@@ -102,6 +102,39 @@ export class CodexAppServerClient extends EventEmitter {
     return { threadId, turnId };
   }
 
+  async startModificationTask(prompt, cwd) {
+    if (!this.ready) throw new Error("Codex App Server is not ready");
+    const threadResult = await this.request("thread/start", {
+      cwd,
+      approvalPolicy: "never",
+      sandbox: "workspace-write",
+      ephemeral: true,
+    });
+    const threadId = threadResult?.thread?.id;
+    if (!threadId) throw new Error("Codex App Server did not return a thread id");
+
+    const turnResult = await this.request("turn/start", {
+      threadId,
+      cwd,
+      approvalPolicy: "never",
+      sandboxPolicy: {
+        type: "workspaceWrite",
+        writableRoots: [cwd],
+        networkAccess: false,
+      },
+      input: [{ type: "text", text: prompt }],
+      outputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: { summary: { type: "string" } },
+        required: ["summary"],
+      },
+    });
+    const turnId = turnResult?.turn?.id;
+    if (!turnId) throw new Error("Codex App Server did not return a turn id");
+    return { threadId, turnId };
+  }
+
   request(method, params) {
     if (!this.process?.stdin?.writable) {
       return Promise.reject(new Error("Codex App Server transport is unavailable"));

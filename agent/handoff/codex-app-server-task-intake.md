@@ -1,5 +1,8 @@
 # VP VisualTask → Codex App Server → Task 문서 저장
 
+> 이 문서는 read-only intake 단계의 구현 기록이다. 이후 별도 Processor/Worker pipeline이
+> 추가되었으며 현재 전체 흐름은 `agent/handoff/vt-processor-worker-pipeline.md`를 따른다.
+
 ## 목적
 
 VP Review Console에서 생성한 `VisualTask`를 Local Task Gateway가 받아 Codex App Server로

@@ -94,4 +94,30 @@ describe("Codex App Server client", () => {
     expect(notifications).toEqual([{ method: "turn/completed", params: { threadId: "thread-1" } }]);
     await client.stop();
   });
+
+  it("수정 Task는 지정 checkout만 workspace-write로 허용한다", async () => {
+    const messages = [];
+    const child = fakeProcess(messages);
+    const client = new CodexAppServerClient({
+      cwd: "/workspace/control",
+      spawnProcess: () => child,
+    });
+    await client.start();
+
+    await client.startModificationTask("modify prompt", "/workspace/job-a");
+    expect(messages[2].params).toMatchObject({
+      cwd: "/workspace/job-a",
+      sandbox: "workspace-write",
+      approvalPolicy: "never",
+    });
+    expect(messages[3].params).toMatchObject({
+      cwd: "/workspace/job-a",
+      sandboxPolicy: {
+        type: "workspaceWrite",
+        writableRoots: ["/workspace/job-a"],
+        networkAccess: false,
+      },
+    });
+    await client.stop();
+  });
 });

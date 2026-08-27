@@ -1,10 +1,20 @@
 import { constants as fsConstants } from "node:fs";
 import { access, link, mkdir, unlink, writeFile } from "node:fs/promises";
+import { EventEmitter } from "node:events";
 import path from "node:path";
 
 const TASK_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const TERMINAL_STATUSES = new Set(["completed", "failed"]);
-const STATUS_ORDER = { accepted: 0, reviewing: 1, editing: 2, completed: 3, failed: 3 };
+const STATUS_ORDER = {
+  queued: 0,
+  reviewing: 1,
+  ready: 2,
+  editing: 3,
+  verifying: 4,
+  completed: 5,
+  failed: 5,
+};
+const GIT_SHA_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i;
 
 export class TaskGatewayError extends Error {
   constructor(message, { code = "task_gateway_error", status = 500, details } = {}) {
@@ -31,6 +41,12 @@ export function validateVisualTask(task) {
   }
   if (!Number.isFinite(task.page?.viewport?.height) || task.page.viewport.height <= 0) {
     errors.push("page.viewport.height must be positive");
+  }
+  if (!GIT_SHA_PATTERN.test(task.repository?.gitSha ?? "")) {
+    errors.push("repository.gitSha must be a full commit SHA");
+  }
+  if (task.repository?.dirty !== false) {
+    errors.push("repository must describe a clean build");
   }
   return errors;
 }
@@ -65,16 +81,35 @@ function agentMessageFromTurn(turn, fallback) {
   return messages.at(-1)?.text ?? fallback;
 }
 
-export class TaskGateway {
-  constructor({ client, rootDir, now = () => new Date().toISOString() }) {
+export class TaskGateway extends EventEmitter {
+  constructor({
+    client,
+    rootDir,
+    jobQueue,
+    executionInstructions = "",
+    capacity = 100,
+    now = () => new Date().toISOString(),
+  }) {
+    super();
     this.client = client;
     this.rootDir = rootDir;
     this.taskDir = path.join(rootDir, "task");
+    this.jobQueue = jobQueue;
+    this.executionInstructions = executionInstructions;
+    this.capacity = capacity;
     this.now = now;
     this.tasks = new Map();
+    this.pendingTaskIds = [];
     this.activeTaskId = null;
     this.client.on("notification", (message) => this.handleNotification(message));
     this.client.on("exit", (error) => this.failActive(error));
+    this.on("taskReady", (job) => this.jobQueue.enqueue(job));
+    this.jobQueue?.on("leased", ({ taskId }) => this.updateById(taskId, "editing"));
+    this.jobQueue?.on("progress", ({ taskId, status }) => this.updateById(taskId, status));
+    this.jobQueue?.on("completed", ({ taskId, result }) =>
+      this.completeModification(taskId, result),
+    );
+    this.jobQueue?.on("failed", ({ taskId, error }) => this.failById(taskId, error));
   }
 
   async start() {
@@ -105,11 +140,11 @@ export class TaskGateway {
         status: 503,
       });
     }
-    if (this.activeTaskId) {
-      throw new TaskGatewayError("Another task is already in progress", {
-        code: "task_in_progress",
-        status: 409,
-      });
+    const outstanding = [...this.tasks.values()].filter(
+      (record) => !TERMINAL_STATUSES.has(record.status),
+    ).length;
+    if (outstanding >= this.capacity) {
+      throw new TaskGatewayError("Task queue is full", { code: "queue_full", status: 429 });
     }
     if (this.tasks.has(task.id) || (await this.taskFileExists(task.id))) {
       throw new TaskGatewayError("Task id already exists", {
@@ -122,7 +157,7 @@ export class TaskGateway {
     const record = {
       task,
       taskId: task.id,
-      status: "accepted",
+      status: "queued",
       receivedAt,
       updatedAt: receivedAt,
       threadId: null,
@@ -130,22 +165,29 @@ export class TaskGateway {
       taskFile: null,
       error: null,
       markdownResponse: null,
+      previewUrl: null,
     };
     this.tasks.set(task.id, record);
-    this.activeTaskId = task.id;
+    this.pendingTaskIds.push(task.id);
+    void this.drainIntake();
+    return { taskId: record.taskId, status: "queued", receivedAt: record.receivedAt };
+  }
 
+  async drainIntake() {
+    if (this.activeTaskId) return;
+    const taskId = this.pendingTaskIds.shift();
+    if (!taskId) return;
+    const record = this.tasks.get(taskId);
+    if (!record || TERMINAL_STATUSES.has(record.status)) return void this.drainIntake();
+    this.activeTaskId = taskId;
     try {
-      const identifiers = await this.client.startTask(buildTaskPrompt(task));
+      const identifiers = await this.client.startTask(buildTaskPrompt(record.task));
       record.threadId = identifiers.threadId;
       record.turnId = identifiers.turnId;
       this.update(record, "reviewing");
-      return { taskId: record.taskId, status: "accepted", receivedAt: record.receivedAt };
     } catch (error) {
       this.fail(record, error);
-      throw new TaskGatewayError("Codex App Server rejected the task", {
-        code: "codex_unavailable",
-        status: 503,
-      });
+      void this.drainIntake();
     }
   }
 
@@ -156,13 +198,9 @@ export class TaskGateway {
     if (record.threadId && params.threadId && params.threadId !== record.threadId) return;
     if (record.turnId && params.turnId && params.turnId !== record.turnId) return;
 
-    if (message.method === "item/agentMessage/delta") {
-      this.update(record, "editing");
-      return;
-    }
+    if (message.method === "item/agentMessage/delta") return;
     if (message.method === "item/completed" && params.item?.type === "agentMessage") {
       record.markdownResponse = params.item.text;
-      this.update(record, "editing");
       return;
     }
     if (message.method === "turn/completed") void this.complete(record, params.turn);
@@ -172,6 +210,7 @@ export class TaskGateway {
     if (TERMINAL_STATUSES.has(record.status)) return;
     if (turn?.status !== "completed") {
       this.fail(record, new Error(turn?.error?.message ?? `Turn ended with ${turn?.status}`));
+      void this.drainIntake();
       return;
     }
     try {
@@ -182,10 +221,19 @@ export class TaskGateway {
         throw new Error("Codex returned an invalid task document");
       }
       record.taskFile = await this.saveMarkdown(record.taskId, parsed.markdown);
-      this.update(record, "completed");
+      this.update(record, "ready");
+      this.emit("taskReady", {
+        taskId: record.taskId,
+        task: record.task,
+        taskMarkdown: parsed.markdown,
+        executionInstructions: this.executionInstructions,
+        repository: { gitSha: record.task.repository.gitSha },
+      });
       this.activeTaskId = null;
+      void this.drainIntake();
     } catch (error) {
       this.fail(record, error);
+      void this.drainIntake();
     }
   }
 
@@ -203,7 +251,29 @@ export class TaskGateway {
 
   failActive(error) {
     const record = this.activeTaskId ? this.tasks.get(this.activeTaskId) : null;
-    if (record) this.fail(record, error);
+    if (record) {
+      this.fail(record, error);
+      void this.drainIntake();
+    }
+  }
+
+  updateById(taskId, status) {
+    const record = this.tasks.get(taskId);
+    if (record && !TERMINAL_STATUSES.has(record.status)) this.update(record, status);
+  }
+
+  completeModification(taskId, result) {
+    const record = this.tasks.get(taskId);
+    if (!record || TERMINAL_STATUSES.has(record.status)) return;
+    record.previewUrl = result.previewUrl;
+    this.update(record, "completed");
+  }
+
+  failById(taskId, error) {
+    const record = this.tasks.get(taskId);
+    if (record && !TERMINAL_STATUSES.has(record.status)) {
+      this.fail(record, new Error(error?.message ?? String(error)));
+    }
   }
 
   publicRecord(record) {
@@ -213,6 +283,7 @@ export class TaskGateway {
       receivedAt: record.receivedAt,
       updatedAt: record.updatedAt,
       ...(record.taskFile ? { taskFile: record.taskFile } : {}),
+      ...(record.previewUrl ? { previewUrl: record.previewUrl } : {}),
       ...(record.error ? { error: record.error } : {}),
     };
   }

@@ -15,15 +15,23 @@ export interface VisualTask {
     };
   };
   repository: {
-    gitSha?: string;
+    gitSha: string;
+    dirty: boolean;
   };
 }
 
-export type TaskStatus = "accepted" | "reviewing" | "editing" | "completed" | "failed";
+export type TaskStatus =
+  | "queued"
+  | "reviewing"
+  | "ready"
+  | "editing"
+  | "verifying"
+  | "completed"
+  | "failed";
 
 export interface TaskSubmissionRecord {
   taskId: string;
-  status: "accepted";
+  status: "queued";
   receivedAt: string;
 }
 
@@ -33,6 +41,7 @@ export interface TaskStatusRecord {
   receivedAt: string;
   updatedAt: string;
   taskFile?: string;
+  previewUrl?: string;
   error?: string;
 }
 

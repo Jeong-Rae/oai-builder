@@ -1,11 +1,13 @@
 import { spawn } from "node:child_process";
+import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 
 const children = [];
 
 let shuttingDown = false;
 
-function run(command, args) {
-  const child = spawn(command, args, { stdio: "inherit", detached: true });
+function run(command, args, env = process.env) {
+  const child = spawn(command, args, { stdio: "inherit", detached: true, env });
   children.push(child);
   child.on("exit", (code) => {
     if (!shuttingDown && code !== 0 && code !== null) shutdown(code);
@@ -29,9 +31,22 @@ function shutdown(exitCode = 0) {
 process.on("SIGINT", () => shutdown());
 process.on("SIGTERM", () => shutdown());
 
-run("node", ["tools/review-server/server.mjs"]);
+const gitSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const gitDirty = execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim() !== "";
+const repositoryUrl = process.env.VT_REPOSITORY_URL || process.cwd();
+const workerToken = randomUUID();
+const sharedEnv = {
+  ...process.env,
+  VT_WORKER_TOKEN: workerToken,
+  VT_REPOSITORY_URL: repositoryUrl,
+  VITE_REVIEW_GIT_SHA: gitSha,
+  VITE_REVIEW_GIT_DIRTY: String(gitDirty),
+};
+
+run("node", ["tools/review-server/server.mjs"], sharedEnv);
+run("node", ["tools/review-worker/main.ts"], sharedEnv);
 run("pnpm", ["run", "dev:live", "--mode", "vt"]);
-run("pnpm", ["run", "dev:review", "--mode", "vt"]);
+run("pnpm", ["run", "dev:review", "--mode", "vt"], sharedEnv);
 
 console.log("\nVisual Task review stack:");
 console.log("  review console : http://localhost:5175/");

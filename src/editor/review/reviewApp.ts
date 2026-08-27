@@ -13,6 +13,8 @@ import "@/src/editor/review/review.css";
 
 const gameUrl =
   (import.meta.env.VITE_REVIEW_GAME_URL as string | undefined) ?? resolveSiblingUrl(5173);
+const repositoryGitSha = import.meta.env.VITE_REVIEW_GIT_SHA as string | undefined;
+const repositoryDirty = import.meta.env.VITE_REVIEW_GIT_DIRTY !== "false";
 
 interface TargetItem {
   target: InspectorTarget;
@@ -20,9 +22,11 @@ interface TargetItem {
 }
 
 const TASK_STEPS: ReadonlyArray<{ status: Exclude<TaskStatus, "failed">; label: string }> = [
-  { status: "accepted", label: "요청 성공" },
+  { status: "queued", label: "요청 접수" },
   { status: "reviewing", label: "Task 검토중" },
+  { status: "ready", label: "수정 대기" },
   { status: "editing", label: "코드 수정 중" },
+  { status: "verifying", label: "검증 중" },
   { status: "completed", label: "작업 완료" },
 ];
 
@@ -143,6 +147,9 @@ export function mountReviewApp(root: HTMLElement): () => void {
         ).join("")}
       </ol>
       <p class="task-card-detail" aria-live="polite"></p>
+      <a class="task-preview-link" data-task-preview hidden target="_blank" rel="noreferrer">
+        Preview 열기
+      </a>
     `;
     card.querySelector<HTMLElement>(".task-card-id")!.textContent = taskId;
     chatLog.append(card);
@@ -152,11 +159,12 @@ export function mountReviewApp(root: HTMLElement): () => void {
 
   const updateTaskCard = (
     card: HTMLElement,
-    record: Pick<TaskStatusRecord, "status" | "taskFile" | "error">,
+    record: Pick<TaskStatusRecord, "status" | "taskFile" | "previewUrl" | "error">,
     retrying = false,
   ): void => {
     const badge = card.querySelector<HTMLElement>(".task-card-badge")!;
     const detail = card.querySelector<HTMLElement>(".task-card-detail")!;
+    const preview = card.querySelector<HTMLAnchorElement>("[data-task-preview]")!;
     card.classList.toggle("is-failed", record.status === "failed");
     card.classList.toggle("is-retrying", retrying);
     badge.textContent = record.status === "failed" ? "FAIL" : retrying ? "RETRYING" : "SUCCESS";
@@ -168,17 +176,19 @@ export function mountReviewApp(root: HTMLElement): () => void {
       node.classList.toggle("is-current", currentIndex === index);
     }
 
+    preview.hidden = !(record.status === "completed" && record.previewUrl);
+    if (record.previewUrl) preview.href = record.previewUrl;
     if (record.status === "failed")
       detail.textContent = record.error ?? "작업 처리에 실패했습니다.";
     else if (retrying) detail.textContent = "Gateway 연결을 다시 확인하고 있습니다.";
     else if (record.status === "completed")
-      detail.textContent = record.taskFile ?? "Task 저장 완료";
+      detail.textContent = record.taskFile ?? "수정과 검증이 완료되었습니다.";
     else detail.textContent = TASK_STEPS[currentIndex]?.label ?? "요청을 처리하고 있습니다.";
   };
 
   const pollTask = (taskId: string, card: HTMLElement): void => {
-    let lastRecord: Pick<TaskStatusRecord, "status" | "taskFile" | "error"> = {
-      status: "accepted",
+    let lastRecord: Pick<TaskStatusRecord, "status" | "taskFile" | "previewUrl" | "error"> = {
+      status: "queued",
     };
     const schedule = (): void => {
       if (destroyed) return;
@@ -277,6 +287,12 @@ export function mountReviewApp(root: HTMLElement): () => void {
     if (!active) {
       throw new Error("선택된 element가 없습니다. 먼저 게임 화면에서 대상을 클릭하세요.");
     }
+    if (!repositoryGitSha) {
+      throw new Error("Review build의 Git SHA를 확인할 수 없습니다. dev:vt로 다시 실행하세요.");
+    }
+    if (repositoryDirty) {
+      throw new Error("현재 화면은 미커밋 변경을 포함합니다. clean commit에서 다시 실행하세요.");
+    }
     return {
       id: `visual-${crypto.randomUUID()}`,
       createdAt: new Date().toISOString(),
@@ -289,7 +305,7 @@ export function mountReviewApp(root: HTMLElement): () => void {
           height: window.innerHeight,
         },
       },
-      repository: {},
+      repository: { gitSha: repositoryGitSha, dirty: false },
     };
   };
 
