@@ -1,4 +1,4 @@
-import { clearAssets, decorAssets, gameAssetUrlGroups } from "@/src/game/assets";
+import { gameAssetUrlGroups } from "@/src/game/assets";
 import {
   type BrowserStorage,
   LocalAuthAdapter,
@@ -36,6 +36,7 @@ import {
   type GameScene,
 } from "@/src/game/scenes/game/controller";
 import { attachClickStars } from "@/src/game/scenes/shared/backgroundStars";
+import { SceneTransition } from "@/src/game/components/SceneTransition";
 import { createStageSelectScene } from "@/src/game/scenes/stage-select/controller";
 import { createStartScene, type StartScene } from "@/src/game/scenes/start/controller";
 import { createTutorialScene } from "@/src/game/scenes/tutorial/controller";
@@ -56,58 +57,6 @@ interface Scene {
   dispose(): void;
 }
 
-const svgNamespace = "http://www.w3.org/2000/svg";
-const meteors = [
-  { source: decorAssets.starMedium, x: 90, y: 18, size: 2.5, delay: 120, duration: 720 },
-  { source: clearAssets.spark, x: 92, y: 40, size: 2, delay: 80, duration: 760 },
-  { source: decorAssets.starLarge, x: 95, y: 65, size: 3, delay: 40, duration: 800 },
-  { source: clearAssets.spark, x: 98, y: 86, size: 2.25, delay: 0, duration: 840 },
-] as const;
-
-function createTransitionWave(): SVGSVGElement {
-  const wave = document.createElementNS(svgNamespace, "svg");
-  wave.classList.add("transition-wave");
-  wave.setAttribute("viewBox", "0 0 2688 1080");
-  wave.setAttribute("preserveAspectRatio", "none");
-  const shape = document.createElementNS(svgNamespace, "path");
-  shape.setAttribute(
-    "d",
-    "M60 0 C170 120 20 240 130 360 C250 480 80 600 190 720 C310 840 160 960 260 1080 L2640 1080 C2520 970 2670 850 2580 740 C2470 620 2660 510 2520 390 C2420 270 2520 130 2380 0 Z",
-  );
-  wave.append(shape);
-  return wave;
-}
-
-function createTransitionMeteor(
-  { source, x, y, size, delay, duration }: (typeof meteors)[number],
-  index: number,
-): HTMLElement {
-  const meteor = document.createElement("span");
-  meteor.className = "transition-meteor";
-  meteor.style.setProperty("--meteor-x", `${x}%`);
-  meteor.style.setProperty("--meteor-y", `${y}%`);
-  meteor.style.setProperty("--meteor-size", `${size}cqw`);
-  meteor.style.setProperty("--meteor-delay", `${delay}ms`);
-  meteor.style.setProperty("--meteor-duration", `${duration}ms`);
-  meteor.style.setProperty("--meteor-color", index % 2 === 0 ? "215 249 255" : "247 211 111");
-  const star = document.createElement("img");
-  star.src = source;
-  star.alt = "";
-  meteor.append(star);
-  return meteor;
-}
-
-function createSceneTransition(): HTMLElement {
-  const layer = document.createElement("div");
-  layer.className = "scene-transition";
-  layer.setAttribute("aria-hidden", "true");
-  const band = document.createElement("div");
-  band.className = "transition-band";
-  band.append(createTransitionWave(), ...meteors.map(createTransitionMeteor));
-  layer.append(band);
-  return layer;
-}
-
 export class GameApp {
   private disposeScene?: () => void;
   private frame?: HTMLElement;
@@ -117,7 +66,7 @@ export class GameApp {
   private challengeGateway?: ChallengeGateway;
   private storage?: BrowserStorage;
   private readonly initialStartScene: StartScene;
-  private readonly transitionLayer: HTMLElement;
+  private readonly transition: SceneTransition;
   private session?: GameSession;
 
   private blockTransitionKeydown = (event: KeyboardEvent): void => {
@@ -133,7 +82,7 @@ export class GameApp {
     // TODO: 배포 확인이 끝나면 개발 환경에서만 단축키를 등록하도록 되돌립니다.
     // if (import.meta.env.DEV)
     document.addEventListener("keydown", this.handleDevShortcut);
-    this.transitionLayer = createSceneTransition();
+    this.transition = new SceneTransition();
     this.initialStartScene = this.createIntroScene(false);
     this.mount(this.initialStartScene);
     setBgm("entire");
@@ -312,7 +261,7 @@ export class GameApp {
     } catch (error) {
       scene.dispose();
       if (transitionId === this.transitionId) {
-        this.transitionLayer.className = "scene-transition";
+        this.transition.reset();
         this.releaseTransitionInput(previousFrame);
       }
       throw error;
@@ -320,24 +269,8 @@ export class GameApp {
   }
 
   private playWaveTransition(phase: "covering" | "revealing"): Promise<void> {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      this.transitionLayer.className =
-        phase === "covering" ? "scene-transition covered" : "scene-transition";
-      return Promise.resolve();
-    }
     if (phase === "covering") playSfx("swoosh");
-    this.transitionLayer.className = `scene-transition ${phase}`;
-    return new Promise((resolve) => {
-      const band = this.transitionLayer.querySelector(".transition-band");
-      const complete = (event: Event) => {
-        if (event.target !== band) return;
-        this.transitionLayer.removeEventListener("animationend", complete);
-        this.transitionLayer.className =
-          phase === "covering" ? "scene-transition covered" : "scene-transition";
-        resolve();
-      };
-      this.transitionLayer.addEventListener("animationend", complete);
-    });
+    return this.transition.play(phase);
   }
 
   private blockTransitionInput(frame?: HTMLElement): void {
@@ -358,7 +291,7 @@ export class GameApp {
     attachClickStars(frame);
     frame.append(scene.view);
     if (this.frame?.isConnected) this.frame.replaceWith(frame);
-    else this.root.append(frame, this.transitionLayer);
+    else this.root.append(frame, this.transition.element);
     this.frame = frame;
     scene.activate?.();
   }

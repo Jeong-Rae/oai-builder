@@ -1,6 +1,6 @@
 import { parseMap } from "@/src/map/mapDocument";
 import { findNextHint, findPath } from "@/src/game/domain/pathfinder";
-import type { GameState, Position } from "@/src/game/domain/types";
+import type { Direction, GameState, Position } from "@/src/game/domain/types";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import { playerTextureForMove } from "@/src/game/features/presentation";
 import { directionFromKey, isUndoShortcut } from "@/src/game/input";
@@ -9,7 +9,7 @@ import {
   transitionHint,
   type HintEvent,
 } from "@/src/game/scenes/game/hintMachine";
-import { createGameView, type GameViewMode } from "@/src/game/scenes/game/view";
+import { createGameView, type GameView, type GameViewMode } from "@/src/game/scenes/game/view";
 import { playSfx } from "@/src/game/sfx";
 import { createGameStoreFromMap } from "@/src/game/store/gameStore";
 import { stageFor, type PlaySelection } from "@/src/game/stages";
@@ -152,10 +152,9 @@ function createMapGameScene(
     sendHint({ type: "hint/requested", result });
     sendTutorialAction("hint", result.status === "available" ? "succeeded" : "unavailable", game);
   };
-  const view = createGameView(onBack, undo, reset, hint, mode, onSkip);
+  let view!: GameView;
   const secretClearCode = mode === "stage" && !tutorialDefinition ? "wswwswswws" : undefined;
   let secretBuffer = "";
-  if (tutorialDefinition) view.renderTutorialCue(tutorialDefinition.initialCue);
   const abort = new AbortController();
   let active = false;
   let listening = false;
@@ -208,33 +207,8 @@ function createMapGameScene(
     view.setActionAvailability(false, false);
     completeTimer = window.setTimeout(() => onComplete(elapsedMs), delay);
   };
-  const keydown = (event: KeyboardEvent) => {
-    if (!store || store.getState().game.status === "completed") return;
-    if (secretClearCode) {
-      const secretKey = event.code.startsWith("Key")
-        ? event.code.slice(3).toLowerCase()
-        : event.key.toLowerCase();
-      secretBuffer = (secretBuffer + secretKey).slice(-secretClearCode.length);
-      if (secretBuffer === secretClearCode) {
-        secretBuffer = "";
-        event.preventDefault();
-        scheduleCompletion(motionDuration(700));
-        return;
-      }
-    }
-    const undoRequested = isUndoShortcut(event);
-    const direction = directionFromKey(event.key);
-    if (motionLocked) {
-      if (undoRequested || direction) event.preventDefault();
-      return;
-    }
-    if (undoRequested) {
-      event.preventDefault();
-      undo();
-      return;
-    }
-    if (!direction) return;
-    event.preventDefault();
+  const move = (direction: Direction) => {
+    if (motionLocked || !store || store.getState().game.status !== "playing") return;
     const game = store.getState().game;
     const decision = store.getState().dispatch({ type: "player/move", direction });
     let tutorialCompleted = false;
@@ -261,6 +235,37 @@ function createMapGameScene(
         motionLocked = false;
       });
     }
+  };
+  view = createGameView(onBack, undo, reset, hint, move, mode, onSkip);
+  if (tutorialDefinition) view.renderTutorialCue(tutorialDefinition.initialCue);
+  const keydown = (event: KeyboardEvent) => {
+    if (!store || store.getState().game.status === "completed") return;
+    if (secretClearCode) {
+      const secretKey = event.code?.startsWith("Key")
+        ? event.code.slice(3).toLowerCase()
+        : event.key.toLowerCase();
+      secretBuffer = (secretBuffer + secretKey).slice(-secretClearCode.length);
+      if (secretBuffer === secretClearCode) {
+        secretBuffer = "";
+        event.preventDefault();
+        scheduleCompletion(motionDuration(700));
+        return;
+      }
+    }
+    const undoRequested = isUndoShortcut(event);
+    const direction = directionFromKey(event.key);
+    if (motionLocked) {
+      if (undoRequested || direction) event.preventDefault();
+      return;
+    }
+    if (undoRequested) {
+      event.preventDefault();
+      undo();
+      return;
+    }
+    if (!direction) return;
+    event.preventDefault();
+    move(direction);
   };
   const activateInput = () => {
     if (!active || !store || listening) return;

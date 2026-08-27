@@ -1,4 +1,4 @@
-import type { GameState, Position } from "@/src/game/domain/types";
+import type { Direction, GameState, Position } from "@/src/game/domain/types";
 import { gateOrientationFor, gateVisualFor } from "@/src/game/features/fields/gate/presentation";
 import { platePressFrames } from "@/src/game/features/fields/plate/presentation";
 import {
@@ -118,6 +118,37 @@ function createNavigationButton(
   return button;
 }
 
+const directionPadButtons: readonly {
+  direction: Direction;
+  label: string;
+}[] = [
+  { direction: "up", label: "위로 이동" },
+  { direction: "left", label: "왼쪽으로 이동" },
+  { direction: "down", label: "아래로 이동" },
+  { direction: "right", label: "오른쪽으로 이동" },
+];
+
+function createDirectionPad(onMove: (direction: Direction) => void): HTMLElement {
+  const pad = document.createElement("nav");
+  pad.className = styles.directionPad;
+  pad.setAttribute("aria-label", "방향 이동");
+  directionPadButtons.forEach(({ direction, label }) => {
+    const button = document.createElement("button");
+    button.className = styles.directionPadButton;
+    button.dataset.direction = direction;
+    button.type = "button";
+    button.disabled = true;
+    button.setAttribute("aria-label", label);
+    const image = document.createElement("img");
+    image.src = assetUrls[assetForDirection(direction)];
+    image.alt = "";
+    button.append(image);
+    button.addEventListener("click", () => onMove(direction));
+    pad.append(button);
+  });
+  return pad;
+}
+
 interface TutorialGuide {
   root: HTMLElement;
   render(cue: TutorialCue): void;
@@ -212,6 +243,7 @@ export function createGameView(
   onUndo: () => void,
   onReset: () => void,
   onHint: () => void,
+  onMove: (direction: Direction) => void,
   mode: GameViewMode = "stage",
   onSkip?: () => void,
 ): GameView {
@@ -273,6 +305,13 @@ export function createGameView(
   const board = document.createElement("div");
   board.className = styles.board;
   root.append(board);
+  const directionPad = createDirectionPad(onMove);
+  root.append(directionPad);
+  const rotateNotice = document.createElement("aside");
+  rotateNotice.className = styles.rotateNotice;
+  rotateNotice.setAttribute("aria-label", "화면 방향 안내");
+  rotateNotice.textContent = "가로로 돌려 플레이하세요";
+  root.append(rotateNotice);
   const tutorialGuide = mode === "tutorial" ? createTutorialGuide() : undefined;
   if (tutorialGuide) root.append(tutorialGuide.root);
   const hintWarningTint = document.createElement("span");
@@ -581,6 +620,9 @@ export function createGameView(
       undo.disabled = !navigationEnabled || !undoEnabled;
       reset.disabled = !navigationEnabled;
       hint.disabled = !navigationEnabled;
+      directionPad.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
+        button.disabled = !navigationEnabled;
+      });
     },
     renderHint: (state) => {
       hintRing.remove();

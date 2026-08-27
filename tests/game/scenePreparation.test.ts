@@ -24,6 +24,7 @@ const mocked = vi.hoisted(() => ({
   onReset: undefined as (() => void) | undefined,
   onUndo: undefined as (() => void) | undefined,
   onHint: undefined as (() => void) | undefined,
+  onMove: undefined as ((direction: "up" | "down" | "left" | "right") => void) | undefined,
   onSkip: undefined as (() => void) | undefined,
   playWormhole: vi.fn(() => Promise.resolve()),
   removeEventListener: vi.fn(),
@@ -45,12 +46,14 @@ vi.mock("@/src/game/scenes/game/view", () => ({
     onUndo: () => void,
     onReset: () => void,
     onHint: () => void,
+    onMove: (direction: "up" | "down" | "left" | "right") => void,
     mode: "stage" | "challenge" | "tutorial" = "stage",
     onSkip?: () => void,
   ) => {
     mocked.onUndo = onUndo;
     mocked.onReset = onReset;
     mocked.onHint = onHint;
+    mocked.onMove = onMove;
     mocked.onSkip = onSkip;
     mocked.mode = mode;
     return {
@@ -143,6 +146,7 @@ describe("게임 장면 사전 준비", () => {
     mocked.onReset = undefined;
     mocked.onUndo = undefined;
     mocked.onHint = undefined;
+    mocked.onMove = undefined;
     mocked.onSkip = undefined;
     mocked.dispatch.mockReturnValue({ events: [] });
     mocked.playWormhole.mockImplementation(() => Promise.resolve());
@@ -398,6 +402,27 @@ describe("게임 장면 사전 준비", () => {
 
     scene.dispose();
     expect(mocked.removeEventListener).toHaveBeenCalledWith("keydown", expect.any(Function));
+  });
+
+  it("모바일 방향 패드도 키보드와 같은 이동 명령을 전달한다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve("map") } as Response)),
+    );
+    vi.stubGlobal("window", {
+      addEventListener: mocked.addEventListener,
+      removeEventListener: mocked.removeEventListener,
+      clearTimeout,
+      matchMedia: () => ({ matches: false }),
+      setTimeout,
+    });
+    const scene = createGameScene({ chapterIndex: 0, stageIndex: 0 }, vi.fn(), vi.fn());
+    await scene.ready;
+
+    mocked.onMove?.("down");
+
+    expect(mocked.dispatch).toHaveBeenCalledWith({ type: "player/move", direction: "down" });
+    scene.dispose();
   });
 
   it("플레이트가 활성화되면 높은 프레임부터 누름 연출을 시작한다", async () => {

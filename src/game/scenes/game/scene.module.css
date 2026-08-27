@@ -49,6 +49,72 @@
   cursor: default;
   opacity: 0.35;
 }
+.directionPad {
+  bottom: max(4%, env(safe-area-inset-bottom));
+  display: none;
+  gap: clamp(0.15rem, 0.4cqw, 0.4rem);
+  grid-template-columns: repeat(3, clamp(2.75rem, 6cqw, 5rem));
+  grid-template-rows: repeat(3, clamp(2.75rem, 6cqw, 5rem));
+  position: absolute;
+  right: max(3%, env(safe-area-inset-right));
+  z-index: 4;
+}
+.directionPadButton {
+  align-items: center;
+  appearance: none;
+  background: rgb(8 14 20 / 78%);
+  border: 0.12cqw solid rgb(215 249 255 / 72%);
+  border-radius: 24%;
+  box-shadow: 0 0 0.6cqw rgb(116 203 255 / 28%);
+  cursor: pointer;
+  display: grid;
+  grid-column: 2;
+  grid-row: 2;
+  padding: 18%;
+  place-items: center;
+  touch-action: manipulation;
+  transition:
+    background-color 120ms ease,
+    filter 120ms ease,
+    scale 120ms ease;
+}
+.directionPadButton img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+.directionPadButton[data-direction="up"] {
+  grid-row: 1;
+}
+.directionPadButton[data-direction="left"] {
+  grid-column: 1;
+}
+.directionPadButton[data-direction="down"] {
+  grid-row: 3;
+}
+.directionPadButton[data-direction="down"] img,
+.directionPadButton[data-direction="left"] img {
+  transform: rotate(180deg);
+}
+.directionPadButton[data-direction="right"] {
+  grid-column: 3;
+}
+.directionPadButton:not(:disabled):active {
+  background: rgb(129 240 197 / 35%);
+  filter: drop-shadow(0 0 0.45cqw rgb(129 240 197 / 72%));
+  scale: 0.92;
+}
+.directionPadButton:focus-visible {
+  outline: 0.16cqw solid #f8edd8;
+  outline-offset: 0.12cqw;
+}
+.directionPadButton:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+.rotateNotice {
+  display: none;
+}
 .hintButton {
   position: relative;
 }
@@ -533,6 +599,33 @@
   }
   .goalSpark {
     opacity: 0.62;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) {
+  .directionPad {
+    display: grid;
+  }
+  .tutorial .directionPad {
+    bottom: auto;
+    top: 24%;
+  }
+}
+@media (pointer: coarse) and (orientation: portrait) {
+  .rotateNotice {
+    align-items: center;
+    background: rgb(8 14 20 / 94%);
+    color: #f8edd8;
+    display: grid;
+    font:
+      700 clamp(1.1rem, 4.2cqw, 2rem) "온글잎 박다현체",
+      monospace;
+    inset: 0;
+    letter-spacing: 0.08em;
+    padding: 12%;
+    place-items: center;
+    position: absolute;
+    text-align: center;
+    z-index: 8;
   }
 }
 .error {
