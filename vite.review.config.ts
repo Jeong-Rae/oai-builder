@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0",
     port: 5175,
     strictPort: true,
+    proxy: {
+      "/api/tasks": {
+        target: "http://127.0.0.1:8787",
+      },
+    },
   },
   build: {
     outDir: "../../dist/review",

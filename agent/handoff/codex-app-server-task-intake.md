@@ -89,6 +89,11 @@ VP는 POST 결과를 즉시 Success/Fail 카드로 표시하고, 성공한 Task�
 표시한다. `completed` 또는 `failed`에서 폴링을 종료하고 화면이 해제될 때 모든 timer를
 정리한다.
 
+브라우저의 Task 요청은 Review Vite 서버와 동일 origin인 `/api/tasks`를 사용한다. Review
+서버가 이를 로컬 `127.0.0.1:8787` Gateway로 프록시하므로 Codespaces의 8787 forwarded
+port는 private 상태로 유지할 수 있다. `VITE_REVIEW_GATEWAY_URL`을 지정하면 명시한 Gateway
+주소를 우선한다.
+
 ## Task 문서 저장
 
 Codex는 다음 내용을 포함한 한국어 Markdown을 구조화한다.

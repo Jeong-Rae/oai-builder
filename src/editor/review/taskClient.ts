@@ -1,8 +1,6 @@
 import type { TaskStatusRecord, TaskSubmissionRecord, VisualTask } from "@/src/editor/review/types";
-import { resolveSiblingUrl } from "@/src/editor/review/urls";
 
-const gatewayUrl =
-  (import.meta.env.VITE_REVIEW_GATEWAY_URL as string | undefined) ?? resolveSiblingUrl(8787);
+const gatewayUrl = (import.meta.env.VITE_REVIEW_GATEWAY_URL as string | undefined) ?? "";
 
 export async function submitVisualTask(task: VisualTask): Promise<TaskSubmissionRecord> {
   const response = await fetch(`${gatewayUrl}/api/tasks`, {

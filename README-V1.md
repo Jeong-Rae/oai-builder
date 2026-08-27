@@ -69,12 +69,16 @@ The gateway starts `codex app-server` automatically and uses the existing local 
 returns after the App Server accepts the thread and turn. The review console then polls the Task GET
 endpoint until the Markdown is saved or the turn fails. Only one Task is active at a time.
 
-The review wrapper resolves sibling ports from its own origin (works on localhost and Codespaces forwarded HTTPS hosts):
+The review wrapper resolves the game server as a sibling port from its own origin:
 
 - game dev server: same host on port `5173`
-- task gateway: same host on port `8787`
+- task gateway: same-origin `/api/tasks`, proxied by the review dev server to `127.0.0.1:8787`
 
 `VITE_REVIEW_GAME_URL` / `VITE_REVIEW_GATEWAY_URL` can override both.
+
+The same-origin task proxy keeps the Codespaces `8787` forwarded port private. Accessing that
+private port directly from browser JavaScript can fail at the Codespaces tunnel authentication
+layer before the gateway can return its own CORS headers.
 
 ## Important browser constraint
 
